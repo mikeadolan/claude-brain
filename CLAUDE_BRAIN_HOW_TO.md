@@ -1,6 +1,6 @@
 # CLAUDE-BRAIN: HOW TO USE YOUR BRAIN
 
-**Last Updated:** 2026-03-07 (v2 — added semantic search, session quality, summaries)
+**Last Updated:** 2026-03-08 (v3 — added get_schema tool, LLM summaries, Adding a Project guide)
 **For:** All claude-brain users
 
 ---
@@ -17,8 +17,9 @@
 8. [Importing Claude.ai Conversations](#8-importing-claudeai-conversations)
 9. [Running Status and Health Checks](#9-status-and-health-checks)
 10. [How Data Gets Into the Brain](#10-how-data-gets-into-the-brain)
-11. [Troubleshooting](#11-troubleshooting)
-12. [What the Brain Cannot Do (Yet)](#12-limitations)
+11. [Adding a New Project](#11-adding-a-new-project)
+12. [Troubleshooting](#12-troubleshooting)
+13. [What the Brain Cannot Do (Yet)](#13-limitations)
 
 ---
 
@@ -89,7 +90,7 @@ These fire without you doing anything:
 
 ### The Simple Version
 
-Just ask Claude in plain English. Claude Code has access to 10 MCP brain tools
+Just ask Claude in plain English. Claude Code has access to 11 MCP brain tools
 and will use them when your question implies memory lookup.
 
 **Examples that trigger brain search:**
@@ -149,7 +150,7 @@ with numpy computing cosine similarity. All local, no API calls.
 
 ## 5. MCP TOOLS REFERENCE
 
-These are the 10 tools Claude Code can call. You don't call them directly —
+These are the 11 tools Claude Code can call. You don't call them directly —
 Claude calls them based on your prompt. But knowing what exists helps you
 ask better questions.
 
@@ -324,6 +325,19 @@ backup status, DB size, semantic search status.
 "What's the brain status?"
 "How many sessions and messages are in the database?"
 "Is the backup current?"
+```
+
+---
+
+### get_schema()
+**What:** Returns the full database schema — all tables, columns, types, and row counts.
+**When Claude uses it:** When it needs to understand the DB structure or write a query.
+
+**Example prompts:**
+```
+"Show me the database schema"
+"What tables does the brain have?"
+"How many rows are in each table?"
 ```
 
 ---
@@ -654,7 +668,57 @@ Location: `db-backup/claude-brain.db.bak1`
 
 ---
 
-## 11. TROUBLESHOOTING
+## 11. ADDING A NEW PROJECT
+
+To add a new project to the brain:
+
+### Option 1: Re-run setup (recommended)
+```bash
+python3 scripts/brain-setup.py
+```
+The setup script is idempotent — it will detect existing projects and let you add new ones.
+It creates the folder, CLAUDE.md, config entry, and database registration all at once.
+
+### Option 2: Manual steps
+
+1. **Add to config.yaml** — add a new entry under `projects:` and `jsonl_project_mapping:`:
+   ```yaml
+   projects:
+     - folder_name: "my-new-project"
+       prefix: "mnp"
+       label: "My New Project"
+
+   jsonl_project_mapping:
+     "my-new-project": "mnp"
+   ```
+
+2. **Create the folder** — inside your claude-brain root:
+   ```bash
+   mkdir my-new-project
+   ```
+
+3. **Create CLAUDE.md** — copy from an existing project folder, update the project name,
+   prefix, and label at the top.
+
+4. **Register the prefix** — the startup check will auto-register on next session start,
+   or run manually:
+   ```bash
+   python3 scripts/startup_check.py
+   ```
+
+5. **Register MCP** — if you want brain access from this project folder:
+   ```bash
+   claude mcp add brain-server python3 /path/to/claude-brain/mcp/server.py
+   ```
+
+### Naming rules
+- **folder_name:** lowercase, hyphens only (e.g., "my-project")
+- **prefix:** lowercase, 2-4 chars, no trailing underscore (e.g., "mp")
+- **label:** human-readable name shown in brain-import picklist
+
+---
+
+## 12. TROUBLESHOOTING
 
 ### "Claude isn't using the brain tools"
 - **Check:** Is the MCP server registered? Run: `claude mcp list`
@@ -696,7 +760,7 @@ Location: `db-backup/claude-brain.db.bak1`
 
 ---
 
-## 12. WHAT THE BRAIN CANNOT DO (YET)
+## 13. WHAT THE BRAIN CANNOT DO (YET)
 
 | Limitation | Why | When It Gets Fixed |
 |-----------|-----|-------------------|

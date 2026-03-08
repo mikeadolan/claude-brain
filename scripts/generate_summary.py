@@ -2,7 +2,11 @@
 """
 generate_summary.py — Session summary generator for claude-brain.
 
-Builds a structured summary from session transcripts (no LLM calls).
+Two modes:
+  1. LLM-powered (if summary_llm.enabled in config.yaml) — sends transcript
+     to Anthropic or OpenRouter API for a rich, narrative summary.
+  2. Pure Python fallback — structured extraction (no API, no cost).
+
 Called by hooks/session-end.sh.
 
 Usage:
@@ -13,6 +17,7 @@ Exit codes: 0 = success, 1 = error
 
 import argparse
 import datetime
+import json
 import logging
 import os
 import pathlib
@@ -20,6 +25,8 @@ import re
 import socket
 import sqlite3
 import sys
+import urllib.request
+import urllib.error
 
 import yaml
 
@@ -77,7 +84,91 @@ def connect_db(db_path):
 
 
 # ---------------------------------------------------------------------------
-# Summary building
+# LLM-powered summary (Anthropic or OpenRouter)
+# ---------------------------------------------------------------------------
+
+LLM_PROMPT = """Summarize this Claude Code session transcript in 20-40 lines. Include:
+- Main topic/goal of the session
+- Key decisions made (with decision numbers if mentioned)
+- Files created or modified
+- What was accomplished
+- Current state at end of session
+- Any blockers or issues found
+
+Be concise and factual. Use bullet points. Do not add commentary.
+
+TRANSCRIPT:
+{transcript}"""
+
+
+def _call_llm(config, transcript_text, logger):
+    """Call LLM API for summary. Returns summary string or None on failure."""
+    llm_config = config.get("summary_llm", {})
+    if not llm_config.get("enabled", False):
+        return None
+
+    api_key = llm_config.get("api_key", "")
+    if not api_key:
+        logger.info("summary_llm enabled but no api_key configured, using fallback")
+        return None
+
+    provider = llm_config.get("provider", "openrouter")
+    model = llm_config.get("model", "")
+
+    # Truncate transcript to ~12K chars to stay under token limits
+    if len(transcript_text) > 12000:
+        transcript_text = transcript_text[:6000] + "\n\n[...truncated...]\n\n" + transcript_text[-6000:]
+
+    prompt = LLM_PROMPT.format(transcript=transcript_text)
+
+    try:
+        if provider == "anthropic":
+            url = "https://api.anthropic.com/v1/messages"
+            headers = {
+                "x-api-key": api_key,
+                "anthropic-version": "2023-06-01",
+                "Content-Type": "application/json",
+            }
+            body = {
+                "model": model or "claude-haiku-4-5-20251001",
+                "max_tokens": 1024,
+                "messages": [{"role": "user", "content": prompt}],
+            }
+        else:
+            # OpenRouter (OpenAI-compatible)
+            url = "https://openrouter.ai/api/v1/chat/completions"
+            headers = {
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            }
+            body = {
+                "model": model or "anthropic/claude-haiku-4.5",
+                "max_tokens": 1024,
+                "messages": [{"role": "user", "content": prompt}],
+            }
+
+        data = json.dumps(body).encode("utf-8")
+        req = urllib.request.Request(url, data=data, headers=headers)
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            result = json.loads(resp.read().decode("utf-8"))
+
+        # Extract response text
+        if provider == "anthropic":
+            return result["content"][0]["text"]
+        else:
+            return result["choices"][0]["message"]["content"]
+
+    except urllib.error.HTTPError as e:
+        body = e.read().decode("utf-8", errors="replace")
+        logger.warning("LLM API HTTP error %s: %s", e.code, body[:200])
+        return None
+    except Exception as e:
+        logger.warning("LLM API call failed: %s", e)
+        return None
+
+
+# ---------------------------------------------------------------------------
+# Pure Python summary (fallback)
 # ---------------------------------------------------------------------------
 
 MAX_SUMMARY_LINES = 50
@@ -240,8 +331,16 @@ def generate_summary(session_id, project, root_path=None, config=None):
             logger.warning("No transcripts found for session %s", session_id)
             return {"summary_lines": 0, "exit_code": 0}
 
-        # Build summary
-        summary = build_summary(transcripts, session_id, project)
+        # Try LLM summary first, fall back to pure Python
+        transcript_text = "\n".join(
+            f"[{r['type']}] {(r['content'] or '')[:500]}"
+            for r in transcripts if r['content']
+        )
+        summary = _call_llm(config, transcript_text, logger)
+        if summary:
+            logger.info("LLM summary generated for session %s", session_id)
+        else:
+            summary = build_summary(transcripts, session_id, project)
         summary_lines = len(summary.split('\n'))
 
         if summary_lines > MAX_SUMMARY_LINES:

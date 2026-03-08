@@ -33,7 +33,7 @@ You type a prompt
 [user-prompt-submit hook] searches your brain, injects top 3 relevant memories
     |
     v
-Claude responds (can also query the brain on-demand via 10 MCP tools)
+Claude responds (can also query the brain on-demand via 11 MCP tools)
     |
     v
 [stop hook] captures the exchange and writes it to the database

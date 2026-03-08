@@ -155,6 +155,27 @@ jsonl_project_mapping:
   "general": "gen"
 
 # ==============================================================================
+# LLM-POWERED SUMMARIES (optional)
+# ==============================================================================
+# If enabled, session summaries use an LLM API for richer, narrative
+# summaries. Without a key, everything still works -- summaries just
+# use simpler text extraction methods.
+#
+# Supported providers: "anthropic" or "openrouter"
+# Typical cost: under $1/month (uses the smallest, cheapest model)
+# The API key unlocks:
+#   - Richer session summaries powered by AI (vs basic text extraction)
+#   - Smarter fact and decision extraction from conversations
+#   - Higher quality session notes for cross-session continuity
+
+summary_llm:
+  enabled: false                                 # Set to true + add API key
+  provider: "openrouter"                         # "anthropic" or "openrouter"
+  api_key: ""                                    # Your actual API key here
+  model: "anthropic/claude-haiku-4.5"   # OpenRouter model ID
+  # model: "claude-haiku-4-5-20251001"           # Use this for Anthropic API provider
+
+# ==============================================================================
 # SEMANTIC SEARCH
 # ==============================================================================
 # sentence-transformers + SQLite + numpy.

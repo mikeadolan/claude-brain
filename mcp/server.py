@@ -5,10 +5,10 @@ server.py — MCP server for claude-brain.
 Read-only access to the claude-brain SQLite database.
 All writes are handled by hooks and scripts.
 
-10 tool functions:
+11 tool functions:
   get_profile, get_project_state, search_transcripts, get_session,
   get_recent_sessions, lookup_decision, lookup_fact, get_recent_summaries,
-  search_semantic, get_status
+  search_semantic, get_status, get_schema
 
 Registration:
   claude mcp add brain-server python3 /path/to/mcp/server.py
@@ -631,6 +631,54 @@ def get_status() -> str:
             f"Last backup: {backup_info}",
             f"Semantic search: {sem_status}",
         ])
+
+        return "\n".join(lines)
+    finally:
+        conn.close()
+
+# ---------------------------------------------------------------------------
+# 11. get_schema
+# ---------------------------------------------------------------------------
+
+@mcp.tool()
+def get_schema() -> str:
+    """Returns the database schema: all tables, columns, and types.
+    Use this to understand the DB structure without reading documentation."""
+    conn = get_db()
+    try:
+        tables = conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"
+        ).fetchall()
+
+        lines = ["## Database Schema", ""]
+        for tbl in tables:
+            name = tbl["name"]
+            cols = conn.execute(f"PRAGMA table_info(\"{name}\")").fetchall()
+            col_strs = []
+            for col in cols:
+                pk = " PK" if col["pk"] else ""
+                notnull = " NOT NULL" if col["notnull"] else ""
+                default = f" DEFAULT {col['dflt_value']}" if col["dflt_value"] else ""
+                col_strs.append(f"  - {col['name']} ({col['type']}{pk}{notnull}{default})")
+            lines.append(f"### {name}")
+            lines.extend(col_strs)
+
+            # Show row count
+            try:
+                count = conn.execute(f"SELECT COUNT(*) as c FROM \"{name}\"").fetchone()["c"]
+                lines.append(f"  ({count} rows)")
+            except Exception:
+                pass
+            lines.append("")
+
+        # Also show indexes
+        indexes = conn.execute(
+            "SELECT name, tbl_name FROM sqlite_master WHERE type='index' AND name NOT LIKE 'sqlite_%' ORDER BY tbl_name, name"
+        ).fetchall()
+        if indexes:
+            lines.append("### Indexes")
+            for idx in indexes:
+                lines.append(f"  - {idx['name']} on {idx['tbl_name']}")
 
         return "\n".join(lines)
     finally:

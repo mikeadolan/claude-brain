@@ -640,6 +640,40 @@ def phase_config(cfg):
     for p in cfg["projects"]:
         jsonl_mapping[p["folder_name"]] = p["prefix"]
 
+    # --- Optional: API key for enhanced features ---
+    print()
+    print(f"  {bold('=== Optional: API Key for Enhanced Features ===')}")
+    print(f"  An API key unlocks better brain capabilities:")
+    print(f"    - Richer session summaries powered by AI (vs basic text extraction)")
+    print(f"    - Smarter fact and decision extraction from conversations")
+    print(f"    - Higher quality session notes for cross-session continuity")
+    print()
+    print(f"  Without a key, everything still works — summaries and extraction")
+    print(f"  just use simpler methods that don't require an API call.")
+    print()
+    print(f"  Supported: Anthropic or OpenRouter")
+    print(f"  Typical cost: under $1/month (uses the smallest, cheapest model)")
+    print()
+
+    if ask_yn("Do you have an API key?", "n"):
+        print()
+        provider = ask("Provider (anthropic or openrouter)", "openrouter").lower()
+        if provider not in ("anthropic", "openrouter"):
+            warn(f"Unknown provider '{provider}', defaulting to openrouter")
+            provider = "openrouter"
+        api_key = ask("Paste your API key")
+        if provider == "anthropic":
+            model = "claude-haiku-4-5-20251001"
+        else:
+            model = "anthropic/claude-haiku-4.5"
+        cfg["summary_llm_enabled"] = True
+        cfg["summary_llm_provider"] = provider
+        cfg["summary_llm_api_key"] = api_key
+        cfg["summary_llm_model"] = model
+        ok(f"API key configured ({provider}, model: {model})")
+    else:
+        ok("Skipped — pure Python summaries will be used (works great, no cost)")
+
     config_data = {
         "storage": {
             "mode": cfg["storage_mode"],
@@ -675,6 +709,12 @@ def phase_config(cfg):
             "ingest_tool_results": True,
         },
         "jsonl_project_mapping": jsonl_mapping,
+        "summary_llm": {
+            "enabled": cfg.get("summary_llm_enabled", False),
+            "provider": cfg.get("summary_llm_provider", "openrouter"),
+            "api_key": cfg.get("summary_llm_api_key", ""),
+            "model": cfg.get("summary_llm_model", "anthropic/claude-haiku-4.5"),
+        },
         "semantic_search": {
             "enabled": True,
             "model": "all-MiniLM-L6-v2",
