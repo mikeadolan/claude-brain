@@ -1,0 +1,5 @@
+{"parentUuid":null,"isSidechain":false,"userType":"external","cwd":"/home/user/claude-brain","sessionId":"test-session-bad","version":"2.1.63","gitBranch":"HEAD","type":"user","message":{"role":"user","content":"This line is valid."},"uuid":"ddd00001-1111-1111-1111-000000000001","timestamp":"2026-01-18T10:00:00.000Z"}
+{"parentUuid":"ddd00001-1111-1111-1111-000000000001","type":"assistant","sessionId":"test-session-bad","message":{"role":"assistant","content":"truncated
+
+{"parentUuid":"ddd00001-1111-1111-1111-000000000001","type":"user","sessionId":"test-session-bad","message":{"role":"user","content":"Missing uuid field."},"timestamp":"2026-01-18T10:00:10.000Z"}
+{"parentUuid":"ddd00001-1111-1111-1111-000000000001","sessionId":"test-session-bad","message":{"role":"assistant","content":"Missing type field."},"uuid":"ddd00001-5555-5555-5555-000000000001","timestamp":"2026-01-18T10:00:15.000Z"}

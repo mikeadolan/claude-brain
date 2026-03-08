@@ -1,0 +1,5 @@
+/home/user/claude-brain
+/home/user/claude-brain/config.yaml
+/home/user/claude-brain/DATABASE_INFO.txt
+/home/user/claude-brain/DEPENDENCIES.md
+/home/user/claude-brain/FOLDER_SCHEMA.md

@@ -1,0 +1,39 @@
+storage:
+  mode: "synced"
+  root_path: "/tmp/claude-brain-test"
+  local_db_path: "/tmp/claude-brain-test/test.db"
+
+jsonl:
+  source_paths:
+    - "/tmp/claude-brain-test/jsonl"
+  ingest_subagents: true
+  ingest_tool_results: true
+
+jsonl_project_mapping:
+  "johnny-goods-assistant": "jga"
+  "johnny-goods": "jg"
+  "claude-brain": "mb"
+  "general": "gen"
+
+projects:
+  - folder_name: "johnny-goods"
+    prefix: "jg"
+    label: "Johnny Goods"
+  - folder_name: "general"
+    prefix: "gen"
+    label: "General"
+  - folder_name: "other"
+    prefix: "oth"
+    label: "Other"
+
+backup:
+  max_copies: 2
+  verify_after_copy: true
+
+semantic_search:
+  enabled: false
+  model: "all-MiniLM-L6-v2"
+
+logging:
+  enabled: true
+  level: "info"

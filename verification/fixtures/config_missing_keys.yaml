@@ -1,0 +1,7 @@
+meta:
+  project_name: "claude-brain"
+  version: "0.1.0"
+
+logging:
+  enabled: true
+  level: "info"

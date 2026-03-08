@@ -1,0 +1,74 @@
+{
+  "uuid": "export-session-001",
+  "name": "Test Claude.ai Conversation",
+  "summary": "A test conversation about project planning.",
+  "created_at": "2026-01-20T14:00:00.000Z",
+  "updated_at": "2026-01-20T14:05:00.000Z",
+  "chat_messages": [
+    {
+      "uuid": "fff00001-1111-1111-1111-000000000001",
+      "sender": "human",
+      "text": "Help me plan a Python project.",
+      "content": [{"type": "text", "text": "Help me plan a Python project."}],
+      "created_at": "2026-01-20T14:00:01.000Z",
+      "parent_message_uuid": null,
+      "index": 0,
+      "attachments": [],
+      "files": [],
+      "files_v2": [],
+      "truncated": false
+    },
+    {
+      "uuid": "fff00001-2222-2222-2222-000000000001",
+      "sender": "assistant",
+      "text": "I'd be happy to help you plan a Python project. Let's start with the requirements.",
+      "content": [{"type": "text", "text": "I'd be happy to help you plan a Python project. Let's start with the requirements."}],
+      "created_at": "2026-01-20T14:00:10.000Z",
+      "parent_message_uuid": "fff00001-1111-1111-1111-000000000001",
+      "index": 1,
+      "attachments": [],
+      "files": [],
+      "files_v2": [],
+      "truncated": false
+    },
+    {
+      "uuid": "fff00001-3333-3333-3333-000000000001",
+      "sender": "human",
+      "text": "I want to build a memory system for Claude Code.",
+      "content": [{"type": "text", "text": "I want to build a memory system for Claude Code."}],
+      "created_at": "2026-01-20T14:01:00.000Z",
+      "parent_message_uuid": "fff00001-2222-2222-2222-000000000001",
+      "index": 2,
+      "attachments": [],
+      "files": [],
+      "files_v2": [],
+      "truncated": false
+    },
+    {
+      "uuid": "fff00001-4444-4444-4444-000000000001",
+      "sender": "assistant",
+      "text": "Great idea! A memory system could use SQLite for structured data and vector search for semantic queries.",
+      "content": [{"type": "text", "text": "Great idea! A memory system could use SQLite for structured data and vector search for semantic queries."}],
+      "created_at": "2026-01-20T14:01:15.000Z",
+      "parent_message_uuid": "fff00001-3333-3333-3333-000000000001",
+      "index": 3,
+      "attachments": [],
+      "files": [],
+      "files_v2": [],
+      "truncated": false
+    },
+    {
+      "uuid": "fff00001-5555-5555-5555-000000000001",
+      "sender": "human",
+      "text": "That sounds perfect. Let's do it.",
+      "content": [{"type": "text", "text": "That sounds perfect. Let's do it."}],
+      "created_at": "2026-01-20T14:02:00.000Z",
+      "parent_message_uuid": "fff00001-4444-4444-4444-000000000001",
+      "index": 4,
+      "attachments": [],
+      "files": [],
+      "files_v2": [],
+      "truncated": false
+    }
+  ]
+}
