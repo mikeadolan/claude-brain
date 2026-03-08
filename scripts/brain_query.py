@@ -21,8 +21,14 @@ import pathlib
 import re
 import sqlite3
 import sys
-
 import yaml
+
+# Suppress HuggingFace model-loading noise (must be before any HF imports)
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
+os.environ["HF_HUB_OFFLINE"] = "1"
+os.environ["TQDM_DISABLE"] = "1"
+os.environ["TRANSFORMERS_VERBOSITY"] = "error"
 
 # ---------------------------------------------------------------------------
 # Config / DB
@@ -347,8 +353,8 @@ def main():
     parser.add_argument("question", help="Natural language question to search for")
     parser.add_argument("--project", "-p", default=None,
                         help="Filter by project prefix (jg, gen, mb, etc.)")
-    parser.add_argument("--limit", "-l", type=int, default=15,
-                        help="Max results per search type (default: 15)")
+    parser.add_argument("--limit", "-l", type=int, default=10,
+                        help="Max results per search type (default: 10)")
     parser.add_argument("--no-semantic", action="store_true",
                         help="Skip semantic search (faster)")
     args = parser.parse_args()
@@ -376,7 +382,7 @@ def main():
         sem_config = config.get("semantic_search", {})
         if sem_config.get("enabled", False) and not args.no_semantic:
             semantic_results = search_semantic(
-                conn, args.question, args.project, args.limit
+                conn, args.question, args.project, min(args.limit, 5)
             )
 
         # Format and print

@@ -20,8 +20,14 @@ import pathlib
 import socket
 import sqlite3
 import sys
-
 import yaml
+
+# Suppress HuggingFace model-loading noise (must be before any HF imports)
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
+os.environ["HF_HUB_OFFLINE"] = "1"
+os.environ["TQDM_DISABLE"] = "1"
+os.environ["TRANSFORMERS_VERBOSITY"] = "error"
 
 # ---------------------------------------------------------------------------
 # Constants — shared with ingest_jsonl.py

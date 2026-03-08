@@ -147,7 +147,7 @@ Four hooks fire automatically at session lifecycle events. Registered in `~/.cla
 
 ## Slash Commands
 
-Five commands available in any Claude Code session:
+Ten commands available in any Claude Code session:
 
 | Command | What It Does |
 |---------|-------------|
@@ -156,6 +156,11 @@ Five commands available in any Claude Code session:
 | `/brain-question` | Ask a natural language question and search the entire brain (FTS5 + semantic + facts + decisions) |
 | `/brain-questionnaire` | Fill out or update your personal profile (brain_facts + brain_preferences) |
 | `/brain-setup` | Re-run the setup script to add projects or fix configuration |
+| `/brain-search` | Raw transcript search — returns matching results with timestamps, session IDs, and excerpts |
+| `/brain-history` | Session timeline — one line per session with date, project, message count, and topic |
+| `/brain-recap` | Progress report for a time range (today, week, or N days), grouped by project |
+| `/brain-decide` | Fast decision lookup by number or keyword — shows full decision text and rationale |
+| `/brain-export` | Export data to timestamped text files (profile, decisions, search results, sessions, weekly recap) |
 
 ---
 
@@ -195,7 +200,7 @@ Ten read-only tools registered as the `brain-server` MCP server. Claude calls th
 
 ```
 claude-brain/
-├── scripts/              # 10 Python/bash scripts
+├── scripts/              # 15 Python/bash scripts
 │   ├── brain-setup.py    # Interactive first-run installer
 │   ├── startup_check.py  # JSONL ingestion + backup (called by hook)
 │   ├── write_exchange.py # Real-time exchange capture (called by hook)
@@ -204,6 +209,11 @@ claude-brain/
 │   ├── import_claude_ai.py # Claude.ai conversation importer
 │   ├── brain_sync.sh     # Database backup with rotation
 │   ├── brain_query.py    # Local search engine for /brain-question
+│   ├── brain_search.py   # Raw transcript search for /brain-search
+│   ├── brain_history.py  # Session timeline for /brain-history
+│   ├── brain_recap.py    # Progress report for /brain-recap
+│   ├── brain_decide.py   # Decision lookup for /brain-decide
+│   ├── brain_export.py   # Data export for /brain-export
 │   ├── status.py         # Database statistics
 │   └── copy_chat_file.py # File versioning for chat sessions
 ├── hooks/                # 4 Claude Code lifecycle hooks
@@ -214,6 +224,7 @@ claude-brain/
 ├── mcp/
 │   └── server.py         # MCP server (10 read-only tools)
 ├── config.yaml.example   # Reference config (real config is .gitignore'd)
+├── exports/              # /brain-export output files
 ├── imports/              # Drop claude.ai exports here
 │   └── completed/        # Successfully imported files move here
 ├── db-backup/            # Rotating database backups

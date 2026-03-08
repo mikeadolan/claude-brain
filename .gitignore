@@ -65,6 +65,9 @@ imports/*.json
 # Keep imports/completed/ structure but not contents
 imports/completed/*.json
 
+# Brain export output (personal data)
+exports/
+
 # Session logs
 logs/
 
