@@ -302,11 +302,18 @@ Key settings:
 
 Claude.ai conversations are not captured by hooks (no hook system exists for the web UI). To import them:
 
-1. Export from claude.ai using the [AI Chat Exporter](https://chromewebstore.google.com/detail/ai-chat-exporter/) Chrome extension (JSON format)
-2. Drop the `.json` file into your `imports/` folder
-3. Run `/brain-import` in Claude Code
-4. Follow the prompts (select project, confirm)
-5. Successfully imported files move to `imports/completed/`
+1. Install the [AI Chat Exporter](https://chromewebstore.google.com/detail/ai-chat-exporter/) Chrome extension
+2. On claude.ai, open a conversation and click the extension icon
+3. Set these export options:
+   - **Chat format:** JSON
+   - **Chats:** checked
+   - **Metadata:** checked
+   - **Extended Thinking:** unchecked (not parsed, adds bulk)
+   - **All Artifact options:** unchecked (not parsed)
+4. Click **Export Current Conversation** and save the `.json` file to your `imports/` folder
+5. Run `/brain-import` in Claude Code
+6. Follow the prompts (select project, confirm)
+7. Successfully imported files move to `imports/completed/`
 
 ---
 

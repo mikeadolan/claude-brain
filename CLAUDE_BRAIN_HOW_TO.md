@@ -547,8 +547,15 @@ Conversations from claude.ai (the web interface) are NOT automatically captured
 by hooks. You need to export and import them manually.
 
 ### Step 1: Export from claude.ai
-- Use the **AI Chat Exporter** Chrome extension (most reliable method)
-- Export as JSON format
+- Install the **AI Chat Exporter** Chrome extension
+- On claude.ai, open a conversation and click the extension icon
+- Set these export options:
+  - **Chat format:** JSON
+  - **Chats:** checked
+  - **Metadata:** checked
+  - **Extended Thinking:** unchecked (not parsed, adds bulk)
+  - **All Artifact options:** unchecked (not parsed)
+- Click **Export Current Conversation**
 - Save the .json file to: `imports/` folder in your claude-brain directory
 
 ### Step 2: Tell Claude Code to import
