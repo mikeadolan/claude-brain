@@ -768,12 +768,15 @@ def phase_config(cfg):
     }
 
     example_path = root / "config.yaml.example"
-    with open(example_path, "w") as f:
-        f.write("# claude-brain Configuration File — EXAMPLE\n")
-        f.write("# Copy this to config.yaml and edit with your values.\n")
-        f.write("# Or run: python3 scripts/brain-setup.py (generates config for you)\n\n")
-        yaml.dump(example_data, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
-    ok("config.yaml.example written")
+    if example_path.exists():
+        ok("config.yaml.example already exists (shipped with repo, skipping)")
+    else:
+        with open(example_path, "w") as f:
+            f.write("# claude-brain Configuration File — EXAMPLE\n")
+            f.write("# Copy this to config.yaml and edit with your values.\n")
+            f.write("# Or run: python3 scripts/brain-setup.py (generates config for you)\n\n")
+            yaml.dump(example_data, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
+        ok("config.yaml.example written")
 
     # --- Generate CLAUDE.md per project ---
     for p in cfg["projects"]:
