@@ -147,10 +147,11 @@ Four hooks fire automatically at session lifecycle events. Registered in `~/.cla
 
 ## Slash Commands
 
-Ten commands available in any Claude Code session:
+Eleven commands available in any Claude Code session:
 
 | Command | What It Does |
 |---------|-------------|
+| `/brain-health` | Full 9-point diagnostic — database, space, data sync, backup, performance, dependencies, MCP, hooks, config |
 | `/brain-status` | Database stats — sessions, messages, per-project counts, backup status, semantic search status |
 | `/brain-import` | Import a claude.ai conversation export (JSON) into the brain |
 | `/brain-question` | Ask a natural language question and search the entire brain (FTS5 + semantic + facts + decisions) |
@@ -200,7 +201,7 @@ Ten read-only tools registered as the `brain-server` MCP server. Claude calls th
 
 ```
 claude-brain/
-├── scripts/              # 15 Python/bash scripts
+├── scripts/              # 16 Python/bash scripts
 │   ├── brain-setup.py    # Interactive first-run installer
 │   ├── startup_check.py  # JSONL ingestion + backup (called by hook)
 │   ├── write_exchange.py # Real-time exchange capture (called by hook)
@@ -214,6 +215,7 @@ claude-brain/
 │   ├── brain_recap.py    # Progress report for /brain-recap
 │   ├── brain_decide.py   # Decision lookup for /brain-decide
 │   ├── brain_export.py   # Data export for /brain-export
+│   ├── brain_health.py   # 9-point system health check
 │   ├── status.py         # Database statistics
 │   └── copy_chat_file.py # File versioning for chat sessions
 ├── hooks/                # 4 Claude Code lifecycle hooks

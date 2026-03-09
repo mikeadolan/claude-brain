@@ -599,36 +599,44 @@ When importing, you must specify which project the conversation belongs to:
 
 ## 9. STATUS AND HEALTH CHECKS
 
-### Quick Status
-Ask Claude: `"What's the brain status?"`
+### Full Health Check (recommended)
+Ask Claude: `"/brain-health"` or run from terminal:
+```bash
+python3 scripts/brain_health.py
+```
 
-Or run from terminal:
+This runs a 9-point diagnostic:
+```
+=== Claude Brain Health Check ===
+
+  [PASS] Database: 112.8 MB, integrity OK, WAL, 0.0% fragmentation
+  [PASS] Space: raw_json 79.0 MB (70%), content 2.7 MB (2%), embeddings 3.6 MB (3%)
+  [WARN] Data: FTS5 synced (10447), embeddings 71% (2427/3432)
+  [PASS] Backup: 2 copies, newest 2h old, integrity OK
+  [PASS] Performance: FTS5 0.1ms, LIKE 1.3ms, COUNT(*) 0.2ms
+  [PASS] Dependencies: all 4 packages importable
+  [PASS] MCP: brain-server registered for 2 projects, server.py exists
+  [PASS] Hooks: 4/4 registered, all files exist
+  [PASS] Config: config.yaml valid, 7 projects, all paths exist
+
+  Score: 8/9 PASS, 1 WARN, 0 FAIL
+```
+
+**Status levels:**
+- **PASS** = everything nominal
+- **WARN** = works but suboptimal (embedding coverage <80%, backup >24h old)
+- **FAIL** = broken (integrity fail, missing files, hooks not registered)
+
+JSON output: `python3 scripts/brain_health.py --json`
+
+### Quick Status
+Ask Claude: `"/brain-status"` or run from terminal:
 ```bash
 python3 scripts/status.py
 ```
 
-### What You'll See
-```
-Sessions: 54
-Messages: 7134
-Tool results: 23
-Summaries: 54
-Ingested files: 104
-Embeddings: 1939
-
-By Project:
-  jg: 27 sessions, 2946 msgs
-  mb: 11 sessions, 2488 msgs
-  js: 2 sessions, 981 msgs
-  gen: 13 sessions, 716 msgs
-
-Semantic search: enabled (1939 embeddings)
-```
-
-### JSON Output (for scripts)
-```bash
-python3 scripts/status.py --json
-```
+Shows session counts, message counts, per-project breakdown, backup info, and
+semantic search status. Lighter than the full health check.
 
 ### Check If Hooks Are Working
 The simplest test: after a Claude Code session, check if the message count
@@ -804,7 +812,8 @@ MY PROFILE:
   "What does the brain know about me?"
 
 HEALTH CHECK:
-  "What's the brain status?"
+  /brain-health (full 9-point diagnostic)
+  /brain-status (quick stats)
 
 IMPORT CLAUDE.AI CHAT:
   Drop .json in imports/, then:
