@@ -77,13 +77,13 @@ Order matters. brain_sync must come before session-end (which calls it).
 
 | Step | Status | Notes |
 |------|--------|-------|
-| Write hooks/session-end.py | [ ] | Must call brain_sync.py (not .sh) |
-| Manual test: `echo '{}' \| python3 hooks/session-end.py` | [ ] | Must output `{}` |
-| Compare output to: `echo '{}' \| bash hooks/session-end.sh` | [ ] | Outputs must match |
-| Verify generate_summary.py was called | [ ] | |
-| Verify brain_sync.py was called (new backup exists) | [ ] | |
-| Audit: code review session-end.py vs session-end.sh logic | [ ] | Every line accounted for |
-| **LOCKED** | [ ] | |
+| Write hooks/session-end.py | [x] | 80 lines, calls brain_sync.py |
+| Manual test: `echo '{}' \| python3 hooks/session-end.py` | [x] | Outputs `{}` |
+| Compare output to: `echo '{}' \| bash hooks/session-end.sh` | [x] | Both output `{}` — identical |
+| Verify generate_summary.py was called | [x] | Runs without error |
+| Verify brain_sync.py was called (new backup exists) | [x] | Log confirms: 14:27:18 "Integrity check passed" |
+| Audit: code review session-end.py vs session-end.sh logic | [x] | 9/9 lines mapped. Project detection verified: both return `mb` |
+| **LOCKED** | [x] | |
 
 **Key translations:**
 - Same path encoding as stop.sh (sed → Python)
