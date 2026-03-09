@@ -17,7 +17,7 @@ Do this EVERY session:
 6. Never re-ask locked decisions — they're in the tracker and MVP plan
 7. Never start coding without Mike's GO
 8. Read LAST SESSION notes — know what happened last time
-9. If resuming after a provider switch or long gap: read memory/session-history.md for multi-session history
+9. If resuming after a provider switch or long gap: use /brain-recap or /brain-history for multi-session context
 10. When Mike says "start session" or opens with a task, follow this protocol then confirm ready with a brief status line: "MEMORY.md loaded. Last session: [one-line summary]. Tracker read. Current step: [phase/step]. Ready." — do not recite the full protocol, just this confirmation.
 
 ---
@@ -35,12 +35,11 @@ When Mike says "end session" (or similar: "wrap up", "done for today", "close it
    - Current state (exact phase/step)
    - Blockers or issues discovered
    - Exact next step
-2. Append a new entry to memory/session-history.md
-3. Update PROJECT_TRACKER.md if any steps changed status
-4. Update FOLDER_SCHEMA.md if any folders or files were created
-5. Update DEPENDENCIES.md if any packages or tools changed
-6. New decisions go in PROJECT_TRACKER.md → BUILD-PHASE DECISIONS section
-7. Confirm to Mike: "Session logged. History appended. Governance updated."
+2. Update PROJECT_TRACKER.md if any steps changed status
+3. Update FOLDER_SCHEMA.md if any folders or files were created
+4. Update DEPENDENCIES.md if any packages or tools changed
+5. New decisions go in PROJECT_TRACKER.md → BUILD-PHASE DECISIONS section
+6. Confirm to Mike: "Session logged. Governance updated."
 
 ---
 
