@@ -1,0 +1,10 @@
+# claude-brain core dependencies
+PyYAML>=6.0
+mcp>=1.0
+
+# Semantic search (optional but recommended)
+# Enables meaning-based search across your conversations.
+# Without these, keyword search (FTS5) still works perfectly.
+# sentence-transformers downloads a ~80MB model on first use.
+sentence-transformers>=3.0
+numpy>=1.26

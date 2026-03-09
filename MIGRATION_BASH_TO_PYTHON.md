@@ -2,7 +2,7 @@
 
 **Created:** 2026-03-09
 **Purpose:** Convert all .sh hooks and scripts to .py for cross-platform support (Linux + Mac + Windows)
-**Status:** PHASES A-E COMPLETE — ready for Phase F (cleanup + merge)
+**Status:** COMPLETE — all phases A-F done, merged to main, pushed to GitHub (2026-03-09)
 
 ---
 
@@ -189,17 +189,17 @@ Only after Phase D is LOCKED (all hooks live and verified).
 
 | # | Step | Status | Notes |
 |---|------|--------|-------|
-| F.1 | Delete `hooks/session-start.sh` | [ ] | |
-| F.2 | Delete `hooks/user-prompt-submit.sh` | [ ] | |
-| F.3 | Delete `hooks/stop.sh` | [ ] | |
-| F.4 | Delete `hooks/session-end.sh` | [ ] | |
-| F.5 | Delete `scripts/brain_sync.sh` | [ ] | |
-| F.6 | Full lifecycle test (start → prompt → response → end) | [ ] | Everything still works with .sh deleted |
-| F.7 | Commit all changes on migration branch | [ ] | |
-| F.8 | Merge `migration/bash-to-python` → `main` | [ ] | |
-| F.9 | Push to GitHub | [ ] | |
-| F.10 | Verify `main-backup-pre-migration` branch exists on GitHub as rollback | [ ] | |
-| **DONE** | | | [ ] |
+| F.1 | Delete `hooks/session-start.sh` | [x] | Deleted |
+| F.2 | Delete `hooks/user-prompt-submit.sh` | [x] | Deleted |
+| F.3 | Delete `hooks/stop.sh` | [x] | Deleted |
+| F.4 | Delete `hooks/session-end.sh` | [x] | Deleted |
+| F.5 | Delete `scripts/brain_sync.sh` | [x] | Deleted |
+| F.6 | Full lifecycle test (start → prompt → response → end) | [x] | 4/4 hooks verified live. stop.py: 30 transcripts in DB. session-end.py: exit 0. brain_health: 8/9→9/9 PASS |
+| F.7 | Commit all changes on migration branch | [x] | 68de212 — 19 files changed, 109 insertions, 591 deletions |
+| F.8 | Merge `migration/bash-to-python` → `main` | [x] | 31efb0a — clean merge, zero conflicts |
+| F.9 | Push to GitHub | [x] | e9bf822..31efb0a main → main |
+| F.10 | Verify `main-backup-pre-migration` branch exists on GitHub as rollback | [x] | Pushed to origin. All .sh files + config.yaml + settings.json.backup preserved |
+| **DONE** | | | [x] |
 
 ---
 
@@ -218,3 +218,4 @@ If the session ends at any point, the next session:
 | # | Decision | Date |
 |---|----------|------|
 | 103 | Bash-to-Python migration uses git branches for full backup. main-backup-pre-migration includes gitignored files. Work on migration/bash-to-python branch. One file at a time: write, test, compare, audit, lock. | 2026-03-09 |
+| 104 | Migration Phase F complete: 5 .sh files deleted, lifecycle tested (4/4 hooks live, brain_health 9/9), committed (68de212), merged to main (31efb0a), pushed to GitHub. Backup branch on GitHub with full .sh rollback. Embeddings backfilled to 100% (batch_embed.py, 2555 records, 9.4s). | 2026-03-09 |

@@ -33,7 +33,7 @@ Do NOT build in v0.1. Added to PROJECT_TRACKER.md.
 
 | Decision | What Was Deferred | Rationale |
 |----------|------------------|-----------|
-| 52 | Multi-OS support (macOS, Windows) | MVP is Fedora-only. Polish comes later. |
+| 52 | ~~Multi-OS support (macOS, Windows)~~ | **PARTIALLY RESOLVED** — Bash-to-Python migration complete (Decision 103-104). All hooks + scripts now pure Python. macOS should work out of box. Windows needs WSL. |
 | 53 | Provider-agnostic storage (iCloud, OneDrive, etc.) | MVP is Dropbox-only. |
 | 53 | Open-source packaging polish | MVP works; packaging is cosmetic. |
 | 54 | brain-tags management | Not needed for core functionality. |
@@ -49,9 +49,9 @@ Do NOT build in v0.1. Added to PROJECT_TRACKER.md.
 
 | Limitation | Detail | Post-MVP Fix |
 |-----------|--------|-------------|
-| **Python 3.13+ only** | Tested on 3.13 and 3.14. Python 3.12 and below are untested — may work but not guaranteed. sentence-transformers and numpy both require recent versions. | Expand testing to 3.10+ and document minimum. |
+| **Python 3.10+** | Tested on 3.13 and 3.14. Older 3.10+ versions should work but are untested. | Expand testing matrix. |
 | **Single-user design** | No multi-user support. One person, one database. No authentication, no user accounts, no permissions. | Not planned — this is a personal memory tool. |
-| **Fedora + macOS only** | Tested on Fedora 43. macOS support via brain-setup.py (untested until beta). Windows not supported. | Decision 52: multi-OS is post-MVP. |
+| **Fedora + macOS only** | Tested on Fedora 43. All scripts now pure Python (bash-to-python migration complete). macOS should work — needs beta tester verification. Windows needs WSL. | Beta test on Mac is the remaining gate. |
 
 ### Search & Performance
 
