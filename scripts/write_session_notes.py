@@ -3,7 +3,7 @@
 write_session_notes.py — Store session notes in the brain database.
 
 Replaces the LAST SESSION block in MEMORY.md. Notes are written to
-sys_sessions.notes and read by session-start.sh on next session start.
+sys_sessions.notes and read by session-start.py on next session start.
 
 Usage:
     python3 write_session_notes.py --session-id <id> --notes <text>

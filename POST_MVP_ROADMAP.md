@@ -24,7 +24,7 @@ Do NOT build in v0.1. Added to PROJECT_TRACKER.md.
 |---------|------------|--------|
 | `/brain-forget` | Delete specific records from database | Deferred — too dangerous for v0.1. Needs confirmation dialogs and undo capability. |
 | `/brain-tag` | Tag management for conversations | Deferred — Decision 54, not needed for core functionality. |
-| `/brain-sync` | Manual sync trigger | Deferred — hooks handle sync automatically. Terminal command `brain_sync.sh` already exists. |
+| `/brain-sync` | Manual sync trigger | Deferred — hooks handle sync automatically. Terminal command `brain_sync.py` already exists. |
 | ~~`/brain-doctor`~~ | ~~Full health check~~ | **DONE** — Renamed to `/brain-health` (Decision 100). 9-point diagnostic. scripts/brain_health.py. |
 
 ---

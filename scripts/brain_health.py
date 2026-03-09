@@ -430,10 +430,10 @@ def check_hooks():
     hooks_config = settings.get("hooks", {})
     required_hooks = ["SessionStart", "UserPromptSubmit", "Stop", "SessionEnd"]
     hook_files = {
-        "SessionStart": "session-start.sh",
-        "UserPromptSubmit": "user-prompt-submit.sh",
-        "Stop": "stop.sh",
-        "SessionEnd": "session-end.sh",
+        "SessionStart": "session-start.py",
+        "UserPromptSubmit": "user-prompt-submit.py",
+        "Stop": "stop.py",
+        "SessionEnd": "session-end.py",
     }
 
     registered = 0

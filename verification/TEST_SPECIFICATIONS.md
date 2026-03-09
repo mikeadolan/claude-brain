@@ -182,7 +182,7 @@ Imports claude.ai JSON conversation exports.
 
 ---
 
-## 6. BRAIN_SYNC.SH
+## 6. BRAIN_SYNC.PY
 
 Rotating backup of SQLite database.
 
@@ -242,7 +242,7 @@ File versioning to chat-files/ per project.
 
 ## 9. HOOKS
 
-### session-start.sh (Hook 1)
+### session-start.py (Hook 1)
 
 | ID | Test | Input | Expected |
 |----|------|-------|----------|
@@ -251,7 +251,7 @@ File versioning to chat-files/ per project.
 | T-HOOK-START-03 | Empty summaries | No summaries in DB | Output JSON: {"additionalContext": ""} or minimal context. Valid JSON. |
 | T-HOOK-START-04 | Valid JSON output | Any state | stdout is parseable JSON. No extra output mixed in. |
 
-### user-prompt-submit.sh (Hook 2)
+### user-prompt-submit.py (Hook 2)
 
 | ID | Test | Input | Expected |
 |----|------|-------|----------|
@@ -260,7 +260,7 @@ File versioning to chat-files/ per project.
 | T-HOOK-PROMPT-03 | No results | Empty DB / no matches | Output JSON with empty or minimal additionalContext. Valid JSON. |
 | T-HOOK-PROMPT-04 | Semantic search disabled | Config: enabled=false | Hook returns {} or minimal JSON. No error. |
 
-### stop.sh (Hook 3)
+### stop.py (Hook 3)
 
 | ID | Test | Input | Expected |
 |----|------|-------|----------|
@@ -268,12 +268,12 @@ File versioning to chat-files/ per project.
 | T-HOOK-STOP-02 | Non-blocking | Hook runs | Returns quickly. Does not block next user prompt. |
 | T-HOOK-STOP-03 | Valid JSON output | Any state | stdout: {} (empty JSON object). |
 
-### session-end.sh (Hook 4)
+### session-end.py (Hook 4)
 
 | ID | Test | Input | Expected |
 |----|------|-------|----------|
 | T-HOOK-END-01 | Generates summary | Hook fires on session end | generate_summary.py runs. New row in sys_session_summaries. |
-| T-HOOK-END-02 | Runs backup | Hook fires | brain_sync.sh runs. New backup in db-backup/. |
+| T-HOOK-END-02 | Runs backup | Hook fires | brain_sync.py runs. New backup in db-backup/. |
 | T-HOOK-END-03 | Valid JSON output | Any state | stdout: {} (empty JSON object). |
 
 ---
@@ -435,7 +435,7 @@ Tests should be run in this order (dependency chain):
 2. **ingest_jsonl.py tests** (T-INGEST-*) — core engine, no other script depends on it being wrong
 3. **startup_check.py tests** (T-STARTUP-*) — depends on ingest working
 4. **write_exchange.py tests** (T-WRITE-*) — independent of ingest
-5. **brain_sync.sh tests** (T-SYNC-*) — independent
+5. **brain_sync.py tests** (T-SYNC-*) — independent
 6. **status.py tests** (T-STATUS-*) — reads DB populated by above
 7. **copy_chat_file.py tests** (T-COPY-*) — independent
 8. **generate_summary.py tests** (T-SUMMARY-*) — depends on transcripts existing
@@ -455,7 +455,7 @@ Tests should be run in this order (dependency chain):
 | write_exchange.py | 6 | — | 2 | 8 |
 | generate_summary.py | 3 | — | 3 | 6 |
 | import_claude_ai.py | 4 | — | 3 | 7 |
-| brain_sync.sh | 4 | — | 2 | 6 |
+| brain_sync.py | 4 | — | 2 | 6 |
 | status.py | 4 | — | — | 4 |
 | copy_chat_file.py | 3 | — | 2 | 5 |
 | Hooks (4 hooks) | 11 | — | — | 11 |

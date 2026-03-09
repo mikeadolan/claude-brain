@@ -7,7 +7,7 @@ Two modes:
      to Anthropic or OpenRouter API for a rich, narrative summary.
   2. Pure Python fallback — structured extraction (no API, no cost).
 
-Called by hooks/session-end.sh.
+Called by hooks/session-end.py.
 
 Usage:
     python3 generate_summary.py --session-id <id> --project <prefix>

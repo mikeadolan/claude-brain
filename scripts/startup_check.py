@@ -8,7 +8,7 @@ verifies required folders, triggers DB backup, prints summary.
 Usage:
     python3 startup_check.py
 
-Triggered by: hooks/session-start.sh
+Triggered by: hooks/session-start.py
 Exit codes: 0 = success, 1 = warnings, 2 = fatal error
 """
 
@@ -168,7 +168,7 @@ def discover_files(source_paths, config, logger):
 def run_backup(root_path, config, logger):
     """Run database backup with rotation.
 
-    Inline implementation (brain_sync.sh not built yet).
+    Inline implementation (separate from brain_sync.py).
     Rotation: max 2 copies. .bak2 deleted, .bak1 renamed to .bak2, new copy to .bak1.
     """
     db_path = config["storage"]["local_db_path"]
