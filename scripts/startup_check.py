@@ -216,6 +216,51 @@ def run_backup(root_path, config, logger):
 
 
 # ---------------------------------------------------------------------------
+# Summary gap repair
+# ---------------------------------------------------------------------------
+
+def repair_missing_summaries(root_path, db_path, logger):
+    """Find sessions with transcripts but no summary and auto-generate them."""
+    conn = connect_db(db_path)
+    repaired = 0
+    try:
+        rows = conn.execute("""
+            SELECT s.session_id, s.project
+            FROM sys_sessions s
+            LEFT JOIN sys_session_summaries sm ON s.session_id = sm.session_id
+            WHERE sm.session_id IS NULL
+              AND (SELECT COUNT(*) FROM transcripts t
+                   WHERE t.session_id = s.session_id) > 0
+        """).fetchall()
+    finally:
+        conn.close()
+
+    if not rows:
+        return 0
+
+    gen_script = os.path.join(root_path, "scripts", "generate_summary.py")
+    for session_id, project in rows:
+        try:
+            result = subprocess.run(
+                [sys.executable, gen_script,
+                 "--session-id", session_id, "--project", project],
+                capture_output=True, text=True, timeout=30,
+            )
+            if result.returncode == 0:
+                repaired += 1
+                logger.info("Repaired missing summary: %s (%s)", session_id[:12], project)
+            else:
+                logger.warning("Failed to repair summary for %s: %s",
+                               session_id[:12], result.stderr.strip())
+        except Exception as e:
+            logger.warning("Error repairing summary for %s: %s", session_id[:12], e)
+
+    if repaired:
+        logger.info("Auto-repaired %d missing summaries", repaired)
+    return repaired
+
+
+# ---------------------------------------------------------------------------
 # Main startup check
 # ---------------------------------------------------------------------------
 
@@ -290,7 +335,10 @@ def startup_check(root_path=None, config=None):
     if not backup_ok:
         warnings += 1
 
-    # 8. Determine exit code
+    # 8. Auto-repair missing summaries
+    summaries_repaired = repair_missing_summaries(root_path, db_path, logger)
+
+    # 9. Determine exit code
     if errors > 0:
         exit_code = 1
     else:
@@ -306,6 +354,7 @@ def startup_check(root_path=None, config=None):
         "errors": errors,
         "backup_ok": backup_ok,
         "backup_size": backup_size,
+        "summaries_repaired": summaries_repaired,
         "exit_code": exit_code,
     }
 
@@ -325,6 +374,8 @@ def main():
     print(f"Records ingested: {result['records_ingested']}")
     print(f"Errors: {result['errors']}")
     print(f"Backup: {backup_status}")
+    if result.get("summaries_repaired", 0) > 0:
+        print(f"Summaries repaired: {result['summaries_repaired']}")
     print("===================================")
 
     sys.exit(result["exit_code"])
