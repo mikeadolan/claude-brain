@@ -24,6 +24,8 @@ import sqlite3
 import sys
 import yaml
 
+from fuzzy_search import fuzzy_correct
+
 # Suppress HuggingFace model-loading noise (must be before any HF imports)
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
@@ -281,7 +283,7 @@ def main():
                 print(f"Valid prefixes: {', '.join(sorted(valid))}")
                 sys.exit(1)
 
-        # Extract keywords
+        # Extract keywords and fuzzy-correct before searching
         keywords = extract_keywords(query)
         if not keywords:
             keywords = [w.lower() for w in query.split() if len(w) > 2][:MAX_KEYWORDS]
@@ -289,6 +291,13 @@ def main():
         if not keywords:
             print(f"No searchable keywords found in: {query}")
             sys.exit(0)
+
+        corrected, corrections = fuzzy_correct(keywords, db_path)
+        if corrections:
+            parts = [f"'{orig}' → '{fixed}'" for orig, fixed in corrections.items()]
+            print(f"Did you mean: {', '.join(parts)}")
+            print()
+        keywords = corrected
 
         # --- FTS5 Search ---
         fts_results = search_fts(conn, keywords, args.project, args.limit)

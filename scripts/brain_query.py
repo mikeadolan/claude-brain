@@ -23,6 +23,8 @@ import sqlite3
 import sys
 import yaml
 
+from fuzzy_search import fuzzy_correct
+
 # Suppress HuggingFace model-loading noise (must be before any HF imports)
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
@@ -290,12 +292,16 @@ def truncate(text, max_len=300):
 
 
 def format_results(question, keywords, fts_results, semantic_results,
-                   decision_results, fact_results, brain_fact_results, project):
+                   decision_results, fact_results, brain_fact_results,
+                   project, corrections=None):
     """Format all results into clean text for Claude to synthesize."""
     lines = []
     lines.append(f"## Brain Query Results")
     lines.append(f"Question: {question}")
     lines.append(f"Keywords: {', '.join(keywords)}")
+    if corrections:
+        parts = [f"'{orig}' → '{fixed}'" for orig, fixed in corrections.items()]
+        lines.append(f"Did you mean: {', '.join(parts)}")
     if project:
         lines.append(f"Project filter: {project}")
     lines.append("")
@@ -365,11 +371,14 @@ def main():
     conn = connect_db(db_path)
 
     try:
-        # Extract keywords
+        # Extract keywords and fuzzy-correct before searching
         keywords = extract_keywords(args.question)
         if not keywords:
             # Fallback: use all non-trivial words
             keywords = [w.lower() for w in args.question.split() if len(w) > 2][:MAX_KEYWORDS]
+
+        corrected, corrections = fuzzy_correct(keywords, db_path)
+        keywords = corrected
 
         # Run all searches
         fts_results = search_fts(conn, keywords, args.project, args.limit)
@@ -388,7 +397,8 @@ def main():
         # Format and print
         output = format_results(
             args.question, keywords, fts_results, semantic_results,
-            decision_results, fact_results, brain_fact_results, args.project
+            decision_results, fact_results, brain_fact_results,
+            args.project, corrections
         )
         print(output)
 

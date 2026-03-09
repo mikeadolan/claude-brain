@@ -18,10 +18,16 @@ import datetime
 import json
 import os
 import pathlib
+import re
 import sqlite3
+import sys
 
 import yaml
 from mcp.server.fastmcp import FastMCP
+
+# fuzzy_search is in scripts/ — add to path
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
+from scripts.fuzzy_search import fuzzy_correct
 
 # ---------------------------------------------------------------------------
 # Setup
@@ -182,6 +188,25 @@ STOP_WORDS = {
 }
 
 
+def _is_fts5_syntax(raw_query: str) -> bool:
+    """Check if the query uses explicit FTS5 operators."""
+    return any(op in raw_query for op in [" OR ", " AND ", " NOT ", '"'])
+
+
+def _extract_keywords(raw_query: str) -> list[str]:
+    """Extract search keywords from a natural language query."""
+    words = re.findall(r'[a-zA-Z0-9]{3,}', raw_query.lower())
+    keywords = [w for w in words if w not in STOP_WORDS]
+    if not keywords:
+        keywords = words[:5]
+    return keywords[:10]
+
+
+def _keywords_to_fts(keywords: list[str]) -> str:
+    """Join keywords into an FTS5 OR query."""
+    return " OR ".join(f'"{kw}"' for kw in keywords)
+
+
 def _build_fts_query(raw_query: str) -> str:
     """Convert a natural language query to an FTS5 OR query.
 
@@ -189,28 +214,61 @@ def _build_fts_query(raw_query: str) -> str:
     - Otherwise, extract keywords, strip stop words, join with OR.
     - Escape special characters that break FTS5 (apostrophes, etc.).
     """
-    import re
-
-    # Pass through if user is already using FTS5 syntax
-    if any(op in raw_query for op in [" OR ", " AND ", " NOT ", '"']):
-        # Still need to escape apostrophes outside quotes
+    if _is_fts5_syntax(raw_query):
         return raw_query.replace("'", "")
 
-    # Extract words (3+ chars), strip stop words
-    words = re.findall(r'[a-zA-Z0-9]{3,}', raw_query.lower())
-    keywords = [w for w in words if w not in STOP_WORDS]
-
-    if not keywords:
-        # All stop words — fall back to original words minus special chars
-        words = re.findall(r'[a-zA-Z0-9]{3,}', raw_query.lower())
-        keywords = words[:5]
-
+    keywords = _extract_keywords(raw_query)
     if not keywords:
         return raw_query.replace("'", "").replace('"', "")
 
-    # Cap at 10 keywords, join with OR
-    keywords = keywords[:10]
-    return " OR ".join(f'"{kw}"' for kw in keywords)
+    return _keywords_to_fts(keywords)
+
+
+def _run_fts_query(conn, fts_query: str, project: str | None, limit: int,
+                    recency_bias: bool) -> list:
+    """Execute an FTS5 query and return rows."""
+    if recency_bias:
+        order = "fts.rank * (1.0 / (1.0 + julianday('now') - julianday(t.timestamp)))"
+    else:
+        order = "fts.rank"
+
+    if project:
+        return conn.execute(
+            f"""SELECT t.session_id, t.project, t.timestamp, t.type,
+                      substr(t.content, 1, 300) as preview
+               FROM transcripts_fts fts
+               JOIN transcripts t ON t.rowid = fts.rowid
+               WHERE transcripts_fts MATCH ? AND t.project = ?
+               ORDER BY {order}
+               LIMIT ?""",
+            (fts_query, project, limit),
+        ).fetchall()
+    else:
+        return conn.execute(
+            f"""SELECT t.session_id, t.project, t.timestamp, t.type,
+                      substr(t.content, 1, 300) as preview
+               FROM transcripts_fts fts
+               JOIN transcripts t ON t.rowid = fts.rowid
+               WHERE transcripts_fts MATCH ?
+               ORDER BY {order}
+               LIMIT ?""",
+            (fts_query, limit),
+        ).fetchall()
+
+
+def _format_results(rows, header: str = "") -> str:
+    """Format search result rows into a readable string."""
+    lines = []
+    if header:
+        lines.append(header)
+        lines.append("")
+    lines.append(f"## Search Results ({len(rows)} matches)")
+    lines.append("")
+    for row in rows:
+        date = row["timestamp"][:10] if row["timestamp"] else "?"
+        preview = (row["preview"] or "").replace("\n", " ").strip()
+        lines.append(f"- [{date}, {row['project']}, {row['type']}] {preview}")
+    return "\n".join(lines)
 
 
 @mcp.tool()
@@ -226,45 +284,32 @@ def search_transcripts(
     limit — max results (default 20), recency_bias — weight newer results higher."""
     conn = get_db()
     try:
-        fts_query = _build_fts_query(query)
+        # FTS5 syntax passthrough — no fuzzy correction
+        if _is_fts5_syntax(query):
+            fts_query = query.replace("'", "")
+            rows = _run_fts_query(conn, fts_query, project, limit, recency_bias)
+            if not rows:
+                return f"No results for '{query}'."
+            return _format_results(rows)
 
-        if recency_bias:
-            order = "fts.rank * (1.0 / (1.0 + julianday('now') - julianday(t.timestamp)))"
-        else:
-            order = "fts.rank"
+        # Extract keywords and fuzzy-correct BEFORE searching
+        keywords = _extract_keywords(query)
+        if not keywords:
+            return f"No results for '{query}'."
 
-        if project:
-            rows = conn.execute(
-                f"""SELECT t.session_id, t.project, t.timestamp, t.type,
-                          substr(t.content, 1, 300) as preview
-                   FROM transcripts_fts fts
-                   JOIN transcripts t ON t.rowid = fts.rowid
-                   WHERE transcripts_fts MATCH ? AND t.project = ?
-                   ORDER BY {order}
-                   LIMIT ?""",
-                (fts_query, project, limit),
-            ).fetchall()
-        else:
-            rows = conn.execute(
-                f"""SELECT t.session_id, t.project, t.timestamp, t.type,
-                          substr(t.content, 1, 300) as preview
-                   FROM transcripts_fts fts
-                   JOIN transcripts t ON t.rowid = fts.rowid
-                   WHERE transcripts_fts MATCH ?
-                   ORDER BY {order}
-                   LIMIT ?""",
-                (fts_query, limit),
-            ).fetchall()
+        corrected, corrections = fuzzy_correct(keywords, DB_PATH)
+        fts_query = _keywords_to_fts(corrected)
+        rows = _run_fts_query(conn, fts_query, project, limit, recency_bias)
 
         if not rows:
             return f"No results for '{query}'."
 
-        lines = [f"## Search Results ({len(rows)} matches)", ""]
-        for row in rows:
-            date = row["timestamp"][:10] if row["timestamp"] else "?"
-            preview = (row["preview"] or "").replace("\n", " ").strip()
-            lines.append(f"- [{date}, {row['project']}, {row['type']}] {preview}")
-        return "\n".join(lines)
+        if corrections:
+            parts = [f"'{orig}' → '{fixed}'" for orig, fixed in corrections.items()]
+            note = f"**Did you mean:** {', '.join(parts)}"
+            return _format_results(rows, header=note)
+
+        return _format_results(rows)
     finally:
         conn.close()
 

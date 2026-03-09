@@ -523,6 +523,9 @@ DDL_FTS = """CREATE VIRTUAL TABLE IF NOT EXISTS transcripts_fts USING fts5(
     content_rowid=id
 )"""
 
+DDL_FTS_VOCAB = """CREATE VIRTUAL TABLE IF NOT EXISTS transcripts_fts_vocab \
+USING fts5vocab(transcripts_fts, row)"""
+
 DDL_TRIGGERS = [
     """CREATE TRIGGER IF NOT EXISTS transcripts_ai AFTER INSERT ON transcripts BEGIN
         INSERT INTO transcripts_fts(rowid, content) VALUES (new.id, new.content);
@@ -564,6 +567,16 @@ def phase_database(cfg):
             ok("FTS5 virtual table already exists")
         else:
             fail(f"FTS5 creation failed: {e}")
+
+    # FTS5 vocab table (for fuzzy search)
+    try:
+        cursor.execute(DDL_FTS_VOCAB)
+        ok("FTS5 vocab table verified")
+    except sqlite3.OperationalError as e:
+        if "already exists" in str(e):
+            ok("FTS5 vocab table already exists")
+        else:
+            fail(f"FTS5 vocab creation failed: {e}")
 
     # Triggers
     for ddl in DDL_TRIGGERS:
