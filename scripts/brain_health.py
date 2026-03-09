@@ -564,19 +564,109 @@ def run_health_check():
     return results
 
 
+def _wrap_text(text, width):
+    """Word-wrap text to fit within a column width. Returns list of lines."""
+    if len(text) <= width:
+        return [text]
+    lines = []
+    while text:
+        if len(text) <= width:
+            lines.append(text)
+            break
+        # Find last space within width
+        cut = text.rfind(" ", 0, width + 1)
+        if cut <= 0:
+            cut = width  # no space found, hard break
+        lines.append(text[:cut])
+        text = text[cut:].lstrip()
+    return lines
+
+
 def print_report(results):
-    """Print human-readable report."""
-    print()
-    print("=== Claude Brain Health Check ===")
-    print()
+    """Print bordered, colored health report with status on the right."""
+    # ANSI colors
+    GREEN = "\033[32m"
+    YELLOW = "\033[33m"
+    RED = "\033[31m"
+    BOLD = "\033[1m"
+    DIM = "\033[2m"
+    RESET = "\033[0m"
+
+    # Column widths
+    NAME_W = 14
+    DETAIL_W = 54
+    STATUS_W = 10
+    INNER_W = NAME_W + DETAIL_W + STATUS_W + 8  # total inside outer borders
+
+    # Status display: (colored_text, visual_width)
+    STATUS_DISPLAY = {
+        "PASS": (f"{GREEN}{BOLD}✓ PASS{RESET}", 6),
+        "WARN": (f"{YELLOW}{BOLD}⚠ WARN{RESET}", 6),
+        "FAIL": (f"{RED}{BOLD}✗ FAIL{RESET}", 6),
+    }
+
+    CHECK_LABELS = {
+        "Database": "Database",
+        "Space": "Space",
+        "Data": "Data Health",
+        "Backup": "Backup",
+        "Performance": "Performance",
+        "Dependencies": "Dependencies",
+        "MCP": "MCP Server",
+        "Hooks": "Hooks",
+        "Config": "Config",
+    }
+
+    # Box-drawing borders
+    col_sep     = f"├{'─' * (NAME_W + 2)}┼{'─' * (DETAIL_W + 2)}┼{'─' * (STATUS_W + 2)}┤"
+    footer_sep  = f"├{'─' * (NAME_W + 2)}┴{'─' * (DETAIL_W + 2)}┴{'─' * (STATUS_W + 2)}┤"
+    bottom      = f"└{'─' * INNER_W}┘"
 
     pass_count = 0
     warn_count = 0
     fail_count = 0
 
+    print()
+
+    # Title row (spans full width)
+    title = f"{BOLD}Claude Brain Health Check{RESET}"
+    title_visual = "Claude Brain Health Check"
+    title_pad = INNER_W - len(title_visual) - 1
+    print(f"┌{'─' * INNER_W}┐")
+    print(f"│ {title}{' ' * title_pad}│")
+    print(f"├{'─' * (NAME_W + 2)}┬{'─' * (DETAIL_W + 2)}┬{'─' * (STATUS_W + 2)}┤")
+
+    # Header row
+    print(f"│ {DIM}{'Check':<{NAME_W}}{RESET} │ {DIM}{'Details':<{DETAIL_W}}{RESET} │ {DIM}{'Status':^{STATUS_W}}{RESET} │")
+    print(col_sep)
+
+    # Data rows
     for name, status, summary, details in results:
-        tag = f"[{status}]"
-        print(f"  {tag:6s} {summary}")
+        check_name = CHECK_LABELS.get(name, name)
+        colored_status, status_vis_w = STATUS_DISPLAY.get(status, (status, len(status)))
+
+        # Extract detail text (strip the check name prefix)
+        detail = summary
+        for prefix in [f"{name}:", f"{check_name}:"]:
+            if summary.startswith(prefix):
+                detail = summary[len(prefix):].strip()
+                break
+
+        # Word-wrap detail into multiple lines — show everything
+        detail_lines = _wrap_text(detail, DETAIL_W)
+
+        # Pad status to center it (accounting for ANSI invisible chars)
+        status_lpad = (STATUS_W - status_vis_w) // 2
+        status_rpad = STATUS_W - status_vis_w - status_lpad
+        status_cell = f"{' ' * status_lpad}{colored_status}{' ' * status_rpad}"
+        empty_status = f"{' ' * STATUS_W}"
+
+        # First line: check name + first detail line + status
+        print(f"│ {check_name:<{NAME_W}} │ {detail_lines[0]:<{DETAIL_W}} │ {status_cell} │")
+
+        # Continuation lines: empty name + wrapped detail + empty status
+        for extra_line in detail_lines[1:]:
+            print(f"│ {'':<{NAME_W}} │ {extra_line:<{DETAIL_W}} │ {empty_status} │")
 
         if status == "PASS":
             pass_count += 1
@@ -585,9 +675,39 @@ def print_report(results):
         else:
             fail_count += 1
 
+        # Dotted separator between rows (not after the last row)
+        if (name, status, summary, details) != results[-1]:
+            print(f"│ {DIM}{'·' * NAME_W}{RESET} │ {DIM}{'·' * DETAIL_W}{RESET} │ {DIM}{'·' * STATUS_W}{RESET} │")
+
+    # Footer
     total = pass_count + warn_count + fail_count
-    print()
-    print(f"  Score: {pass_count}/{total} PASS, {warn_count} WARN, {fail_count} FAIL")
+    print(footer_sep)
+
+    if fail_count > 0:
+        score_color = RED
+    elif warn_count > 0:
+        score_color = YELLOW
+    else:
+        score_color = GREEN
+
+    score_parts = [f"{score_color}{BOLD}{pass_count}/{total} PASS{RESET}"]
+    if warn_count > 0:
+        score_parts.append(f"{YELLOW}{warn_count} WARN{RESET}")
+    if fail_count > 0:
+        score_parts.append(f"{RED}{fail_count} FAIL{RESET}")
+    score_text = ", ".join(score_parts)
+
+    # Visual width of score (without ANSI codes)
+    score_visual = f"{pass_count}/{total} PASS"
+    if warn_count > 0:
+        score_visual += f", {warn_count} WARN"
+    if fail_count > 0:
+        score_visual += f", {fail_count} FAIL"
+
+    label = "Score: "
+    score_pad = INNER_W - len(label) - len(score_visual) - 1
+    print(f"│ {label}{score_text}{' ' * score_pad}│")
+    print(bottom)
     print()
 
     return fail_count, warn_count
