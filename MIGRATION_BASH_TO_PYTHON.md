@@ -97,12 +97,12 @@ Order matters. brain_sync must come before session-end (which calls it).
 
 | Step | Status | Notes |
 |------|--------|-------|
-| Write hooks/session-start.py | [ ] | |
-| Manual test: `echo '{}' \| python3 hooks/session-start.py` | [ ] | Must output valid JSON with additionalContext |
-| Compare output to: `echo '{}' \| bash hooks/session-start.sh` | [ ] | Outputs must match |
-| Verify startup_check.py was called | [ ] | |
-| Audit: code review session-start.py vs session-start.sh logic | [ ] | Every line accounted for |
-| **LOCKED** | [ ] | |
+| Write hooks/session-start.py | [x] | 113 lines, inline Python extracted to proper script |
+| Manual test: `echo '{}' \| python3 hooks/session-start.py` | [x] | Valid JSON with session notes + summaries |
+| Compare output to: `echo '{}' \| bash hooks/session-start.sh` | [x] | Byte-for-byte identical (diff returned nothing) |
+| Verify startup_check.py was called | [x] | Runs via subprocess without error |
+| Audit: code review session-start.py vs session-start.sh logic | [x] | Inline heredoc → native Python. All DB queries identical. |
+| **LOCKED** | [x] | |
 
 **Key translations:**
 - Bash wrapper is thin — the inline Python heredoc becomes the actual script
