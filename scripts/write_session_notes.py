@@ -55,22 +55,30 @@ def write_notes(session_id, notes, db_path):
     """Write session notes to sys_sessions.notes column."""
     conn = connect_db(db_path)
     try:
-        # Verify session exists
+        # Support both full UUIDs and prefix matches (e.g. first 8 chars)
         row = conn.execute(
             "SELECT session_id FROM sys_sessions WHERE session_id = ?",
             (session_id,),
         ).fetchone()
 
+        if not row and len(session_id) < 36:
+            # Try prefix match for truncated IDs
+            row = conn.execute(
+                "SELECT session_id FROM sys_sessions WHERE session_id LIKE ?",
+                (session_id + "%",),
+            ).fetchone()
+
         if not row:
             print(f"ERROR: Session not found: {session_id}", file=sys.stderr)
             return 1
 
+        full_id = row[0]
         conn.execute(
             "UPDATE sys_sessions SET notes = ? WHERE session_id = ?",
-            (notes, session_id),
+            (notes, full_id),
         )
         conn.commit()
-        print(f"Session notes written for {session_id} ({len(notes)} chars)")
+        print(f"Session notes written for {full_id} ({len(notes)} chars)")
         return 0
     except Exception as e:
         print(f"ERROR: {e}", file=sys.stderr)

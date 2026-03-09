@@ -772,12 +772,18 @@ It creates the folder, CLAUDE.md, config entry, and database registration all at
 
 | Limitation | Why | When It Gets Fixed |
 |-----------|-----|-------------------|
+| **Python 3.13+ only** | Tested on 3.13 and 3.14. Older versions untested. | Expand testing to 3.10+ post-MVP |
+| **Single-user design** | One person, one database. No multi-user support. | Not planned — personal memory tool |
+| **Semantic search cold-start ~4-5s** | First query loads embedding model into memory | Subsequent queries are fast (<100ms) |
+| **FTS5 only (no fuzzy match)** | Typos like "sesion" won't match "session" | Post-MVP: fuzzy matching layer |
 | **No auto-capture from claude.ai** | Claude.ai has no hook system | Manual export + import required |
 | **No cross-machine real-time sync** | DB is local; Dropbox syncs project files but not the DB | Planned: DB in Dropbox or sync script |
 | **Summaries require normal exit** | session-end hook only fires on clean exit | If Claude Code crashes, summary is lost (but exchanges are saved) |
 | **No web UI** | CLI-only via Claude Code | Post-MVP consideration |
 | **No automatic fact extraction** | Facts are manually populated | Post-MVP: auto-extract from conversations |
-| **No lessons learned extractor** | Requires specialized MCP tool to aggregate patterns | Post-MVP: tool that finds "mistake"/"redo"/"should have" patterns across sessions |
+| **No lessons learned extractor** | Requires pattern mining across sessions | Post-MVP: find "mistake"/"redo"/"should have" patterns |
+
+See `POST_MVP_ROADMAP.md` for the full roadmap and planned fixes.
 
 ---
 

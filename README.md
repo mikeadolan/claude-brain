@@ -319,6 +319,21 @@ Claude.ai conversations are not captured by hooks (no hook system exists for the
 
 ---
 
+## Known Limitations
+
+| Limitation | Detail |
+|-----------|--------|
+| **Python 3.13+ only** | Tested on 3.13 and 3.14. Older versions untested. |
+| **Single-user** | One person, one database. No multi-user support. |
+| **No real-time cross-machine sync** | DB is local. Dropbox syncs project files but not the database. |
+| **Semantic search cold-start** | First query takes ~4-5s to load the embedding model. Subsequent queries are fast. |
+| **No fuzzy search** | FTS5 keyword search is exact token matching. Typos won't match. |
+| **No auto-capture from claude.ai** | Manual export + `/brain-import` required. |
+
+See `POST_MVP_ROADMAP.md` for the full list and planned fixes.
+
+---
+
 ## Security
 
 - The database, JSONL archives, logs, backups, and personal content are all in `.gitignore`
