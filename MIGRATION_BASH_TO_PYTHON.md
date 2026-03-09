@@ -2,7 +2,7 @@
 
 **Created:** 2026-03-09
 **Purpose:** Convert all .sh hooks and scripts to .py for cross-platform support (Linux + Mac + Windows)
-**Status:** PLANNING
+**Status:** PHASE A COMPLETE — ready for Phase B
 
 ---
 
@@ -21,10 +21,10 @@
 
 | # | Step | Status | Notes |
 |---|------|--------|-------|
-| A.1 | Commit any uncommitted changes to main | [ ] | Clean starting point |
-| A.2 | Create `main-backup-pre-migration` branch with config.yaml + settings.json copy | [ ] | Full backup on private repo |
-| A.3 | Return to main, create `migration/bash-to-python` branch | [ ] | Work branch |
-| A.4 | This document committed to work branch | [ ] | Session-resilient tracking |
+| A.1 | Commit any uncommitted changes to main | [x] | 958e7db — migration doc + competitive analysis script |
+| A.2 | Create `main-backup-pre-migration` branch with config.yaml + settings.json copy | [x] | dc968d9 — config.yaml + settings.json.backup |
+| A.3 | Return to main, create `migration/bash-to-python` branch | [x] | On branch, clean working tree |
+| A.4 | This document committed to work branch | [x] | Phase A marked complete |
 
 ---
 
