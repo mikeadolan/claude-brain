@@ -29,8 +29,9 @@ DEPENDENCIES.md
 # Database connection info with hardcoded paths
 DATABASE_INFO.txt
 
-# Session prompts and workflow docs (personal)
+# Session prompts, workflow docs, and brainstorming (personal)
 NEXT_SESSION_START_PROMPT.txt
+BRAIN_BRAINSTORMING_IDEAS.md
 DUAL_SESSION_GUIDE.txt
 SESSION_PROMPTS_REFERENCE.md
 SAVE_EXISTING_SESSIONS.md
