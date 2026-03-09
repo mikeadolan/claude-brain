@@ -3,7 +3,7 @@
 write_exchange.py — Live exchange writer for claude-brain.
 
 Captures new messages from the current session's JSONL file into the database.
-Called by hooks/stop.sh after every Claude response.
+Called by hooks/stop.py after every Claude response.
 
 Usage:
     python3 write_exchange.py --session-id <id> --jsonl-path <path>

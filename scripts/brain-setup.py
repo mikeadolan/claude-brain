@@ -29,7 +29,7 @@ from pathlib import Path
 MIN_PYTHON = (3, 10)
 PIP_PACKAGES = ["PyYAML", "mcp", "sentence-transformers", "numpy"]
 HOOK_EVENTS = ["SessionStart", "UserPromptSubmit", "Stop", "SessionEnd"]
-HOOK_SCRIPTS = ["session-start.sh", "user-prompt-submit.sh", "stop.sh", "session-end.sh"]
+HOOK_SCRIPTS = ["session-start.py", "user-prompt-submit.py", "stop.py", "session-end.py"]
 
 # ---------------------------------------------------------------------------
 # Utilities
@@ -738,7 +738,7 @@ def phase_config(cfg):
         "scripts": {
             "commands": {
                 "brain-check": "startup_check.py",
-                "brain-sync": "brain_sync.sh",
+                "brain-sync": "brain_sync.py",
                 "brain-status": "status.py",
             },
         },
@@ -902,7 +902,7 @@ def phase_registration(cfg):
     hooks_added = 0
 
     for event, script in zip(HOOK_EVENTS, HOOK_SCRIPTS):
-        hook_cmd = f"bash {root}/hooks/{script}"
+        hook_cmd = f"python3 {root}/hooks/{script}"
         existing = hooks.get(event, [])
 
         # Check if already registered with same command

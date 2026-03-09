@@ -161,7 +161,7 @@ The `message.content` field varies by message type:
 ## 2. startup_check.py
 
 **Location:** `scripts/startup_check.py`
-**Triggered by:** `hooks/session-start.sh`
+**Triggered by:** `hooks/session-start.py`
 **Phase:** 2.3
 
 ### Interface
@@ -195,7 +195,7 @@ Stdout:
    - Find all `tool-results/*.txt` files (recursive)
    - Check each against `sys_ingest_log`
    - New files → call `ingest_jsonl.ingest()` (Python import, not subprocess)
-4. Run database backup (call `brain_sync.sh` or inline backup logic)
+4. Run database backup (call `brain_sync.py` or inline backup logic)
 5. Print summary to stdout
 6. Log to `logs/{hostname}/startup_check.log`
 
@@ -221,7 +221,7 @@ Delegates to `ingest_jsonl.py`. No direct DB writes except reading `sys_ingest_l
 ## 3. write_exchange.py
 
 **Location:** `scripts/write_exchange.py`
-**Triggered by:** `hooks/stop.sh`
+**Triggered by:** `hooks/stop.py`
 **Phase:** 2.4
 
 ### Interface
@@ -269,7 +269,7 @@ Stdout:
 ## 4. generate_summary.py
 
 **Location:** `scripts/generate_summary.py`
-**Triggered by:** `hooks/session-end.sh`
+**Triggered by:** `hooks/session-end.py`
 **Phase:** 2.5
 
 ### Interface
@@ -386,16 +386,16 @@ Stdout:
 
 ---
 
-## 6. brain_sync.sh
+## 6. brain_sync.py
 
-**Location:** `scripts/brain_sync.sh`
-**Triggered by:** `hooks/session-end.sh` and `startup_check.py`
+**Location:** `scripts/brain_sync.py`
+**Triggered by:** `hooks/session-end.py` and `startup_check.py`
 **Phase:** 3.2
 
 ### Interface
 
 ```
-Usage:  bash brain_sync.sh
+Usage:  python3 brain_sync.py
 
 Args:   None (reads config.yaml for paths)
 
@@ -408,7 +408,7 @@ Stdout:
 
 ### Behavior
 
-1. Read DB path from config (or hardcode — it's a bash script)
+1. Read DB path from config
    - Source: `{local_db_path from config.yaml}`
    - Dest: `{ROOT}/db-backup/`
 2. Rotation (max 2 copies):
@@ -529,22 +529,22 @@ Stdout:
 
 ## 9. HOOK CONTRACTS
 
-All hooks are bash scripts. They read JSON from stdin and write JSON to stdout.
+All hooks are Python scripts. They read JSON from stdin and write JSON to stdout.
 Claude Code manages the hook lifecycle — scripts just respond.
 
 ### Common Hook Pattern
 
-```bash
-#!/usr/bin/env bash
-set -euo pipefail
+```python
+#!/usr/bin/env python3
+import json, sys, os
 
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-INPUT=$(cat)  # Read stdin JSON
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+raw = sys.stdin.read()
 
 # ... do work ...
 
 # Output JSON to stdout (ONLY valid JSON, no other output)
-echo '{"additionalContext": "..."}'
+json.dump({"additionalContext": "..."}, sys.stdout)
 ```
 
 ### Rule: stdout is SACRED
@@ -555,9 +555,9 @@ not the final JSON must go to stderr or log files.
 
 ---
 
-### Hook 1: session-start.sh
+### Hook 1: session-start.py
 
-**Location:** `hooks/session-start.sh`
+**Location:** `hooks/session-start.py`
 **Fires:** Once when Claude Code session starts
 **Phase:** 4.1
 
@@ -579,9 +579,9 @@ formatted as markdown text in `additionalContext`.
 
 ---
 
-### Hook 2: user-prompt-submit.sh
+### Hook 2: user-prompt-submit.py
 
-**Location:** `hooks/user-prompt-submit.sh`
+**Location:** `hooks/user-prompt-submit.py`
 **Fires:** Before every user message is sent to Claude
 **Phase:** 4.2
 
@@ -604,9 +604,9 @@ If semantic search is disabled/broken: return `{}` or FTS5 results.
 
 ---
 
-### Hook 3: stop.sh
+### Hook 3: stop.py
 
-**Location:** `hooks/stop.sh`
+**Location:** `hooks/stop.py`
 **Fires:** After every Claude response completes
 **Phase:** 4.3
 
@@ -622,9 +622,9 @@ environment or Claude Code metadata. Pass to write_exchange.py.
 
 ---
 
-### Hook 4: session-end.sh
+### Hook 4: session-end.py
 
-**Location:** `hooks/session-end.sh`
+**Location:** `hooks/session-end.py`
 **Fires:** When session ends (/exit or terminal close)
 **Phase:** 4.4
 
@@ -632,11 +632,11 @@ environment or Claude Code metadata. Pass to write_exchange.py.
 |----------|-------|
 | Stdin | `{}` (session metadata) |
 | Stdout | `{}` |
-| Calls | `scripts/generate_summary.py`, then `scripts/brain_sync.sh` |
+| Calls | `scripts/generate_summary.py`, then `scripts/brain_sync.py` |
 | Blocking | N/A — session is ending |
 
 **Note:** May not fire on terminal close. Data integrity guaranteed by
-stop.sh having captured all exchanges already.
+stop.py having captured all exchanges already.
 
 ---
 
@@ -692,13 +692,13 @@ Newer rows get a boost. Very old rows deprioritized but not excluded.
 ```
 config.yaml
     │
-    ├── ingest_jsonl.py ←── startup_check.py ←── session-start.sh (hook)
+    ├── ingest_jsonl.py ←── startup_check.py ←── session-start.py (hook)
     │
-    ├── write_exchange.py ←── stop.sh (hook)
+    ├── write_exchange.py ←── stop.py (hook)
     │
-    ├── generate_summary.py ←── session-end.sh (hook)
+    ├── generate_summary.py ←── session-end.py (hook)
     │
-    ├── brain_sync.sh ←── session-end.sh (hook)
+    ├── brain_sync.py ←── session-end.py (hook)
     │                 ←── startup_check.py
     │
     ├── import_claude_ai.py (standalone)
@@ -709,7 +709,7 @@ config.yaml
     │
     └── mcp/server.py (standalone, registered with Claude Code)
 
-    user-prompt-submit.sh (hook) ── reads DB + ChromaDB directly
+    user-prompt-submit.py (hook) ── reads DB + ChromaDB directly
 ```
 
 ---
@@ -755,11 +755,11 @@ except (ImportError, Exception):
 | write_exchange.py | 3 | T-WRITE-* (8 tests) | 2.4 |
 | generate_summary.py | 4 | T-SUMMARY-* (6 tests) | 2.5 |
 | import_claude_ai.py | 5 | T-IMPORT-* (7 tests) | 3.1 |
-| brain_sync.sh | 6 | T-SYNC-* (6 tests) | 3.2 |
+| brain_sync.py | 6 | T-SYNC-* (6 tests) | 3.2 |
 | status.py | 7 | T-STATUS-* (4 tests) | 3.3 |
 | copy_chat_file.py | 8 | T-COPY-* (5 tests) | 3.4 |
-| session-start.sh | 9 (Hook 1) | T-HOOK-START-* (4 tests) | 4.1 |
-| user-prompt-submit.sh | 9 (Hook 2) | T-HOOK-PROMPT-* (4 tests) | 4.2 |
-| stop.sh | 9 (Hook 3) | T-HOOK-STOP-* (3 tests) | 4.3 |
-| session-end.sh | 9 (Hook 4) | T-HOOK-END-* (3 tests) | 4.4 |
+| session-start.py | 9 (Hook 1) | T-HOOK-START-* (4 tests) | 4.1 |
+| user-prompt-submit.py | 9 (Hook 2) | T-HOOK-PROMPT-* (4 tests) | 4.2 |
+| stop.py | 9 (Hook 3) | T-HOOK-STOP-* (3 tests) | 4.3 |
+| session-end.py | 9 (Hook 4) | T-HOOK-END-* (3 tests) | 4.4 |
 | mcp/server.py | 10 | T-MCP-* (18 tests) | 5.1 |

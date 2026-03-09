@@ -239,7 +239,7 @@ startup:
 scripts:
   commands:
     brain-check:    "startup_check.py"
-    brain-sync:     "brain_sync.sh"
+    brain-sync:     "brain_sync.py"
     brain-status:   "status.py"
 
 # ==============================================================================

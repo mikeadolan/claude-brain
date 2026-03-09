@@ -77,10 +77,10 @@ These fire without you doing anything:
 
 | When | What Happens | Hook |
 |------|-------------|------|
-| Session starts | Checks for new files to ingest, loads recent session summaries | session-start.sh |
-| Every prompt you type | Searches brain for relevant memories, injects top 3 results | user-prompt-submit.sh |
-| Every Claude response | Captures the exchange (your prompt + Claude's response) to DB | stop.sh |
-| Session ends | Generates session summary, backs up database | session-end.sh |
+| Session starts | Checks for new files to ingest, loads recent session summaries | session-start.py |
+| Every prompt you type | Searches brain for relevant memories, injects top 3 results | user-prompt-submit.py |
+| Every Claude response | Captures the exchange (your prompt + Claude's response) to DB | stop.py |
+| Session ends | Generates session summary, backs up database | session-end.py |
 
 **You never need to say "save this" or "remember that."** It's all captured automatically.
 

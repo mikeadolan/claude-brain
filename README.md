@@ -46,7 +46,7 @@ Session ends
 ```
 
 **Two systems, clean split:**
-- **Hooks write.** Four shell scripts fire at session lifecycle events — start, prompt, response, end. They capture data automatically. Claude doesn't need to decide to save anything.
+- **Hooks write.** Four Python scripts fire at session lifecycle events — start, prompt, response, end. They capture data automatically. Claude doesn't need to decide to save anything.
 - **MCP reads.** Ten read-only tools let Claude query the brain on demand — search transcripts, look up decisions, load your profile.
 
 This eliminates the single biggest reliability problem in AI memory systems: depending on the AI to follow save instructions. Hooks run at the CLI layer. They always fire.
@@ -117,29 +117,29 @@ After setup, just use Claude Code normally. The brain works in the background.
 
 Four hooks fire automatically at session lifecycle events. Registered in `~/.claude/settings.json` during setup. No configuration needed after install.
 
-### session-start.sh
+### session-start.py
 **Fires:** Once when a Claude Code session starts.
 - Runs `startup_check.py` (scans for new JSONL files, ingests them, backs up DB)
 - Loads recent session summaries (last 5-10 per project)
 - Returns summaries as context so Claude immediately knows what happened recently
 
-### user-prompt-submit.sh
+### user-prompt-submit.py
 **Fires:** Before every user message is sent to Claude.
 - Extracts keywords from your prompt
 - Runs FTS5 search against the brain database
 - Injects top 3 relevant memories into Claude's context
 - Skips short prompts (<15 chars) and filters stop words
 
-### stop.sh
+### stop.py
 **Fires:** After every Claude response completes.
 - Captures the exchange (your prompt + Claude's response)
 - Writes to the database via `write_exchange.py`
 - Generates and stores a semantic embedding for the message
 
-### session-end.sh
+### session-end.py
 **Fires:** When the session ends (including `/exit` and terminal close).
 - Generates a session summary via `generate_summary.py`
-- Backs up the database via `brain_sync.sh`
+- Backs up the database via `brain_sync.py`
 
 **Data safety:** If the terminal is closed without `/exit`, the stop hook has already captured every exchange up to that point. The session-start hook catches up on anything missed via JSONL reconciliation. Zero data loss.
 
@@ -201,14 +201,14 @@ Ten read-only tools registered as the `brain-server` MCP server. Claude calls th
 
 ```
 claude-brain/
-├── scripts/              # 16 Python/bash scripts
+├── scripts/              # 16 Python scripts
 │   ├── brain-setup.py    # Interactive first-run installer
 │   ├── startup_check.py  # JSONL ingestion + backup (called by hook)
 │   ├── write_exchange.py # Real-time exchange capture (called by hook)
 │   ├── generate_summary.py # Session summary generator (called by hook)
 │   ├── ingest_jsonl.py   # Core JSONL parsing engine
 │   ├── import_claude_ai.py # Claude.ai conversation importer
-│   ├── brain_sync.sh     # Database backup with rotation
+│   ├── brain_sync.py     # Database backup with rotation
 │   ├── brain_query.py    # Local search engine for /brain-question
 │   ├── brain_search.py   # Raw transcript search for /brain-search
 │   ├── brain_history.py  # Session timeline for /brain-history
@@ -219,10 +219,10 @@ claude-brain/
 │   ├── status.py         # Database statistics
 │   └── copy_chat_file.py # File versioning for chat sessions
 ├── hooks/                # 4 Claude Code lifecycle hooks
-│   ├── session-start.sh
-│   ├── user-prompt-submit.sh
-│   ├── stop.sh
-│   └── session-end.sh
+│   ├── session-start.py
+│   ├── user-prompt-submit.py
+│   ├── stop.py
+│   └── session-end.py
 ├── mcp/
 │   └── server.py         # MCP server (10 read-only tools)
 ├── config.yaml.example   # Reference config (real config is .gitignore'd)
