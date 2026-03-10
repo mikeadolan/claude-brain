@@ -272,8 +272,8 @@ File versioning to chat-files/ per project.
 
 | ID | Test | Input | Expected |
 |----|------|-------|----------|
-| T-HOOK-END-01 | Generates summary | Hook fires on session end | generate_summary.py runs. New row in sys_session_summaries. |
-| T-HOOK-END-02 | Runs backup | Hook fires | brain_sync.py runs. New backup in db-backup/. |
+| T-HOOK-END-01 | Runs backup | Hook fires on session end | brain_sync.py runs (detached). New backup in db-backup/. |
+| T-HOOK-END-02 | Returns instantly | Hook fires | Hook returns {} without blocking. brain_sync.py detached. |
 | T-HOOK-END-03 | Valid JSON output | Any state | stdout: {} (empty JSON object). |
 
 ---
@@ -438,8 +438,7 @@ Tests should be run in this order (dependency chain):
 5. **brain_sync.py tests** (T-SYNC-*) — independent
 6. **status.py tests** (T-STATUS-*) — reads DB populated by above
 7. **copy_chat_file.py tests** (T-COPY-*) — independent
-8. **generate_summary.py tests** (T-SUMMARY-*) — depends on transcripts existing
-9. **import_claude_ai.py tests** (T-IMPORT-*) — independent
+8. **import_claude_ai.py tests** (T-IMPORT-*) — independent
 10. **Hook tests** (T-HOOK-*) — depends on scripts working
 11. **MCP tests** (T-MCP-*) — depends on data existing
 12. **Integration tests** (T-INT-*) — depends on everything
@@ -453,7 +452,6 @@ Tests should be run in this order (dependency chain):
 | ingest_jsonl.py | 10 | 3 | 5 | 18 |
 | startup_check.py | 7 | — | 3 | 10 |
 | write_exchange.py | 6 | — | 2 | 8 |
-| generate_summary.py | 3 | — | 3 | 6 |
 | import_claude_ai.py | 4 | — | 3 | 7 |
 | brain_sync.py | 4 | — | 2 | 6 |
 | status.py | 4 | — | — | 4 |

@@ -15,7 +15,7 @@
 | 3 | Email Digests | 1 script | 2 | none (smtplib is stdlib) |
 
 **Build order:** 1 → Phase 8 (architecture merge) → 2 → 3
-Phase 8 eliminates sys_session_summaries and generate_summary.py. Feature 2 will use direct Anthropic API calls (not OpenRouter/Haiku). See ARCHITECTURE_MERGE_PLAN.md.
+Phase 8 eliminates sys_session_summaries and generate_summary.py. Steps 8.2-8.3 done in session 22 (generate_summary.py deleted, session-end.py rewritten). Remaining: 8.0-8.1, 8.4-8.7. See ARCHITECTURE_MERGE_PLAN.md.
 
 ---
 
@@ -104,12 +104,12 @@ Typos that appear in enough transcripts (doc >= 5) AND whose correct spelling ha
 ## FEATURE 2: AUTO FACT EXTRACTION
 
 **Goal:** Script that scans conversations, sends them to an LLM, and writes structured facts to the database automatically.
-**Prerequisite:** Phase 8 (Architecture Merge) must be complete. generate_summary.py and OpenRouter infra will be deleted in Phase 8. Feature 2 will use a new, clean LLM call approach (direct Anthropic API or similar).
+**Prerequisite:** Phase 8 (Architecture Merge) must be complete. generate_summary.py and OpenRouter summary infra already deleted (session 22, steps 8.2-8.3). Remaining Phase 8 steps: schema migration, consumer script updates, sys_session_summaries drop. Feature 2 will use a clean LLM call approach (direct Anthropic API or similar).
 
 ### Steps
 
 - [ ] **2.1 — Design LLM call approach (post-Phase 8)**
-  Phase 8 removes generate_summary.py and all OpenRouter config. Design the new LLM call mechanism for fact extraction. Options: direct Anthropic API, or Claude Code subprocess. Read the `facts` table schema.
+  generate_summary.py and OpenRouter config already removed (session 22). Design the new LLM call mechanism for fact extraction. Options: direct Anthropic API, or Claude Code subprocess. Read the `facts` table schema.
 
 - [ ] **2.2 — Design the extraction prompt**
   Write the LLM prompt that takes a session transcript and returns structured facts as JSON.

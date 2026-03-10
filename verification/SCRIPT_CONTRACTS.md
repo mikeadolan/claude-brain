@@ -266,54 +266,10 @@ Stdout:
 
 ---
 
-## 4. generate_summary.py
+## 4. [DELETED] generate_summary.py
 
-**Location:** `scripts/generate_summary.py`
-**Triggered by:** `hooks/session-end.py`
-**Phase:** 2.5
-
-### Interface
-
-```
-Usage:  python3 generate_summary.py --session-id <id>
-
-Args:
-  --session-id     Session UUID to summarize
-
-Returns:
-  Exit code 0 on success, 1 on failure
-
-Stdout:
-  "Summary generated for session {session_id} ({N} lines)"
-```
-
-### Behavior
-
-1. Query `transcripts` for all rows with session_id, ordered by timestamp
-2. If 0 rows → log warning, exit 0 (no summary needed)
-3. Build transcript text from content fields
-4. Call Claude Haiku for summarization:
-   ```
-   claude -p --model haiku "Summarize this session in under 50 lines: {transcript}"
-   ```
-   (subprocess call to `claude` CLI)
-5. Validate output ≤ 50 lines. Truncate if exceeded.
-6. Write to `sys_session_summaries`
-
-### Database Writes
-
-| Table | Action |
-|-------|--------|
-| `sys_session_summaries` | INSERT. Fields: session_id, project (from sys_sessions), summary, created_at. |
-
-### Error Handling
-
-| Error | Behavior |
-|-------|----------|
-| No transcripts for session | Log warning. Exit 0. No summary row. |
-| Claude Haiku call fails | Log error. Exit 1. No partial data. |
-| Summary > 50 lines | Truncate to 50 lines. Log warning. Still write. |
-| Duplicate session_id | Update existing summary (INSERT OR REPLACE). |
+**Status:** DELETED in session 22. Claude writes notes directly via end-session protocol.
+No OpenRouter API. No Python fallback. See ARCHITECTURE_MERGE_PLAN.md.
 
 ---
 
@@ -632,7 +588,7 @@ environment or Claude Code metadata. Pass to write_exchange.py.
 |----------|-------|
 | Stdin | `{}` (session metadata) |
 | Stdout | `{}` |
-| Calls | `scripts/generate_summary.py`, then `scripts/brain_sync.py` |
+| Calls | `scripts/brain_sync.py` (detached via Popen) |
 | Blocking | N/A — session is ending |
 
 **Note:** May not fire on terminal close. Data integrity guaranteed by
@@ -696,9 +652,7 @@ config.yaml
     │
     ├── write_exchange.py ←── stop.py (hook)
     │
-    ├── generate_summary.py ←── session-end.py (hook)
-    │
-    ├── brain_sync.py ←── session-end.py (hook)
+    ├── brain_sync.py ←── session-end.py (hook, detached)
     │                 ←── startup_check.py
     │
     ├── import_claude_ai.py (standalone)
@@ -753,7 +707,6 @@ except (ImportError, Exception):
 | ingest_jsonl.py | 1 | T-INGEST-* (18 tests) | 2.1 |
 | startup_check.py | 2 | T-STARTUP-* (10 tests) | 2.3 |
 | write_exchange.py | 3 | T-WRITE-* (8 tests) | 2.4 |
-| generate_summary.py | 4 | T-SUMMARY-* (6 tests) | 2.5 |
 | import_claude_ai.py | 5 | T-IMPORT-* (7 tests) | 3.1 |
 | brain_sync.py | 6 | T-SYNC-* (6 tests) | 3.2 |
 | status.py | 7 | T-STATUS-* (4 tests) | 3.3 |

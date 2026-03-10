@@ -39,7 +39,7 @@ Do NOT build in v0.1. Added to PROJECT_TRACKER.md.
 | 54 | brain-tags management | Not needed for core functionality. |
 | 54 | brain-doctor health check | Not needed for core functionality. |
 | 56 | Y/F/R verification of questionnaire answers | Mike answered directly; formal verification not needed. |
-| ~~81~~ | ~~LLM-generated session summaries (Claude Haiku)~~ | **RESOLVED** — Direct API call to OpenRouter/Anthropic bypasses `claude -p` hang entirely. Config.yaml stores API key. Pure Python fallback for users without a key. |
+| ~~81~~ | ~~LLM-generated session summaries (Claude Haiku)~~ | **DELETED** — generate_summary.py removed (session 22). Claude writes notes directly. No OpenRouter. No fallback. |
 
 ---
 
@@ -99,7 +99,7 @@ Already on GitHub (PRIVATE, Decision 96). Some packaging items remain:
 
 | # | Item | Status |
 |---|------|--------|
-| O.4 | OpenRouter — verify works in Claude Code on Fedora | Open (Mike's homework) |
+| ~~O.4~~ | ~~OpenRouter — verify works in Claude Code on Fedora~~ | **RESOLVED** — Works but unsupported. Decision: migrate to Amazon Bedrock (session 21). |
 
 ---
 
@@ -109,7 +109,7 @@ Already on GitHub (PRIVATE, Decision 96). Some packaging items remain:
 |------|------------|--------|
 | ~~Progressive retrieval layers (L1/L2/L3)~~ | ~~Formalize the retrieval hierarchy~~ | **DONE** — L1 structured tables, L2 FTS5, L3 semantic. Already built, just was unlabeled. |
 | ~~Forked subagent for memory recall~~ | ~~Dedicated subagent for memory ops~~ | **DONE** — Solved by Decision 94 (local script replaces subagent). |
-| ~~LLM-powered summaries~~ | ~~Replace pure-Python summary generator~~ | **DONE** — Direct API call to OpenRouter/Anthropic (Decision 99), bypasses claude -p hang. Pure Python fallback if no key. |
+| ~~LLM-powered summaries~~ | ~~Replace pure-Python summary generator~~ | **DELETED** — generate_summary.py removed (session 22). Claude writes notes directly. No OpenRouter. No fallback. |
 | ~~MEMORY.md trimming~~ | ~~Move stable info to DB to save context tokens~~ | **DONE** — Stable info moved to DB + ARCHITECTURE.md + SESSION_PROTOCOLS.md. session-history.md retired (Decision 102). |
 | Session narratives | Richer session summaries that read like a story of what happened | LLM summaries are a step toward this. Post-MVP. |
 | Token optimization | Hook output and context injection could be further optimized | Post-MVP. |
@@ -127,7 +127,7 @@ Already on GitHub (PRIVATE, Decision 96). Some packaging items remain:
 - **Decision 85:** Phase 7 rewritten, brain-setup moved IN to MVP (un-deferring Decision 55)
 - **Decision 89:** ChromaDB replaced with SQLite+numpy (**RESOLVED** the Python 3.14 blocker)
 - **Decision 96:** Repo starts PRIVATE for beta testing
-- **Decision 99:** LLM summaries via direct API call to OpenRouter/Anthropic. Pure Python fallback.
+- **Decision 99:** ~~LLM summaries via direct API call to OpenRouter/Anthropic.~~ **SUPERSEDED** — generate_summary.py deleted (session 22). Claude writes notes directly.
 - **Decision 100:** /brain-doctor renamed to /brain-health. **DONE.**
 - **Decision 102:** session-history.md retired. Brain DB replaces it.
 

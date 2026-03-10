@@ -44,8 +44,7 @@ Source of truth for the dependency chain. See CLAUDE_BRAIN_MVP_PLAN.txt for full
 config.yaml
  ├─ ingest_jsonl.py ← startup_check.py ← session-start.py (hook)
  ├─ write_exchange.py ← stop.py (hook)
- ├─ generate_summary.py ← session-end.py (hook)
- ├─ brain_sync.py ← session-end.py (hook) + startup_check.py
+ ├─ brain_sync.py ← session-end.py (hook, detached) + startup_check.py
  ├─ import_claude_ai.py (standalone, user runs manually)
  ├─ status.py ← MCP get_status() + user manual
  ├─ copy_chat_file.py (standalone, called by Claude via CLAUDE.md)

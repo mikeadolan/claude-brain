@@ -4,6 +4,27 @@ All notable changes to claude-brain.
 
 ---
 
+## [0.1.1] — 2026-03-10
+
+### Fixed
+- **SessionEnd hook timeout (Bug 1)** — Root cause: `generate_summary.py` made 30s OpenRouter API call, exceeding hook timeout. Fix: deleted `generate_summary.py` entirely. `session-end.py` now only runs `brain_sync.py` (detached).
+- **MCP server unclean shutdown (Bug 2)** — Root cause: `sys.exit(0)` in signal handler raises `SystemExit` through asyncio event loop. Fix: changed to `os._exit(0)` for clean OS-level exit.
+- **UTC timestamps** — All 4 scripts with logging now use `time.gmtime` converter so "Z" suffix is accurate (was using local time).
+
+### Removed
+- **`scripts/generate_summary.py`** — Deleted. Claude writes session notes directly. No LLM summary generation. No OpenRouter dependency.
+- **`summary_llm` config section** — Removed from `config.yaml`, `config.yaml.example`, and `brain-setup.py` setup wizard.
+- **`repair_missing_summaries()`** — Removed from `startup_check.py` (called deleted generate_summary.py).
+- **generate_summary call in `import_claude_ai.py`** — Removed dead subprocess call block.
+
+### Changed
+- `hooks/session-end.py` — Complete rewrite. Only runs `brain_sync.py` (detached via `Popen`).
+- `mcp/server.py` — Signal handler uses `os._exit(0)` instead of `sys.exit(0)`.
+- Documentation updated: ARCHITECTURE.md, FOLDER_SCHEMA.md, SCRIPT_CONTRACTS.md, TEST_SPECIFICATIONS.md, POST_MVP_ROADMAP.md, PROJECT_TRACKER.md, CHANGELOG.md.
+- Added CODE CHANGE CHECKLIST to CLAUDE.md and MEMORY.md.
+
+---
+
 ## [0.1.0] — 2026-03-09
 
 ### Added
@@ -35,4 +56,4 @@ All notable changes to claude-brain.
 - Claude.ai conversation import via Chrome extension export.
 - Interactive setup wizard (`brain-setup.py`).
 - Multi-machine support via Dropbox/cloud sync.
-- LLM-powered session summaries via direct API call (OpenRouter/Anthropic).
+- ~~LLM-powered session summaries via direct API call (OpenRouter/Anthropic).~~ (Removed in 0.1.1 — generate_summary.py deleted, Claude writes notes directly.)
