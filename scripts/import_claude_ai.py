@@ -22,6 +22,7 @@ import socket
 import sqlite3
 import subprocess
 import sys
+import time
 
 import yaml
 
@@ -56,6 +57,7 @@ def setup_logging(root_path):
     if not logger.handlers:
         fmt = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s",
                                 datefmt="%Y-%m-%dT%H:%M:%SZ")
+        fmt.converter = time.gmtime
         fh = logging.FileHandler(log_file)
         fh.setLevel(logging.INFO)
         fh.setFormatter(fmt)
@@ -240,23 +242,6 @@ def import_export(file_path, project, root_path=None, config=None, move_on_succe
 
         logger.info("Imported %d messages from '%s' -> project %s",
                      records_imported, conversation_name, project)
-
-        # Generate summary inline (uses LLM if configured, pure Python fallback)
-        if records_imported > 0:
-            gen_script = os.path.join(root_path, "scripts", "generate_summary.py")
-            try:
-                result_sum = subprocess.run(
-                    [sys.executable, gen_script,
-                     "--session-id", session_id, "--project", project],
-                    capture_output=True, text=True, timeout=60,
-                )
-                if result_sum.returncode == 0:
-                    logger.info("Summary generated for imported session %s", session_id[:12])
-                else:
-                    logger.warning("Summary generation failed for %s: %s",
-                                   session_id[:12], result_sum.stderr.strip())
-            except Exception as e:
-                logger.warning("Summary generation error for %s: %s", session_id[:12], e)
 
         return {"records_imported": records_imported,
                 "conversation_name": conversation_name, "exit_code": 0}

@@ -20,6 +20,7 @@ import pathlib
 import socket
 import sqlite3
 import sys
+import time
 
 import yaml
 
@@ -75,6 +76,7 @@ def setup_logging(root_path):
 
     fmt = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s",
                             datefmt="%Y-%m-%dT%H:%M:%SZ")
+    fmt.converter = time.gmtime
 
     fh = logging.FileHandler(log_file)
     fh.setLevel(logging.INFO)

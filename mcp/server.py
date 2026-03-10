@@ -29,7 +29,7 @@ from mcp.server.fastmcp import FastMCP
 
 # Clean shutdown on SIGTERM/SIGINT — prevents "MCP server failed" on session exit
 def _clean_exit(signum, frame):
-    sys.exit(0)
+    os._exit(0)
 
 signal.signal(signal.SIGTERM, _clean_exit)
 signal.signal(signal.SIGINT, _clean_exit)
