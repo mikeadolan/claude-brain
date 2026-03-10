@@ -19,11 +19,20 @@ import json
 import os
 import pathlib
 import re
+import signal
 import sqlite3
 import sys
 
 import yaml
 from mcp.server.fastmcp import FastMCP
+
+
+# Clean shutdown on SIGTERM/SIGINT — prevents "MCP server failed" on session exit
+def _clean_exit(signum, frame):
+    sys.exit(0)
+
+signal.signal(signal.SIGTERM, _clean_exit)
+signal.signal(signal.SIGINT, _clean_exit)
 
 # fuzzy_search is in scripts/ — add to path
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))

@@ -6,13 +6,16 @@ Replaces the LAST SESSION block in MEMORY.md. Notes are written to
 sys_sessions.notes and read by session-start.py on next session start.
 
 Usage:
-    python3 write_session_notes.py --session-id <id> --notes <text>
-    python3 write_session_notes.py --session-id <id> --notes-file <path>
+    python3 write_session_notes.py --notes <text>
+    python3 write_session_notes.py --notes-file <path>
+
+Session ID is auto-detected from the active session's JSONL file.
 
 Exit codes: 0 = success, 1 = error
 """
 
 import argparse
+import glob
 import os
 import pathlib
 import sqlite3
@@ -45,6 +48,20 @@ def connect_db(db_path):
     conn.execute("PRAGMA journal_mode=WAL;")
     conn.execute("PRAGMA busy_timeout=5000;")
     return conn
+
+
+def auto_detect_session_id():
+    """Auto-detect current session ID from JSONL files (same logic as stop.py)."""
+    cwd = os.getcwd()
+    encoded_cwd = cwd.replace("/", "-")
+    project_dir = os.path.join(os.path.expanduser("~"), ".claude", "projects", encoded_cwd)
+
+    jsonl_files = glob.glob(os.path.join(project_dir, "*.jsonl"))
+    if not jsonl_files:
+        return None
+
+    jsonl_path = max(jsonl_files, key=os.path.getmtime)
+    return os.path.splitext(os.path.basename(jsonl_path))[0]
 
 
 # ---------------------------------------------------------------------------
@@ -121,7 +138,7 @@ def get_latest_notes(db_path, project=None):
 
 def main():
     parser = argparse.ArgumentParser(description="Write session notes to brain DB")
-    parser.add_argument("--session-id", required=True, help="Session UUID")
+    parser.add_argument("--session-id", help=argparse.SUPPRESS)
     parser.add_argument("--notes", help="Session notes text")
     parser.add_argument("--notes-file", help="Read notes from file instead of --notes")
     parser.add_argument("--read-latest", action="store_true",
@@ -141,6 +158,12 @@ def main():
             print("No session notes found.")
         return
 
+    # Auto-detect session ID from JSONL (always available during active session)
+    session_id = args.session_id or auto_detect_session_id()
+    if not session_id:
+        print("ERROR: No active session detected.", file=sys.stderr)
+        sys.exit(1)
+
     # Get notes from --notes or --notes-file
     notes = args.notes
     if args.notes_file:
@@ -154,7 +177,7 @@ def main():
         print("ERROR: Must provide --notes or --notes-file", file=sys.stderr)
         sys.exit(1)
 
-    exit_code = write_notes(args.session_id, notes, db_path)
+    exit_code = write_notes(session_id, notes, db_path)
     sys.exit(exit_code)
 
 

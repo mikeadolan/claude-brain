@@ -37,7 +37,7 @@ def main():
     jsonl_path = max(jsonl_files, key=os.path.getmtime)
     session_id = os.path.splitext(os.path.basename(jsonl_path))[0]
 
-    # Call write_exchange.py (all output suppressed from stdout)
+    # Call write_exchange.py — stdout/stderr suppressed (hook stdout is SACRED)
     try:
         subprocess.run(
             [sys.executable, os.path.join(root, "scripts", "write_exchange.py"),

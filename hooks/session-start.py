@@ -25,7 +25,7 @@ def main():
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     # 1. Run startup check — ingest new files, verify folders, backup DB
-    #    All output suppressed from stdout (startup_check logs internally)
+    #    stdout/stderr suppressed — hook stdout is SACRED (JSON only)
     try:
         subprocess.run(
             [sys.executable, os.path.join(root, "scripts", "startup_check.py")],

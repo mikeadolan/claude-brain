@@ -56,7 +56,8 @@ def main():
     except Exception:
         pass
 
-    # 1. Generate session summary (all output suppressed from stdout)
+    # 1. Generate session summary
+    # stdout/stderr suppressed — hook stdout is SACRED (JSON only)
     try:
         subprocess.run(
             [sys.executable, os.path.join(root, "scripts", "generate_summary.py"),
@@ -68,7 +69,7 @@ def main():
     except Exception:
         pass
 
-    # 2. Run database backup (all output suppressed from stdout)
+    # 2. Run database backup
     try:
         subprocess.run(
             [sys.executable, os.path.join(root, "scripts", "brain_sync.py")],
