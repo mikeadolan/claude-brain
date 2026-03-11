@@ -241,8 +241,8 @@ File versioning to chat-files/ per project.
 
 | ID | Test | Input | Expected |
 |----|------|-------|----------|
-| T-HOOK-PROMPT-01 | Receives prompt via stdin | stdin: {"prompts":[{"content":"test query"}]} | Script extracts "test query". |
-| T-HOOK-PROMPT-02 | Semantic search results | Relevant data in ChromaDB | Output JSON: {"additionalContext": "## Relevant Memories\n..."} with top 3 results. |
+| T-HOOK-PROMPT-01 | Receives prompt via stdin | stdin: {"user_prompt":"test query"} | Script extracts "test query". |
+| T-HOOK-PROMPT-02 | Semantic search results | Relevant data in DB | Output JSON: {"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":"## Relevant Memories\n..."}} with top 3 results. |
 | T-HOOK-PROMPT-03 | No results | Empty DB / no matches | Output JSON with empty or minimal additionalContext. Valid JSON. |
 | T-HOOK-PROMPT-04 | Semantic search disabled | Config: enabled=false | Hook returns {} or minimal JSON. No error. |
 

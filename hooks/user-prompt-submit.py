@@ -187,17 +187,9 @@ def main():
             print("{}")
             return
 
-        prompts = input_data.get("prompts", [])
-        if not prompts:
-            print("{}")
-            return
-
-        prompt_text = ""
-        for p in prompts:
-            if isinstance(p, dict):
-                prompt_text += p.get("content", "") + " "
-            elif isinstance(p, str):
-                prompt_text += p + " "
+        prompt_text = input_data.get("user_prompt", "")
+        if not isinstance(prompt_text, str):
+            prompt_text = ""
         prompt_text = prompt_text.strip()
 
         # Frustration circuit breaker — check BEFORE length filter

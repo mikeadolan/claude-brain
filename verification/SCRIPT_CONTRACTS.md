@@ -543,8 +543,8 @@ formatted as markdown text in `additionalContext`.
 
 | Property | Value |
 |----------|-------|
-| Stdin | `{"prompts":[{"content":"user's message text"}]}` |
-| Stdout | `{"additionalContext": "..."}` |
+| Stdin | `{"user_prompt":"user's message text"}` |
+| Stdout | `{"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":"..."}}` |
 | Calls | Semantic search (if enabled) against prompt text |
 | Blocking | Yes — runs before message reaches Claude |
 

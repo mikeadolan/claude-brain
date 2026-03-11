@@ -116,9 +116,9 @@ Order matters. brain_sync must come before session-end (which calls it).
 | Step | Status | Notes |
 |------|--------|-------|
 | Write hooks/user-prompt-submit.py | [x] | 148 lines, same logic as inline heredoc |
-| Manual test with sample prompt: `echo '{"prompts":[{"content":"test search query for chapter"}]}' \| python3 hooks/user-prompt-submit.py` | [x] | Returns relevant memories JSON |
+| Manual test with sample prompt: `echo '{"user_prompt":"test search query for chapter"}' \| python3 hooks/user-prompt-submit.py` | [x] | Returns relevant memories JSON |
 | Compare output to same input via .sh | [x] | Byte-for-byte identical (diff returned nothing) |
-| Test with short prompt (<15 chars): `echo '{"prompts":[{"content":"hi"}]}' \| python3 hooks/user-prompt-submit.py` | [x] | Returns `{}` — both versions match |
+| Test with short prompt (<15 chars): `echo '{"user_prompt":"hi"}' \| python3 hooks/user-prompt-submit.py` | [x] | Returns `{}` — both versions match |
 | Audit: code review user-prompt-submit.py vs user-prompt-submit.sh logic | [x] | Same STOP_WORDS, FTS5, project bias, dedup. Empty input also tested. |
 | **LOCKED** | [x] | |
 
