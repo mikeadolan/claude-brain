@@ -2,7 +2,7 @@
 """
 brain_recap.py — Progress report for a time range.
 
-Pulls session summaries and produces a narrative organized by project:
+Pulls session notes and produces a narrative organized by project:
 what was worked on, what was completed, key decisions, what's next.
 
 Usage:
@@ -178,9 +178,7 @@ def main():
         # Query sessions in date range
         sql = """
             SELECT s.session_id, s.project, s.started_at, s.message_count,
-                   (SELECT summary FROM sys_session_summaries
-                    WHERE session_id = s.session_id
-                    ORDER BY created_at DESC LIMIT 1) as summary
+                   s.notes
             FROM sys_sessions s
             WHERE date(s.started_at) >= ?
         """
@@ -258,7 +256,7 @@ def main():
                     print(f"  - {clean}")
                 else:
                     date_str = (s[2] or "")[:10]
-                    print(f"  - [{date_str}] (no summary)")
+                    print(f"  - [{date_str}] (no notes)")
 
             # Show decisions for this project
             proj_decs = dec_by_project.get(project, [])

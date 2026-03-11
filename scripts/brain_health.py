@@ -208,20 +208,22 @@ def check_data_health(config):
         else:
             issues.append(f"embeddings {emb_pct}% ({emb_count}/{content_msgs})")
 
-        # Summary coverage
+        # Notes coverage (sys_sessions.notes is the single source of truth)
         session_count = conn.execute("SELECT COUNT(*) FROM sys_sessions").fetchone()[0]
-        summary_count = conn.execute("SELECT COUNT(*) FROM sys_session_summaries").fetchone()[0]
+        notes_count = conn.execute(
+            "SELECT COUNT(*) FROM sys_sessions WHERE notes IS NOT NULL AND notes != ''"
+        ).fetchone()[0]
         details["session_count"] = session_count
-        details["summary_count"] = summary_count
-        sum_pct = round((summary_count / session_count) * 100) if session_count > 0 else 0
-        details["summary_pct"] = sum_pct
+        details["notes_count"] = notes_count
+        notes_pct = round((notes_count / session_count) * 100) if session_count > 0 else 0
+        details["notes_pct"] = notes_pct
 
-        if sum_pct < 80:
+        if notes_pct < 80:
             if status == "PASS":
                 status = "WARN"
-            issues.append(f"summaries {sum_pct}% ({summary_count}/{session_count})")
+            issues.append(f"notes {notes_pct}% ({notes_count}/{session_count})")
         else:
-            issues.append(f"summaries {sum_pct}% ({summary_count}/{session_count})")
+            issues.append(f"notes {notes_pct}% ({notes_count}/{session_count})")
 
         conn.close()
         summary = f"Data: {', '.join(issues)}"

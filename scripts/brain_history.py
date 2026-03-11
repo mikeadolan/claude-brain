@@ -3,7 +3,7 @@
 brain_history.py — Session timeline from the brain database.
 
 Clean list of recent sessions, one line each: date, project, message count,
-duration, and topic (from session summary).
+duration, and topic (from session notes).
 
 Usage:
     python3 brain_history.py
@@ -130,13 +130,10 @@ def main():
                 print(f"Valid prefixes: {', '.join(sorted(valid))}")
                 sys.exit(1)
 
-        # Query sessions with summary and message count
+        # Query sessions with notes and message count
         sql = """
             SELECT s.session_id, s.project, s.started_at, s.ended_at,
-                   s.message_count,
-                   (SELECT summary FROM sys_session_summaries
-                    WHERE session_id = s.session_id
-                    ORDER BY created_at DESC LIMIT 1) as summary
+                   s.message_count, s.notes
             FROM sys_sessions s
             WHERE 1=1
         """
@@ -174,7 +171,7 @@ def main():
             duration = format_duration(started, ended)
             dur_str = f" | {duration}" if duration else ""
 
-            # Topic: extract from summary
+            # Topic: extract from notes
             if summary:
                 topic = None
                 for line in summary.strip().split("\n"):
@@ -198,12 +195,12 @@ def main():
                         topic = line
                         break
                 if not topic:
-                    topic = "No summary"
+                    topic = "No notes"
                 # Truncate if too long
                 if len(topic) > 100:
                     topic = topic[:97] + "..."
             else:
-                topic = "No summary"
+                topic = "No notes"
 
             print(f"{date_str} | {project:<3} | {msg_count:>4} msgs{dur_str} | {topic}")
 

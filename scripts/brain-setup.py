@@ -416,13 +416,7 @@ DDL_STATEMENTS = [
         records_imported INTEGER,
         ingested_at      TEXT
     )""",
-    """CREATE TABLE IF NOT EXISTS sys_session_summaries (
-        id               INTEGER PRIMARY KEY AUTOINCREMENT,
-        session_id       TEXT,
-        project          TEXT,
-        summary          TEXT,
-        created_at       TEXT
-    )""",
+    # sys_session_summaries REMOVED — sys_sessions.notes is the single source of truth
     """CREATE TABLE IF NOT EXISTS project_registry (
         folder_name      TEXT PRIMARY KEY,
         prefix           TEXT UNIQUE,

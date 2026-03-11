@@ -69,11 +69,12 @@ def main():
         except Exception:
             pass
 
-        # Get last 5 summaries per project (up to 10 total)
+        # Get last 10 sessions with notes, grouped by project
         rows = conn.execute("""
-            SELECT project, summary, created_at
-            FROM sys_session_summaries
-            ORDER BY created_at DESC
+            SELECT project, notes, started_at
+            FROM sys_sessions
+            WHERE notes IS NOT NULL AND notes != ''
+            ORDER BY started_at DESC
             LIMIT 10
         """).fetchall()
         conn.close()
@@ -81,10 +82,10 @@ def main():
         if rows:
             # Group by project
             by_project = {}
-            for project, summary, created_at in rows:
+            for project, notes, started_at in rows:
                 if project not in by_project:
                     by_project[project] = []
-                by_project[project].append((summary, created_at))
+                by_project[project].append((notes, started_at))
 
             lines.append("## Recent Session Context")
             lines.append("")

@@ -19,20 +19,11 @@ import json
 import os
 import pathlib
 import re
-import signal
 import sqlite3
 import sys
 
 import yaml
 from mcp.server.fastmcp import FastMCP
-
-
-# Clean shutdown on SIGTERM/SIGINT — prevents "MCP server failed" on session exit
-def _clean_exit(signum, frame):
-    os._exit(0)
-
-signal.signal(signal.SIGTERM, _clean_exit)
-signal.signal(signal.SIGINT, _clean_exit)
 
 # fuzzy_search is in scripts/ — add to path
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
@@ -506,33 +497,35 @@ def lookup_fact(
 
 @mcp.tool()
 def get_recent_summaries(project: str | None = None, count: int = 5) -> str:
-    """Returns the last N session summaries for fast context loading.
-    Args: project — filter by prefix (optional), count — max summaries (default 5)."""
+    """Returns the last N session notes for fast context loading.
+    Args: project — filter by prefix (optional), count — max notes (default 5)."""
     conn = get_db()
     try:
         if project:
             rows = conn.execute(
-                """SELECT session_id, project, summary, created_at
-                   FROM sys_session_summaries WHERE project = ?
-                   ORDER BY created_at DESC LIMIT ?""",
+                """SELECT session_id, project, notes, started_at
+                   FROM sys_sessions
+                   WHERE project = ? AND notes IS NOT NULL AND notes != ''
+                   ORDER BY started_at DESC LIMIT ?""",
                 (project, count),
             ).fetchall()
         else:
             rows = conn.execute(
-                """SELECT session_id, project, summary, created_at
-                   FROM sys_session_summaries
-                   ORDER BY created_at DESC LIMIT ?""",
+                """SELECT session_id, project, notes, started_at
+                   FROM sys_sessions
+                   WHERE notes IS NOT NULL AND notes != ''
+                   ORDER BY started_at DESC LIMIT ?""",
                 (count,),
             ).fetchall()
 
         if not rows:
-            return "No session summaries found."
+            return "No session notes found."
 
-        lines = [f"## Session Summaries ({len(rows)})", ""]
+        lines = [f"## Session Notes ({len(rows)})", ""]
         for row in rows:
-            date = row["created_at"][:10] if row["created_at"] else "?"
+            date = row["started_at"][:10] if row["started_at"] else "?"
             lines.append(f"### [{date}] {row['project']} — {row['session_id'][:12]}...")
-            lines.append(row["summary"] or "(empty)")
+            lines.append(row["notes"] or "(empty)")
             lines.append("")
 
         return "\n".join(lines)
@@ -626,7 +619,9 @@ def get_status() -> str:
         sessions = conn.execute("SELECT COUNT(*) as c FROM sys_sessions").fetchone()["c"]
         messages = conn.execute("SELECT COUNT(*) as c FROM transcripts").fetchone()["c"]
         tool_results = conn.execute("SELECT COUNT(*) as c FROM tool_results").fetchone()["c"]
-        summaries = conn.execute("SELECT COUNT(*) as c FROM sys_session_summaries").fetchone()["c"]
+        notes_count = conn.execute(
+            "SELECT COUNT(*) as c FROM sys_sessions WHERE notes IS NOT NULL AND notes != ''"
+        ).fetchone()["c"]
         ingest_files = conn.execute("SELECT COUNT(*) as c FROM sys_ingest_log").fetchone()["c"]
 
         # Per-project breakdown
@@ -671,7 +666,7 @@ def get_status() -> str:
             f"Sessions: {sessions}",
             f"Messages: {messages}",
             f"Tool results: {tool_results}",
-            f"Summaries: {summaries}",
+            f"Session notes: {notes_count}",
             f"Ingested files: {ingest_files}",
             "",
             "### By Project",
@@ -743,4 +738,9 @@ def get_schema() -> str:
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    mcp.run()
+    try:
+        mcp.run()
+    except (KeyboardInterrupt, SystemExit):
+        pass
+    finally:
+        os._exit(0)

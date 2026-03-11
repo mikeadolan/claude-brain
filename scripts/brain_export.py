@@ -331,9 +331,7 @@ def export_recap_week(conn, exports_dir):
     # Query sessions
     rows = conn.execute(
         """SELECT s.session_id, s.project, s.started_at, s.message_count,
-                  (SELECT summary FROM sys_session_summaries
-                   WHERE session_id = s.session_id
-                   ORDER BY created_at DESC LIMIT 1) as summary
+                  s.notes
            FROM sys_sessions s
            WHERE date(s.started_at) >= ?
            ORDER BY s.started_at ASC""",

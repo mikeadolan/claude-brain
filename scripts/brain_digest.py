@@ -83,13 +83,14 @@ def get_previous_week_stats(conn, since, before):
 
 
 def get_session_summaries(conn, since):
-    """Session summaries grouped by project, ordered by date."""
+    """Session notes grouped by project, ordered by date."""
     rows = conn.execute("""
-        SELECT ss.project, ss.summary, ss.created_at, s.message_count, s.started_at
-        FROM sys_session_summaries ss
-        LEFT JOIN sys_sessions s ON ss.session_id = s.session_id
-        WHERE ss.created_at >= ?
-        ORDER BY ss.created_at DESC
+        SELECT s.project, s.notes AS summary, s.started_at AS created_at,
+               s.message_count, s.started_at
+        FROM sys_sessions s
+        WHERE s.notes IS NOT NULL AND s.notes != ''
+          AND s.started_at >= ?
+        ORDER BY s.started_at DESC
     """, (since,)).fetchall()
     return rows
 
@@ -145,7 +146,9 @@ def get_brain_totals(conn):
     totals = {}
     totals["sessions"] = conn.execute("SELECT COUNT(*) FROM sys_sessions").fetchone()[0]
     totals["transcripts"] = conn.execute("SELECT COUNT(*) FROM transcripts").fetchone()[0]
-    totals["summaries"] = conn.execute("SELECT COUNT(*) FROM sys_session_summaries").fetchone()[0]
+    totals["notes"] = conn.execute(
+        "SELECT COUNT(*) FROM sys_sessions WHERE notes IS NOT NULL AND notes != ''"
+    ).fetchone()[0]
     totals["decisions"] = conn.execute("SELECT COUNT(*) FROM decisions").fetchone()[0]
     totals["facts"] = conn.execute("SELECT COUNT(*) FROM brain_facts").fetchone()[0]
     totals["embeddings"] = conn.execute("SELECT COUNT(*) FROM transcript_embeddings").fetchone()[0]
@@ -176,8 +179,9 @@ def get_inception_stats(conn, labels):
             "SELECT COUNT(*) FROM facts WHERE project = ?", (prefix,)
         ).fetchone()[0]
 
-        summary_count = conn.execute(
-            "SELECT COUNT(*) FROM sys_session_summaries WHERE project = ?", (prefix,)
+        notes_count = conn.execute(
+            "SELECT COUNT(*) FROM sys_sessions WHERE project = ? AND notes IS NOT NULL AND notes != ''",
+            (prefix,)
         ).fetchone()[0]
 
         first = (row["first_session"] or "")[:10]
@@ -200,7 +204,7 @@ def get_inception_stats(conn, labels):
             "messages": row["messages"] or 0,
             "decisions": decision_count,
             "facts": fact_count,
-            "summaries": summary_count,
+            "notes": notes_count,
             "first_session": first,
             "last_session": last,
             "span_days": span_days,
