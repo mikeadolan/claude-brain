@@ -203,7 +203,7 @@ def main():
         # Frustration circuit breaker — check BEFORE length filter
         if prompt_text and detect_frustration(prompt_text):
             context = handle_frustration(prompt_text, root)
-            print(json.dumps({"additionalContext": context}))
+            print(json.dumps({"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": context}}))
             return
 
         # Skip short/trivial prompts
@@ -304,7 +304,7 @@ def main():
             lines.append(f"{i}. [{r['timestamp']}, {r['project']}] {r['content']}")
         lines.append("")
 
-        print(json.dumps({"additionalContext": "\n".join(lines)}))
+        print(json.dumps({"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": "\n".join(lines)}}))
 
     except Exception:
         print("{}")

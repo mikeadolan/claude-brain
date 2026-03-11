@@ -44,7 +44,7 @@ def main():
 
         db_path = config["storage"]["local_db_path"]
         if not os.path.exists(db_path):
-            print(json.dumps({"additionalContext": ""}))
+            print(json.dumps({"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": ""}}))
             return
 
         conn = sqlite3.connect(db_path)
@@ -146,12 +146,12 @@ def main():
                 lines.append("")
 
         if lines:
-            print(json.dumps({"additionalContext": "\n".join(lines)}))
+            print(json.dumps({"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": "\n".join(lines)}}))
         else:
-            print(json.dumps({"additionalContext": ""}))
+            print(json.dumps({"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": ""}}))
 
     except Exception:
-        print(json.dumps({"additionalContext": ""}))
+        print(json.dumps({"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": ""}}))
 
 
 if __name__ == "__main__":
