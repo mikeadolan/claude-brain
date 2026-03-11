@@ -63,16 +63,16 @@ def get_project_labels(conn):
 # Summary extraction
 # ---------------------------------------------------------------------------
 
-def extract_topic(summary):
-    """Extract the topic line from a session summary."""
-    if not summary:
+def extract_topic(notes):
+    """Extract the topic line from session notes."""
+    if not notes:
         return None
-    for line in summary.strip().split("\n"):
+    for line in notes.strip().split("\n"):
         line = line.strip()
         if line.lower().startswith("topic:"):
             return line[6:].strip()
     # Fallback: first non-metadata line
-    for line in summary.strip().split("\n"):
+    for line in notes.strip().split("\n"):
         line = line.strip()
         if not line:
             continue
@@ -84,11 +84,11 @@ def extract_topic(summary):
     return None
 
 
-def extract_section(summary, header):
-    """Extract lines under a specific header from summary."""
-    if not summary:
+def extract_section(notes, header):
+    """Extract lines under a specific header from session notes."""
+    if not notes:
         return []
-    lines = summary.strip().split("\n")
+    lines = notes.strip().split("\n")
     in_section = False
     results = []
     for line in lines:
@@ -246,8 +246,8 @@ def main():
 
             # Extract topics from each session
             for s in sessions:
-                summary = s[4]
-                topic = extract_topic(summary)
+                notes = s[4]
+                topic = extract_topic(notes)
                 if topic:
                     # Clean up common prefixes
                     clean = topic.strip()

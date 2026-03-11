@@ -5,13 +5,12 @@ Source of truth for the dependency chain. See CLAUDE_BRAIN_MVP_PLAN.txt for full
 
 ---
 
-## DATABASE (11 tables)
+## DATABASE (10 tables)
 
 | Table | Purpose |
 |-------|---------|
 | sys_sessions | One row per Claude Code session (session_id PK, project, started_at, model, source, quality_score, quality_tags) |
 | sys_ingest_log | Tracks imported files, prevents re-import (file_path PK) |
-| sys_session_summaries | Session summaries for fast context loading (session_id, summary) |
 | project_registry | Maps folders to prefixes (7 projects seeded) |
 | transcripts | Every message, every session (uuid UNIQUE, FTS5 on content, 18 columns) |
 | transcripts_fts | FTS5 virtual table on transcripts.content |

@@ -137,25 +137,11 @@ Captures live exchanges during active sessions. Called by stop hook after every 
 
 ---
 
-## 4. GENERATE_SUMMARY.PY
+## 4. [DELETED] GENERATE_SUMMARY.PY
 
-Creates session summary at session end via Claude Haiku.
-
-### Happy Path
-
-| ID | Test | Input | Expected |
-|----|------|-------|----------|
-| T-SUMMARY-01 | Generate summary | Session ID with 10+ transcripts in DB | → sys_session_summaries(1). summary is non-empty string. ≤50 lines. |
-| T-SUMMARY-02 | Summary metadata | Same | session_id, project, created_at all populated correctly. |
-| T-SUMMARY-03 | Respects 50-line cap | Long session | Summary output ≤ 50 lines. |
-
-### Error Handling
-
-| ID | Test | Input | Expected |
-|----|------|-------|----------|
-| T-SUMMARY-10 | Session has no transcripts | Session ID with 0 rows in transcripts | Script logs warning. No summary row created. Does not crash. |
-| T-SUMMARY-11 | Claude Haiku unavailable | API call fails | Script logs error. Falls back or exits cleanly. No partial data written. |
-| T-SUMMARY-12 | Duplicate summary | Run twice for same session | Only 1 summary row. Second run updates or skips. |
+**Status:** DELETED in session 22. Claude writes notes directly via end-session protocol.
+No OpenRouter API. No Python fallback. sys_session_summaries table dropped (session 25).
+All session context now lives in `sys_sessions.notes`.
 
 ---
 
@@ -365,7 +351,7 @@ End-to-end tests that verify components work together.
 | T-INT-01 | Full ingest pipeline | Place JSONL in source path → run startup_check.py | sys_ingest_log, sys_sessions, transcripts all populated. Backup created. |
 | T-INT-02 | Hook → script chain | session-start hook fires → startup_check runs → ingest runs | Data in DB. Context returned as JSON. |
 | T-INT-03 | Write + search | write_exchange.py writes data → search_transcripts() finds it → search_semantic() finds it | Both FTS5 and ChromaDB return the written data. |
-| T-INT-04 | Session lifecycle | Start → 3 exchanges → end | sys_sessions(1), transcripts(6), sys_session_summaries(1), backup created. |
+| T-INT-04 | Session lifecycle | Start → 3 exchanges → end | sys_sessions(1), transcripts(6), backup created. |
 | T-INT-05 | Crash recovery | Simulate terminal close (no session-end hook) → next session start | startup_check reconciles from JSONL. No data lost. |
 | T-INT-06 | Cross-project search | Data from jg and gen in DB | search_transcripts without project filter returns both. With project filter returns only one. |
 | T-INT-07 | MCP → DB round-trip | Populate brain_facts → get_profile() via MCP | Profile data matches what was inserted. |

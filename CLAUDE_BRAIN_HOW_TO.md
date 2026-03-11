@@ -130,7 +130,7 @@ data and inject memories without you lifting a finger.
 | Session starts | Ingests new files, loads recent session summaries as context | session-start.py |
 | Every prompt you type | Searches brain for relevant memories, injects top 3 into Claude's context | user-prompt-submit.py |
 | Every Claude response | Captures the full exchange (your prompt + Claude's response) to the database | stop.py |
-| Session ends | Generates a session summary, backs up the database | session-end.py |
+| Session ends | Backs up the database | session-end.py |
 
 **You never need to say "save this" or "remember that."** Every exchange is captured
 automatically, in full — not summarized, not filtered, not reduced to tool observations.
@@ -766,7 +766,6 @@ Location: `db-backup/claude-brain.db.bak1`
 | transcripts | Every message from every session | 15,082 |
 | transcript_embeddings | Semantic search vectors (384-dim, float32) | 5,435 |
 | sys_sessions | One row per session (metadata + quality score + tags) | 121 |
-| sys_session_summaries | Auto-generated session recaps | 121 |
 | brain_facts | Everything about you (cross-project) | 98 |
 | brain_preferences | How you work (cross-project) | 41 |
 | facts | Project-specific knowledge | 145 |

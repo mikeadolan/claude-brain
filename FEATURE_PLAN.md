@@ -15,7 +15,7 @@
 | 3 | Email Digests | 1 script | 2 | none (smtplib is stdlib) |
 
 **Build order:** 1 → Phase 8 (architecture merge) → 2 → 3
-Phase 8 eliminates sys_session_summaries and generate_summary.py. Steps 8.2-8.3 done in session 22 (generate_summary.py deleted, session-end.py rewritten). Remaining: 8.0-8.1, 8.4-8.7. See ARCHITECTURE_MERGE_PLAN.md.
+Phase 8 eliminated sys_session_summaries and generate_summary.py. Steps 8.2-8.3 done in session 22 (generate_summary.py deleted, session-end.py rewritten). Steps 8.5-8.7 done in sessions 23-25 (consumer scripts migrated, table dropped). Remaining: 8.0-8.1, 8.4, 8.8-8.10. See ARCHITECTURE_MERGE_PLAN.md.
 
 ---
 
@@ -104,7 +104,7 @@ Typos that appear in enough transcripts (doc >= 5) AND whose correct spelling ha
 ## FEATURE 2: AUTO FACT EXTRACTION
 
 **Goal:** Script that scans conversations, sends them to an LLM, and writes structured facts to the database automatically.
-**Prerequisite:** Phase 8 (Architecture Merge) must be complete. generate_summary.py and OpenRouter summary infra already deleted (session 22, steps 8.2-8.3). Remaining Phase 8 steps: schema migration, consumer script updates, sys_session_summaries drop. Feature 2 will use a clean LLM call approach (direct Anthropic API or similar).
+**Prerequisite:** Phase 8 (Architecture Merge) must be complete. generate_summary.py and OpenRouter summary infra deleted (session 22). Consumer scripts migrated to sys_sessions.notes (session 23). sys_session_summaries table dropped (session 25). Remaining Phase 8 steps: schema migration (F2), gap detection (F3), project summaries (F4). Feature 2 will use a clean LLM call approach (direct Anthropic API or similar).
 
 ### Steps
 

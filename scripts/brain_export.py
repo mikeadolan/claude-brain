@@ -381,16 +381,16 @@ def export_recap_week(conn, exports_dir):
         lines.append("")
 
         for s in sessions:
-            summary = s[4]
+            notes = s[4]
             topic = None
-            if summary:
-                for sline in summary.strip().split("\n"):
+            if notes:
+                for sline in notes.strip().split("\n"):
                     sline = sline.strip()
                     if sline.lower().startswith("topic:"):
                         topic = sline[6:].strip()
                         break
                 if not topic:
-                    for sline in summary.strip().split("\n"):
+                    for sline in notes.strip().split("\n"):
                         sline = sline.strip()
                         if not sline or sline.startswith(("Session:", "Project:", "Time:", "Exchanges:")):
                             continue
@@ -399,7 +399,7 @@ def export_recap_week(conn, exports_dir):
                         topic = sline
                         break
             date_str = (s[2] or "")[:10]
-            topic = topic or "(no summary)"
+            topic = topic or "(no notes)"
             if len(topic) > 120:
                 topic = topic[:117] + "..."
             lines.append(f"  [{date_str}] {topic}")

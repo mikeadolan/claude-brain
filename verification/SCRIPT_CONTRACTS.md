@@ -521,10 +521,10 @@ not the final JSON must go to stderr or log files.
 |----------|-------|
 | Stdin | `{}` (empty JSON) |
 | Stdout | `{"additionalContext": "..."}` |
-| Calls | `scripts/startup_check.py` (stderr/log only), then queries `sys_session_summaries` |
+| Calls | `scripts/startup_check.py` (stderr/log only), then queries `sys_sessions.notes` |
 | Blocking | Yes — Claude waits for this to finish |
 
-**Stdout content:** Recent session summaries (last 5 per project, configurable),
+**Stdout content:** Recent session notes (last 5 per project, configurable),
 formatted as markdown text in `additionalContext`.
 
 ```json
