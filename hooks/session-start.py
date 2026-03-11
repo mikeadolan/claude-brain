@@ -11,6 +11,7 @@ RULE: stdout is SACRED. Only valid JSON goes to stdout.
 
 import json
 import os
+import re
 import sqlite3
 import subprocess
 import sys
@@ -51,7 +52,16 @@ def main():
 
         lines = []
 
+        # Verification checklist — always first, non-negotiable
+        lines.append("## Session Start Checklist")
+        lines.append("- Before acting on inherited work: verify the premise independently")
+        lines.append("- Before debugging: identify WHICH component is actually failing")
+        lines.append("- Use brain MCP tools (search_transcripts, get_recent_summaries) for full context")
+        lines.append("- Do NOT trust prior session notes blindly — they may contain wrong assumptions")
+        lines.append("")
+
         # Get last session notes (most valuable context for continuity)
+        notes_text = None
         try:
             notes_row = conn.execute("""
                 SELECT session_id, project, notes, started_at
@@ -61,13 +71,39 @@ def main():
             """).fetchone()
             if notes_row:
                 date = notes_row[3][:10] if notes_row[3] else "unknown"
+                notes_text = notes_row[2] or ""
                 lines.append("## Last Session Notes")
                 lines.append(f"Date: {date} | Project: {notes_row[1]}")
                 lines.append("")
-                lines.append(notes_row[2])
+                lines.append(notes_text)
                 lines.append("")
         except Exception:
             pass
+
+        # Scan last session notes for unfinished/unverified items
+        if notes_text:
+            unfinished_patterns = [
+                r"\bNOT YET VERIFIED\b", r"\bNOT DONE\b", r"\bunverified\b",
+                r"\buntested\b", r"\bneeds verification\b", r"\bVERIFY\b",
+                r"\bnot yet tested\b", r"\bstill broken\b", r"\bstill failing\b",
+            ]
+            flagged = []
+            for note_line in notes_text.split("\n"):
+                stripped = note_line.strip()
+                # Skip section headers (## Blockers, etc.)
+                if stripped.startswith("#"):
+                    continue
+                if stripped and any(
+                    re.search(p, stripped, re.IGNORECASE)
+                    for p in unfinished_patterns
+                ):
+                    flagged.append(stripped)
+            if flagged:
+                lines.append("## Unfinished Items From Last Session")
+                lines.append("VERIFY these independently before continuing:")
+                for f in flagged:
+                    lines.append(f"- {f}")
+                lines.append("")
 
         # Get last 10 sessions with notes, grouped by project
         rows = conn.execute("""

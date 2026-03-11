@@ -32,6 +32,146 @@ STOP_WORDS = {
     "sure", "right", "good", "new", "first", "last", "next", "other",
 }
 
+# ---------------------------------------------------------------------------
+# Frustration detection — circuit breaker
+# ---------------------------------------------------------------------------
+
+FRUSTRATION_PATTERNS = [
+    r"\bwhat the hell\b",
+    r"\bwhy the hell\b",
+    r"\bhow the hell\b",
+    r"\bfor god'?s? sake",
+    r"\bstupid\b",
+    r"\bdumb\b",
+    r"\bidiot\b",
+    r"\bretard",
+    r"\bare you even\b",
+    r"\bwhy didn'?t you\b",
+    r"\bhow can you\b",
+    r"\bwhat are you doing\b",
+    r"\bstop being\b",
+    r"\bfix it\b",
+    r"\bwast(?:ed?|ing)\s+(?:my\s+)?time\b",
+    r"\bhow many times\b",
+    r"\bnot listen",
+    r"\bcan'?t you\b",
+    r"\bfor (?:fuck|christ)\b",
+]
+
+FRUSTRATION_WORDS = {
+    "hell", "stupid", "dumb", "idiot", "retard", "retarded",
+    "god", "sakes", "sake", "damn", "crap", "shit", "fuck",
+    "why", "how", "what", "come", "stop", "being", "even",
+    "fix", "wasted", "waste", "wasting", "time", "christ",
+    "listen", "listening", "cant",
+}
+
+
+def detect_frustration(text):
+    """Check if the user's message indicates frustration."""
+    text_lower = text.lower()
+
+    # Check explicit patterns
+    for pattern in FRUSTRATION_PATTERNS:
+        if re.search(pattern, text_lower):
+            return True
+
+    # Check high caps ratio (>50% uppercase, message > 20 chars)
+    if len(text) > 20:
+        alpha_chars = [c for c in text if c.isalpha()]
+        if alpha_chars:
+            upper_ratio = sum(1 for c in alpha_chars if c.isupper()) / len(alpha_chars)
+            if upper_ratio > 0.5:
+                return True
+
+    # Check multiple exclamation/question marks
+    if text.count("!") >= 3 or text.count("?") >= 3:
+        return True
+
+    return False
+
+
+def extract_topic_keywords(text):
+    """Extract topic keywords from a frustrated message, stripping frustration words."""
+    words = re.findall(r"[a-zA-Z]{3,}", text.lower())
+    keywords = [w for w in words if w not in STOP_WORDS and w not in FRUSTRATION_WORDS]
+    return keywords[:8]
+
+
+def handle_frustration(prompt_text, root):
+    """When frustration detected: search brain for topic context, return STOP directive."""
+    topic_keywords = extract_topic_keywords(prompt_text)
+
+    context_lines = [
+        "## FRUSTRATION DETECTED — STOP AND REASSESS",
+        "Something is wrong with your current approach.",
+        "Do NOT continue what you were doing. Instead:",
+        "1. Review the brain context below",
+        "2. Verify your assumptions are correct",
+        "3. Present your findings to Mike BEFORE taking any action",
+        "",
+    ]
+
+    try:
+        config_path = os.path.join(root, "config.yaml")
+        with open(config_path) as f:
+            config = yaml.safe_load(f)
+
+        db_path = config["storage"]["local_db_path"]
+        if not os.path.exists(db_path):
+            return "\n".join(context_lines)
+
+        conn = sqlite3.connect(db_path)
+        conn.execute("PRAGMA busy_timeout=5000;")
+
+        # Search transcripts for topic keywords
+        if topic_keywords:
+            fts_query = " OR ".join(f'"{kw}"' for kw in topic_keywords)
+            try:
+                rows = conn.execute(
+                    """SELECT t.project, t.timestamp,
+                              substr(t.content, 1, 300) as preview
+                       FROM transcripts_fts fts
+                       JOIN transcripts t ON t.rowid = fts.rowid
+                       WHERE transcripts_fts MATCH ?
+                       ORDER BY fts.rank
+                       LIMIT 5""",
+                    (fts_query,),
+                ).fetchall()
+                if rows:
+                    context_lines.append("## Brain Context for Current Topic")
+                    for proj, ts, preview in rows:
+                        date = ts[:10] if ts else "?"
+                        text = (preview or "").replace("\n", " ").strip()
+                        context_lines.append(f"- [{date}, {proj}] {text}")
+                    context_lines.append("")
+            except Exception:
+                pass
+
+        # Get last 3 session notes for broader context
+        try:
+            notes_rows = conn.execute(
+                """SELECT notes, started_at FROM sys_sessions
+                   WHERE notes IS NOT NULL AND notes != ''
+                   ORDER BY started_at DESC LIMIT 3"""
+            ).fetchall()
+            if notes_rows:
+                context_lines.append("## Recent Session Notes")
+                for notes, date in notes_rows:
+                    d = date[:10] if date else "?"
+                    context_lines.append(f"### [{d}]")
+                    context_lines.append((notes or "")[:500])
+                    context_lines.append("")
+        except Exception:
+            pass
+
+        conn.close()
+
+    except Exception:
+        pass
+
+    return "\n".join(context_lines)
+
 
 def main():
     # Read stdin (hook protocol sends prompt data)
@@ -59,6 +199,12 @@ def main():
             elif isinstance(p, str):
                 prompt_text += p + " "
         prompt_text = prompt_text.strip()
+
+        # Frustration circuit breaker — check BEFORE length filter
+        if prompt_text and detect_frustration(prompt_text):
+            context = handle_frustration(prompt_text, root)
+            print(json.dumps({"additionalContext": context}))
+            return
 
         # Skip short/trivial prompts
         if len(prompt_text) < 15:

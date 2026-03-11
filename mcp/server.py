@@ -738,9 +738,4 @@ def get_schema() -> str:
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    try:
-        mcp.run()
-    except (KeyboardInterrupt, SystemExit):
-        pass
-    finally:
-        os._exit(0)
+    mcp.run()

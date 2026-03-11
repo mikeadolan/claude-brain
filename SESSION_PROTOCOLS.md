@@ -13,12 +13,25 @@ Do this EVERY session:
 2. Read CLAUDE_BRAIN_MVP_PLAN.txt (root) — the MASTER PROJECT PLAN with full architecture
 3. Check BUILD-PHASE DECISIONS section in tracker for recent decisions
 4. Check OPEN ITEMS in tracker for unresolved blockers
-5. Confirm current step with Mike before starting work
-6. Never re-ask locked decisions — they're in the tracker and MVP plan
-7. Never start coding without Mike's GO
-8. Read LAST SESSION notes — know what happened last time
-9. If resuming after a provider switch or long gap: use /brain-recap or /brain-history for multi-session context
-10. When Mike says "start session" or opens with a task, follow this protocol then confirm ready with a brief status line: "MEMORY.md loaded. Last session: [one-line summary]. Tracker read. Current step: [phase/step]. Ready." — do not recite the full protocol, just this confirmation.
+5. Review the session-start hook output — it injects a verification checklist, last session notes, and flagged unfinished items automatically. Do NOT skip these.
+6. If picking up unfinished work: VERIFY the premise independently before acting. Reproduce the problem. Identify which component is actually failing. Never trust prior notes blindly.
+7. Query brain MCP tools for full context — use search_transcripts, get_recent_summaries, or search_semantic as needed. Do this EVERY session, not just after gaps.
+8. Confirm current step with Mike before starting work
+9. Never re-ask locked decisions — they're in the tracker and MVP plan
+10. Never start coding without Mike's GO
+11. When Mike says "start session" or opens with a task, follow this protocol then confirm ready with a brief status line: "MEMORY.md loaded. Last session: [one-line summary]. Tracker read. Current step: [phase/step]. Ready." — do not recite the full protocol, just this confirmation.
+
+### Hook-Enforced Behaviors (automated, non-negotiable)
+
+**session-start.py** injects into every session:
+- Verification checklist (verify premises, use brain tools, don't trust notes blindly)
+- Full last session notes
+- Flagged unfinished/unverified items from last session (anything marked NOT DONE, unverified, etc.)
+- Recent session topics grouped by project
+
+**user-prompt-submit.py** runs on every message:
+- Searches brain for relevant memories based on prompt keywords
+- **Frustration circuit breaker:** If Mike's message indicates frustration (anger keywords, caps, repeated punctuation), the hook automatically searches the brain for the current topic and injects a STOP directive + brain context. This forces a reassessment instead of continuing down a wrong path.
 
 ---
 
