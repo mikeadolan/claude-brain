@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""brain_digest.py — Email digests from the claude-brain database.
+"""brain_digest.py - Email digests from the claude-brain database.
 
 Three email types:
-  Weekly digest (default) — full portfolio view, inception-to-date, trends, dormant alerts
-  Daily standup (--daily) — compact: yesterday's sessions, decisions, where you left off
-  Project deep dive (--project mb) — single project status report with full summary
+  Weekly digest (default) - full portfolio view, inception-to-date, trends, dormant alerts
+  Daily standup (--daily) - compact: yesterday's sessions, decisions, where you left off
+  Project deep dive (--project mb) - single project status report with full summary
 
 Queries brain data and sends formatted HTML email via Gmail SMTP.
 
@@ -189,7 +189,7 @@ def get_brain_totals(conn):
 
 
 def get_inception_stats(conn, labels):
-    """Inception-to-date stats per project — the full body of work."""
+    """Inception-to-date stats per project - the full body of work."""
     projects = []
     for prefix, label in labels.items():
         row = conn.execute("""
@@ -313,14 +313,14 @@ def extract_topic_from_summary(summary):
 # ---------------------------------------------------------------------------
 
 # ---------------------------------------------------------------------------
-# HTML email foundation — all inline styles (Gmail web strips <style> blocks)
+# HTML email foundation - all inline styles (Gmail web strips <style> blocks)
 # Per email-digest-design-spec.md section 5
 # ---------------------------------------------------------------------------
 
 FONT = "Arial,Helvetica,sans-serif"
 
-# Inline style constants — used directly on elements, NOT in a <style> block
-# Light mode (default) — dark mode overrides these via apply_dark_mode()
+# Inline style constants - used directly on elements, NOT in a <style> block
+# Light mode (default) - dark mode overrides these via apply_dark_mode()
 S_BODY = f"margin:0; padding:0; background-color:#f5f5f5; font-family:{FONT}; color:#1a1a1a;"
 S_CONTAINER = f"max-width:600px; margin:0 auto; background-color:#ffffff; padding:30px; font-family:{FONT};"
 S_H1 = f"color:#2d3748; border-bottom:3px solid #4a90d9; padding-bottom:12px; font-size:22px; margin-top:0; font-family:{FONT};"
@@ -344,7 +344,7 @@ S_TREND_UP = "color:#38a169;"
 S_TREND_DOWN = "color:#e53e3e;"
 S_TREND_FLAT = "color:#718096;"
 
-# Colors used inline in templates — must be overridden for dark mode
+# Colors used inline in templates - must be overridden for dark mode
 C_TEXT = "#1a1a1a"
 C_TEXT_MUTED = "#718096"
 C_TEXT_SECONDARY = "#4a5568"
@@ -408,7 +408,7 @@ def build_email_wrapper(title, preheader, content):
     - MSO conditional table wrapper for 600px max-width
     - color-scheme meta for dark mode
     - Hidden preheader div for inbox preview
-    - ALL styles inline — no <style> block (Gmail web strips it)
+    - ALL styles inline - no <style> block (Gmail web strips it)
     """
     return f"""<!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -451,7 +451,7 @@ def format_trend(current, previous):
 
 def build_email_html(conn, days, stats, prev_stats, summaries, decisions,
                      dormant, totals, labels, last_notes, inception, roadmap):
-    """Build the weekly digest HTML — BLUF first, project intelligence throughout.
+    """Build the weekly digest HTML - BLUF first, project intelligence throughout.
 
     Section order per design spec section 3:
     1. Executive Summary BLUF (the "forwardable paragraph")
@@ -505,7 +505,7 @@ def build_email_html(conn, days, stats, prev_stats, summaries, decisions,
         exec_summary += " All projects on track."
 
     # Subject line per spec: [Weekly] {range}: {headline} across {N} projects
-    title = f"Brain Digest — {period_start.strftime('%b %d')} to {now.strftime('%b %d')}"
+    title = f"Brain Digest - {period_start.strftime('%b %d')} to {now.strftime('%b %d')}"
     preheader = exec_summary[:100]
 
     content = f'<h1 style="{S_H1}">{title}</h1>'
@@ -530,9 +530,9 @@ def build_email_html(conn, days, stats, prev_stats, summaries, decisions,
             elif d_pct < 0:
                 delta_html = f'<span style="{S_TREND_DOWN}">{d_pct}%</span>'
             else:
-                delta_html = f'<span style="{S_TREND_FLAT}">—</span>'
+                delta_html = f'<span style="{S_TREND_FLAT}">-</span>'
         else:
-            delta_html = f'<span style="{S_TREND_FLAT}">—</span>'
+            delta_html = f'<span style="{S_TREND_FLAT}">-</span>'
         cur_fmt = f"{current:,}" if isinstance(current, int) and current > 999 else str(current)
         prev_fmt = f"{previous:,}" if isinstance(previous, int) and previous > 999 else str(previous)
         content += f'<tr><td style="{td}"><strong>{metric}</strong></td><td style="{td}">{cur_fmt}</td><td style="{td}">{prev_fmt}</td><td style="{td}">{delta_html}</td></tr>'
@@ -558,7 +558,7 @@ def build_email_html(conn, days, stats, prev_stats, summaries, decisions,
             status = ctx["status"] if ctx else "active"
             summary_text = ctx["summary"] if ctx else None
 
-            # RAG cell — inline background-color, NOT emoji
+            # RAG cell - inline background-color, NOT emoji
             bg, fg, rag_label = RAG_COLORS.get(health, RAG_COLORS["green"])
             rag_td = f'padding:7px 4px; background-color:{bg}; text-align:center; width:8px; border-bottom:1px solid #e2e8f0;'
 
@@ -579,11 +579,11 @@ def build_email_html(conn, days, stats, prev_stats, summaries, decisions,
                 elif t_pct < -10:
                     trend_html = f'<span style="{S_TREND_DOWN}">↓{abs(t_pct)}%</span>'
                 else:
-                    trend_html = f'<span style="{S_TREND_FLAT}">—</span>'
+                    trend_html = f'<span style="{S_TREND_FLAT}">-</span>'
             elif r["sessions"] > 0:
                 trend_html = f'<span style="{S_TREND_UP}">new</span>'
             else:
-                trend_html = f'<span style="{S_TREND_FLAT}">—</span>'
+                trend_html = f'<span style="{S_TREND_FLAT}">-</span>'
 
             # Status badge for paused projects
             status_badge = ""
@@ -615,7 +615,7 @@ def build_email_html(conn, days, stats, prev_stats, summaries, decisions,
             content += f'<div style="margin:4px 0; padding:4px 0; font-size:13px;">'
             content += f'<span style="{S_PROJ_BADGE}">{proj}</span> {acc}</div>'
 
-    # ── 5. Dormant Alerts (amber, not red — dormant ≠ blocked) ──
+    # ── 5. Dormant Alerts (amber, not red - dormant ≠ blocked) ──
     S_DORMANT = "background:#FFF3CD; border-left:4px solid #F59E0B; padding:12px 16px; margin:8px 0; font-size:13px;"
     S_DORMANT_TITLE = "color:#92400E; font-weight:600; margin-bottom:4px;"
     if dormant:
@@ -653,7 +653,7 @@ def build_email_html(conn, days, stats, prev_stats, summaries, decisions,
 
     # ── 8. Roadmap / On Deck ──
     if roadmap:
-        content += f'<h2 style="{S_H2}">On Deck — Planned Next</h2>'
+        content += f'<h2 style="{S_H2}">On Deck - Planned Next</h2>'
         for proj, items in roadmap.items():
             proj_label = labels.get(proj, proj)
             content += f'<div style="margin-top:10px;"><span style="{S_PROJ_BADGE}">{proj}</span> <strong>{proj_label}</strong></div>'
@@ -668,9 +668,9 @@ def build_email_html(conn, days, stats, prev_stats, summaries, decisions,
         content += f'<div style="{S_METRIC}"><div style="{S_METRIC_VAL}">{val}</div><div style="{S_METRIC_LBL}">{lbl}</div></div>'
     content += '</div>'
 
-    # ── 10. Inception-to-Date (reference data, bottom — with health + status) ──
+    # ── 10. Inception-to-Date (reference data, bottom - with health + status) ──
     if inception:
-        content += f'<h2 style="{S_H2}">Portfolio — Inception to Date</h2>'
+        content += f'<h2 style="{S_H2}">Portfolio - Inception to Date</h2>'
         content += f'<table style="{S_TABLE}"><tr>'
         for hdr in ["", "Project", "Status", "Sessions", "Messages", "Decisions", "Since", "Span"]:
             content += f'<th style="{S_TH}">{hdr}</th>'
@@ -682,7 +682,7 @@ def build_email_html(conn, days, stats, prev_stats, summaries, decisions,
             total_itd_sessions += p["sessions"]
             total_itd_msgs += p["messages"]
             total_itd_decisions += p["decisions"]
-            span = f'{p["span_days"]}d' if p["span_days"] else "—"
+            span = f'{p["span_days"]}d' if p["span_days"] else "-"
             td = S_TD_EVEN if i % 2 == 1 else S_TD
 
             # RAG cell
@@ -777,7 +777,7 @@ RAG_COLORS = {
 
 
 def rag_badge_html(health):
-    """Inline RAG badge using background-color on td (not emoji — per design spec)."""
+    """Inline RAG badge using background-color on td (not emoji - per design spec)."""
     bg, fg, label = RAG_COLORS.get(health or "green", RAG_COLORS["green"])
     return (f'<span style="display:inline-block; background-color:{bg}; color:{fg}; '
             f'font-weight:bold; padding:2px 10px; border-radius:3px; font-size:11px; '
@@ -785,7 +785,7 @@ def rag_badge_html(health):
 
 
 def build_daily_subject(stats, summaries, decisions):
-    """Dynamic subject line — always includes a variable per design spec."""
+    """Dynamic subject line - always includes a variable per design spec."""
     total_sessions = sum(r["sessions"] for r in stats) if stats else 0
     total_msgs = sum(r["messages"] or 0 for r in stats) if stats else 0
     num_decisions = len(decisions) if decisions else 0
@@ -793,7 +793,7 @@ def build_daily_subject(stats, summaries, decisions):
     date_str = yesterday.strftime("%b %d")
 
     if total_sessions == 0:
-        return f"[brain] Daily: Quiet day — no sessions | {date_str}"
+        return f"[brain] Daily: Quiet day - no sessions | {date_str}"
     parts = [f"{total_sessions} sessions"]
     if total_msgs:
         parts.append(f"{total_msgs:,} msgs")
@@ -803,7 +803,7 @@ def build_daily_subject(stats, summaries, decisions):
 
 
 def build_daily_html(conn, stats, summaries, decisions, labels, since):
-    """Build daily standup email — BLUF methodology, per-project structure.
+    """Build daily standup email - BLUF methodology, per-project structure.
 
     Design spec: email-digest-design-spec.md
     Key principle: answer "What should I DO today?" in the first 3 lines.
@@ -831,7 +831,7 @@ def build_daily_html(conn, stats, summaries, decisions, labels, since):
     ).fetchall()
     all_active_prefixes = {r[0]: r[1] for r in all_active}
 
-    title = f"Daily Standup — {yesterday.strftime('%A, %b %d')}"
+    title = f"Daily Standup - {yesterday.strftime('%A, %b %d')}"
 
     # 7-day rolling average for metric comparison (B1f)
     avg_since = (now - timedelta(days=8)).isoformat()
@@ -843,7 +843,7 @@ def build_daily_html(conn, stats, summaries, decisions, labels, since):
     avg_sessions_7d = round(avg_row[0] / 7, 1) if avg_row and avg_row[0] else 0
     avg_msgs_7d = round((avg_row[1] or 0) / 7) if avg_row else 0
 
-    # Build preheader — use first Pick Up Here text if available (B1e)
+    # Build preheader - use first Pick Up Here text if available (B1e)
     preheader = ""
     if not is_quiet:
         # Find first project's next step for preheader
@@ -860,7 +860,7 @@ def build_daily_html(conn, stats, summaries, decisions, labels, since):
         if not preheader:
             preheader = f"{total_sessions} sessions, {total_msgs:,} msgs yesterday"
     else:
-        preheader = "Quiet day — no sessions recorded yesterday"
+        preheader = "Quiet day - no sessions recorded yesterday"
 
     html = f'<h1 style="{S_H1}">{title}</h1>'
 
@@ -891,7 +891,7 @@ def build_daily_html(conn, stats, summaries, decisions, labels, since):
                             next_steps = f' Next: {first_line[:100]}'
                     html += f'<div style="margin:4px 0; font-size:13px; color:{C_TEXT_SECONDARY};">'
                     html += f'{rag_badge_html(ctx["health"] if ctx else "green")} '
-                    html += f'<strong>{plabel}</strong> — quiet for {quiet_days} day{"s" if quiet_days != 1 else ""}.{next_steps}</div>'
+                    html += f'<strong>{plabel}</strong> - quiet for {quiet_days} day{"s" if quiet_days != 1 else ""}.{next_steps}</div>'
     else:
         project_list = ", ".join(labels.get(r["project"], r["project"]) for r in stats)
         html += f'<p style="font-size:15px; margin:8px 0 20px 0;">'
@@ -920,7 +920,7 @@ def build_daily_html(conn, stats, summaries, decisions, labels, since):
         html += f'<strong style="font-size:15px; color:{C_HEADING};">{proj_label}</strong>'
         html += '</div>'
 
-        # Pick Up Here — from session notes "Next Step" or project summary "Next Steps"
+        # Pick Up Here - from session notes "Next Step" or project summary "Next Steps"
         next_step = None
         if proj in project_notes:
             next_step = extract_section(project_notes[proj]["notes"], "next step")
@@ -936,7 +936,7 @@ def build_daily_html(conn, stats, summaries, decisions, labels, since):
             html += "<br>".join(step_lines)
             html += '</div>'
 
-        # Blockers — from session notes or project summary "Risks & Blockers"
+        # Blockers - from session notes or project summary "Risks & Blockers"
         blockers = None
         if proj in project_notes:
             blockers = extract_section(project_notes[proj]["notes"], "blockers")
@@ -949,7 +949,7 @@ def build_daily_html(conn, stats, summaries, decisions, labels, since):
             html += "<br>".join(blocker_lines)
             html += '</div>'
 
-        # In Progress — from project summary
+        # In Progress - from project summary
         in_progress = extract_section(proj_summary, "in progress") if proj_summary else None
         if in_progress:
             progress_lines = [l.strip() for l in in_progress.split("\n") if l.strip()][:3]
@@ -958,7 +958,7 @@ def build_daily_html(conn, stats, summaries, decisions, labels, since):
             html += "<br>".join(progress_lines)
             html += '</div>'
 
-        # Yesterday's sessions — brief topic bullets
+        # Yesterday's sessions - brief topic bullets
         proj_sessions = [s for s in summaries if s["project"] == proj]
         if proj_sessions:
             html += '<div style="margin:6px 0; font-size:12px; color:#718096;">'
@@ -993,7 +993,7 @@ def build_daily_html(conn, stats, summaries, decisions, labels, since):
             html += '<h2 style="font-size:14px; margin-top:24px;">No Activity Yesterday</h2>'
             for qp, qlabel, qlast in real_quiet:
                 html += f'<div style="margin:4px 0; font-size:12px; color:#a0aec0;">'
-                html += f'<strong>{qlabel}</strong> — last session {qlast}</div>'
+                html += f'<strong>{qlabel}</strong> - last session {qlast}</div>'
 
     # ── Section 5: Metrics with 7-day average comparison (B1f) ──
     if not is_quiet:
@@ -1087,14 +1087,14 @@ def get_project_deep_dive_data(conn, prefix, days=7):
 
 
 def build_project_subject(data):
-    """Dynamic subject per spec section 6 — kept under 50 chars for mobile."""
+    """Dynamic subject per spec section 6 - kept under 50 chars for mobile."""
     bg, fg, rag_word = RAG_COLORS.get(data["health"], RAG_COLORS["green"])
     date_str = datetime.now().strftime("%b %d")
-    return f"[{data['prefix']}] {rag_word} — {data['label'][:20]} | {date_str}"
+    return f"[{data['prefix']}] {rag_word} - {data['label'][:20]} | {date_str}"
 
 
 def build_project_html(data, days):
-    """Build project deep dive email — richest use of project_registry.summary.
+    """Build project deep dive email - richest use of project_registry.summary.
 
     Section order per design spec section 4:
     1. Header + RAG badge
@@ -1111,12 +1111,12 @@ def build_project_html(data, days):
     now = datetime.now()
     summary = data["summary"] or ""
 
-    # Preheader — first sentence of ## Summary
+    # Preheader - first sentence of ## Summary
     summary_text = extract_section(summary, "summary") or ""
     first_sentence = summary_text.split(".")[0] + "." if "." in summary_text else summary_text[:100]
     preheader = first_sentence[:100]
 
-    title = f"{data['label']} — Project Status"
+    title = f"{data['label']} - Project Status"
 
     # ── 1. Header + RAG badge ──
     content = f'<div style="margin-bottom:16px;">'
@@ -1149,12 +1149,12 @@ def build_project_html(data, days):
         elif trend_pct < 0:
             trend_html = f'<span style="{S_TREND_DOWN}">{trend_pct}%</span>'
         else:
-            trend_html = f'<span style="{S_TREND_FLAT}">—</span>'
+            trend_html = f'<span style="{S_TREND_FLAT}">-</span>'
     else:
-        trend_html = f'<span style="{S_TREND_FLAT}">—</span>'
+        trend_html = f'<span style="{S_TREND_FLAT}">-</span>'
 
     # Freshness
-    freshness = "—"
+    freshness = "-"
     if data["summary_updated_at"]:
         try:
             updated_dt = datetime.strptime(data["summary_updated_at"][:10], "%Y-%m-%d")
@@ -1248,7 +1248,7 @@ def build_test_html():
         content += f'<div style="{S_METRIC}"><div style="{S_METRIC_VAL}">OK</div><div style="{S_METRIC_LBL}">{lbl}</div></div>'
     content += '</div>'
     content += f'<div style="{S_FOOTER}">Generated by claude-brain v0.1 &middot; {now.strftime("%Y-%m-%d %H:%M")}</div>'
-    return build_email_wrapper("Brain Digest — Test", "Testing email delivery", content)
+    return build_email_wrapper("Brain Digest - Test", "Testing email delivery", content)
 
 
 # ---------------------------------------------------------------------------
@@ -1330,7 +1330,7 @@ def main():
 
     if args.test:
         html = build_test_html()
-        subject = "Brain Digest — Test"
+        subject = "Brain Digest - Test"
         ok = send_email(config, subject, html, dry_run=args.dry_run)
         sys.exit(0 if ok else 1)
 

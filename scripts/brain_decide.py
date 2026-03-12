@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-brain_decide.py — Fast decision lookup by number or keyword.
+brain_decide.py - Fast decision lookup by number or keyword.
 
 Looks up locked decisions from the brain database. Accepts a decision
 number for exact lookup or a keyword string for search.
@@ -116,7 +116,7 @@ def print_search_results(rows, query):
         short = desc.strip().split("\n")[0]
         if len(short) > 120:
             short = short[:117] + "..."
-        print(f"  #{num} [{project}] — {short} ({date})")
+        print(f"  #{num} [{project}] - {short} ({date})")
 
 
 # ---------------------------------------------------------------------------

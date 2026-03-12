@@ -2,14 +2,14 @@
 
 **Created:** 2026-03-09
 **Purpose:** Convert all .sh hooks and scripts to .py for cross-platform support (Linux + Mac + Windows)
-**Status:** COMPLETE — all phases A-F done, merged to main, pushed to GitHub (2026-03-09)
+**Status:** COMPLETE - all phases A-F done, merged to main, pushed to GitHub (2026-03-09)
 
 ---
 
 ## SAFETY
 
-- **Git backup branch:** `main-backup-pre-migration` — full snapshot including config.yaml and settings.json copy
-- **Work branch:** `migration/bash-to-python` — all changes happen here
+- **Git backup branch:** `main-backup-pre-migration` - full snapshot including config.yaml and settings.json copy
+- **Work branch:** `migration/bash-to-python` - all changes happen here
 - **Main branch:** UNTOUCHED until everything is tested, audited, and locked
 - **Rollback:** `git checkout main` + restore settings.json = working brain in 10 seconds
 - **Database:** Not touched in this migration. Dropbox backup covers it.
@@ -21,24 +21,24 @@
 
 | # | Step | Status | Notes |
 |---|------|--------|-------|
-| A.1 | Commit any uncommitted changes to main | [x] | 958e7db — migration doc + competitive analysis script |
-| A.2 | Create `main-backup-pre-migration` branch with config.yaml + settings.json copy | [x] | dc968d9 — config.yaml + settings.json.backup |
+| A.1 | Commit any uncommitted changes to main | [x] | 958e7db - migration doc + competitive analysis script |
+| A.2 | Create `main-backup-pre-migration` branch with config.yaml + settings.json copy | [x] | dc968d9 - config.yaml + settings.json.backup |
 | A.3 | Return to main, create `migration/bash-to-python` branch | [x] | On branch, clean working tree |
 | A.4 | This document committed to work branch | [x] | Phase A marked complete |
 
 ---
 
-## PHASE B: CONVERT SCRIPTS (one at a time — write, test, compare, audit, lock)
+## PHASE B: CONVERT SCRIPTS (one at a time - write, test, compare, audit, lock)
 
 Order matters. brain_sync must come before session-end (which calls it).
 
-### B.1: stop.sh → stop.py (simplest — 37 lines, standalone)
+### B.1: stop.sh → stop.py (simplest - 37 lines, standalone)
 
 | Step | Status | Notes |
 |------|--------|-------|
 | Write hooks/stop.py | [x] | 53 lines, clean Python |
 | Manual test: `echo '{}' \| python3 hooks/stop.py` | [x] | Outputs `{}` |
-| Compare output to: `echo '{}' \| bash hooks/stop.sh` | [x] | Both output `{}` — identical |
+| Compare output to: `echo '{}' \| bash hooks/stop.sh` | [x] | Both output `{}` - identical |
 | Verify write_exchange.py was called (check DB or logs) | [x] | JSONL detection verified: finds same file + session ID as .sh |
 | Audit: code review stop.py vs stop.sh logic | [x] | 8/8 lines mapped, path encoding verified identical |
 | **LOCKED** | [x] | |
@@ -79,7 +79,7 @@ Order matters. brain_sync must come before session-end (which calls it).
 |------|--------|-------|
 | Write hooks/session-end.py | [x] | 80 lines, calls brain_sync.py |
 | Manual test: `echo '{}' \| python3 hooks/session-end.py` | [x] | Outputs `{}` |
-| Compare output to: `echo '{}' \| bash hooks/session-end.sh` | [x] | Both output `{}` — identical |
+| Compare output to: `echo '{}' \| bash hooks/session-end.sh` | [x] | Both output `{}` - identical |
 | Verify generate_summary.py was called | [x] | Runs without error |
 | Verify brain_sync.py was called (new backup exists) | [x] | Log confirms: 14:27:18 "Integrity check passed" |
 | Audit: code review session-end.py vs session-end.sh logic | [x] | 9/9 lines mapped. Project detection verified: both return `mb` |
@@ -105,7 +105,7 @@ Order matters. brain_sync must come before session-end (which calls it).
 | **LOCKED** | [x] | |
 
 **Key translations:**
-- Bash wrapper is thin — the inline Python heredoc becomes the actual script
+- Bash wrapper is thin - the inline Python heredoc becomes the actual script
 - `python3 "$ROOT/scripts/startup_check.py"` → `subprocess.run()`
 - Fallback JSON logic (bash `if -z`) → Python try/except already handles it
 
@@ -118,12 +118,12 @@ Order matters. brain_sync must come before session-end (which calls it).
 | Write hooks/user-prompt-submit.py | [x] | 148 lines, same logic as inline heredoc |
 | Manual test with sample prompt: `echo '{"user_prompt":"test search query for chapter"}' \| python3 hooks/user-prompt-submit.py` | [x] | Returns relevant memories JSON |
 | Compare output to same input via .sh | [x] | Byte-for-byte identical (diff returned nothing) |
-| Test with short prompt (<15 chars): `echo '{"user_prompt":"hi"}' \| python3 hooks/user-prompt-submit.py` | [x] | Returns `{}` — both versions match |
+| Test with short prompt (<15 chars): `echo '{"user_prompt":"hi"}' \| python3 hooks/user-prompt-submit.py` | [x] | Returns `{}` - both versions match |
 | Audit: code review user-prompt-submit.py vs user-prompt-submit.sh logic | [x] | Same STOP_WORDS, FTS5, project bias, dedup. Empty input also tested. |
 | **LOCKED** | [x] | |
 
 **Key translations:**
-- Bash wrapper is thin — the inline Python heredoc becomes the actual script
+- Bash wrapper is thin - the inline Python heredoc becomes the actual script
 - `INPUT=$(cat)` → `sys.stdin.read()`
 - Fallback JSON logic → Python try/except already handles it
 
@@ -142,7 +142,7 @@ Only after ALL Phase B steps are LOCKED.
 | C.5 | `scripts/write_session_notes.py` (line 6) | Comment: `session-start.sh` → `session-start.py` | [x] |
 | C.6 | `scripts/generate_summary.py` (line 10) | Comment: `session-end.sh` → `session-end.py` | [x] |
 | C.7 | `config.yaml.example` (line 242) | `brain_sync.sh` → `brain_sync.py` | [x] |
-| C.8 | Test: run `brain_health.py` — hook check validates .py names | [x] | Hooks FAIL expected: settings.json still has .sh (Phase D fixes this). All other checks pass. |
+| C.8 | Test: run `brain_health.py` - hook check validates .py names | [x] | Hooks FAIL expected: settings.json still has .sh (Phase D fixes this). All other checks pass. |
 | C.9 | Audit: grep entire repo for `.sh` refs AND `bash` as interpreter | [x] | 1 extra fix: startup_check.py:171 stale comment. Old .sh files + competitive analysis doc = safe (expected). |
 | **LOCKED** | | | [x] |
 
@@ -152,13 +152,13 @@ Only after ALL Phase B steps are LOCKED.
 
 | # | Step | Status | Notes |
 |---|------|--------|-------|
-| D.1 | Update `~/.claude/settings.json` — all 4 hooks from `.sh` to `.py` | [x] | All 4: bash→python3, .sh→.py |
-| D.2 | End session — `session-end.py` fires (live test) | [x] | Notes + summary + backup present for session 566dfb2c |
-| D.3 | Start new session — `session-start.py` fires (live test) | [x] | "SessionStart:startup hook success" confirmed |
-| D.4 | Type a prompt — `user-prompt-submit.py` fires (live test) | [x] | "UserPromptSubmit hook success" confirmed |
-| D.5 | Get a response — `stop.py` fires (live test) | [x] | Session a376ea56 created with 53 transcripts |
+| D.1 | Update `~/.claude/settings.json` - all 4 hooks from `.sh` to `.py` | [x] | All 4: bash→python3, .sh→.py |
+| D.2 | End session - `session-end.py` fires (live test) | [x] | Notes + summary + backup present for session 566dfb2c |
+| D.3 | Start new session - `session-start.py` fires (live test) | [x] | "SessionStart:startup hook success" confirmed |
+| D.4 | Type a prompt - `user-prompt-submit.py` fires (live test) | [x] | "UserPromptSubmit hook success" confirmed |
+| D.5 | Get a response - `stop.py` fires (live test) | [x] | Session a376ea56 created with 53 transcripts |
 | D.6 | All 4 hooks verified live | [x] | |
-| D.7 | Re-run `brain_health.py` — hooks check must now PASS (9/9) | [x] | 8/9 PASS, hooks 4/4 PASS. 1 WARN = embeddings 52% (pre-existing) |
+| D.7 | Re-run `brain_health.py` - hooks check must now PASS (9/9) | [x] | 8/9 PASS, hooks 4/4 PASS. 1 WARN = embeddings 52% (pre-existing) |
 | **LOCKED** | | | [x] |
 
 **If any hook fails:** Change that one line in settings.json back to `.sh`. Fix the `.py` bug. Re-test. Try again.
@@ -180,7 +180,7 @@ Only after Phase D is LOCKED (all hooks live and verified).
 | E.7 | `verification/SCRIPT_CONTRACTS.md` | [x] |
 | E.8 | `NEXT_SESSION_START_PROMPT.txt` | [x] |
 | E.9 | `BRAIN_BRAINSTORMING_IDEAS.md` | [x] |
-| E.10 | Audit: grep entire repo for `.sh` — clean. Remaining refs in: migration doc (expected), PROJECT_TRACKER (historical), MVP_PLAN (versioned/frozen), config.yaml fixed | [x] |
+| E.10 | Audit: grep entire repo for `.sh` - clean. Remaining refs in: migration doc (expected), PROJECT_TRACKER (historical), MVP_PLAN (versioned/frozen), config.yaml fixed | [x] |
 | **LOCKED** | | [x] |
 
 ---
@@ -195,8 +195,8 @@ Only after Phase D is LOCKED (all hooks live and verified).
 | F.4 | Delete `hooks/session-end.sh` | [x] | Deleted |
 | F.5 | Delete `scripts/brain_sync.sh` | [x] | Deleted |
 | F.6 | Full lifecycle test (start → prompt → response → end) | [x] | 4/4 hooks verified live. stop.py: 30 transcripts in DB. session-end.py: exit 0. brain_health: 8/9→9/9 PASS |
-| F.7 | Commit all changes on migration branch | [x] | 68de212 — 19 files changed, 109 insertions, 591 deletions |
-| F.8 | Merge `migration/bash-to-python` → `main` | [x] | 31efb0a — clean merge, zero conflicts |
+| F.7 | Commit all changes on migration branch | [x] | 68de212 - 19 files changed, 109 insertions, 591 deletions |
+| F.8 | Merge `migration/bash-to-python` → `main` | [x] | 31efb0a - clean merge, zero conflicts |
 | F.9 | Push to GitHub | [x] | e9bf822..31efb0a main → main |
 | F.10 | Verify `main-backup-pre-migration` branch exists on GitHub as rollback | [x] | Pushed to origin. All .sh files + config.yaml + settings.json.backup preserved |
 | **DONE** | | | [x] |

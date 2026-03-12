@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-ingest_jsonl.py — Core JSONL ingestion engine for claude-brain.
+ingest_jsonl.py - Core JSONL ingestion engine for claude-brain.
 
 Parses Claude Code JSONL session files, maps projects, deduplicates,
 and writes to SQLite (sys_sessions, transcripts, sys_ingest_log, tool_results).
@@ -334,7 +334,7 @@ def ingest_jsonl_file(conn, file_path, project, file_type, logger):
                 if conn.total_changes > changes_before:
                     records_imported += 1
             except sqlite3.IntegrityError:
-                # Duplicate uuid — silent skip per contract
+                # Duplicate uuid - silent skip per contract
                 pass
 
     # Write session rows

@@ -1,4 +1,4 @@
-# CLAUDE-BRAIN — SCRIPT CONTRACTS
+# CLAUDE-BRAIN - SCRIPT CONTRACTS
 
 **Created:** 2026-03-03
 **Last Updated:** 2026-03-03
@@ -41,7 +41,7 @@
 
 ### Dependencies
 - Python 3.14.3, stdlib only + PyYAML + sqlite3
-- ChromaDB: **BLOCKED** — incompatible with Python 3.14 (pydantic v1 crash)
+- ChromaDB: **BLOCKED** - incompatible with Python 3.14 (pydantic v1 crash)
   - All semantic search code must be gated behind `try/except ImportError`
   - Scripts must work fully without ChromaDB installed
   - See BLOCKER section at end of this document
@@ -80,8 +80,8 @@ Stdout:
 
 **Project detection (in priority order):**
 1. `--project` argument (if given)
-2. `jsonl_project_mapping` in config — match folder name from file path (Windows archive)
-3. `jsonl_project_mapping` in config — match `cwd` field from first JSONL line (Fedora sessions)
+2. `jsonl_project_mapping` in config - match folder name from file path (Windows archive)
+3. `jsonl_project_mapping` in config - match `cwd` field from first JSONL line (Fedora sessions)
 4. Default: `"oth"`
 
 **Mapping match order matters:** For Fedora cwd matching, longer/more-specific paths match first. `johnny-goods-assistant` must match before `johnny-goods`.
@@ -114,7 +114,7 @@ Stdout:
 | type | `.type` ("user", "assistant", "system") |
 | subtype | `.subtype` (system messages only, else NULL) |
 | role | `.message.role` |
-| content | `.message.content` — see Content Extraction below |
+| content | `.message.content` - see Content Extraction below |
 | model | `.message.model` (assistant only, else NULL) |
 | timestamp | `.timestamp` |
 | token_input | `.message.usage.input_tokens` (if present, else NULL) |
@@ -486,7 +486,7 @@ Stdout:
 ## 9. HOOK CONTRACTS
 
 All hooks are Python scripts. They read JSON from stdin and write JSON to stdout.
-Claude Code manages the hook lifecycle — scripts just respond.
+Claude Code manages the hook lifecycle - scripts just respond.
 
 ### Common Hook Pattern
 
@@ -522,7 +522,7 @@ not the final JSON must go to stderr or log files.
 | Stdin | `{}` (empty JSON) |
 | Stdout | `{"additionalContext": "..."}` |
 | Calls | `scripts/startup_check.py` (stderr/log only), then queries `sys_sessions.notes` |
-| Blocking | Yes — Claude waits for this to finish |
+| Blocking | Yes - Claude waits for this to finish |
 
 **Stdout content:** Recent session notes (last 5 per project, configurable),
 formatted as markdown text in `additionalContext`.
@@ -546,7 +546,7 @@ formatted as markdown text in `additionalContext`.
 | Stdin | `{"user_prompt":"user's message text"}` |
 | Stdout | `{"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":"..."}}` |
 | Calls | Semantic search (if enabled) against prompt text |
-| Blocking | Yes — runs before message reaches Claude |
+| Blocking | Yes - runs before message reaches Claude |
 
 **Stdout content:** Top 3 relevant memories from semantic search (or FTS5 fallback).
 
@@ -571,7 +571,7 @@ If semantic search is disabled/broken: return `{}` or FTS5 results.
 | Stdin | `{}` (session metadata) |
 | Stdout | `{}` |
 | Calls | `scripts/write_exchange.py` |
-| Blocking | No — should run fast, but does not block next prompt |
+| Blocking | No - should run fast, but does not block next prompt |
 
 **Key requirement:** Must determine current session ID and JSONL path from
 environment or Claude Code metadata. Pass to write_exchange.py.
@@ -589,7 +589,7 @@ environment or Claude Code metadata. Pass to write_exchange.py.
 | Stdin | `{}` (session metadata) |
 | Stdout | `{}` |
 | Calls | `scripts/brain_sync.py` (detached via Popen) |
-| Blocking | N/A — session is ending |
+| Blocking | N/A - session is ending |
 
 **Note:** May not fire on terminal close. Data integrity guaranteed by
 stop.py having captured all exchanges already.

@@ -10,16 +10,16 @@ PROJECT="$(basename "$PWD")"
 mkdir -p "$LOGDIR/$PROJECT"
 
 # ---------------------------------------------------------------------------
-# Token monitor — live token usage in terminal title + desktop notifications
+# Token monitor - live token usage in terminal title + desktop notifications
 #
-# Reads Claude Code debug log (effectiveWindow is dynamic — works for both
+# Reads Claude Code debug log (effectiveWindow is dynamic - works for both
 # 200K Max and 1M Bedrock automatically). Zero API tokens.
 #
 # Warning zones:
-#   Normal  (< 70%)  — title shows usage quietly
-#   Warm    (70-80%)  — title adds ⚠, ONE yellow desktop popup
-#   Hot     (80-90%)  — title adds 🔴, red popup every 60s
-#   Critical(> 90% or free < 30K) — title shows END SESSION, red popup every 60s
+#   Normal  (< 70%)  - title shows usage quietly
+#   Warm    (70-80%)  - title adds ⚠, ONE yellow desktop popup
+#   Hot     (80-90%)  - title adds 🔴, red popup every 60s
+#   Critical(> 90% or free < 30K) - title shows END SESSION, red popup every 60s
 #
 # End-session reserve: ~25K tokens needed for notes + summary + governance + git
 # ---------------------------------------------------------------------------
@@ -57,7 +57,7 @@ monitor_tokens() {
 
                     # ── Critical: > 90% OR free < end-session reserve ──
                     if [ "$PCT" -ge 90 ] || [ "$FREE" -lt "$END_SESSION_RESERVE" ]; then
-                        printf '\033]0;🔴 END SESSION NOW — %dK free — %s\007' \
+                        printf '\033]0;🔴 END SESSION NOW - %dK free - %s\007' \
                             "$FREE_K" "$PROJECT"
                         # Red popup every 60 seconds
                         if [ "$((NOW - LAST_CRITICAL_NOTIFY))" -ge 60 ]; then
@@ -70,23 +70,23 @@ monitor_tokens() {
 
                     # ── Hot: 80-90% ──
                     elif [ "$PCT" -ge 80 ]; then
-                        printf '\033]0;🔴 %s — %dK / %dK (%d%%) — %dK free — END SOON\007' \
+                        printf '\033]0;🔴 %s - %dK / %dK (%d%%) - %dK free - END SOON\007' \
                             "$PROJECT" "$TOKENS_K" "$USABLE_K" "$PCT" "$FREE_K"
                         if [ "$WARNED_80" -eq 0 ]; then
                             notify-send --urgency=critical \
-                                "🔴 Token Warning — 80%" \
-                                "${TOKENS_K}K / ${USABLE_K}K used (${PCT}%)\n${FREE_K}K remaining\nStart wrapping up — say 'end session' soon" \
+                                "🔴 Token Warning - 80%" \
+                                "${TOKENS_K}K / ${USABLE_K}K used (${PCT}%)\n${FREE_K}K remaining\nStart wrapping up - say 'end session' soon" \
                                 2>/dev/null
                             WARNED_80=1
                         fi
 
                     # ── Warm: 70-80% ──
                     elif [ "$PCT" -ge 70 ]; then
-                        printf '\033]0;⚠ %s — %dK / %dK (%d%%) — %dK free\007' \
+                        printf '\033]0;⚠ %s - %dK / %dK (%d%%) - %dK free\007' \
                             "$PROJECT" "$TOKENS_K" "$USABLE_K" "$PCT" "$FREE_K"
                         if [ "$WARNED_70" -eq 0 ]; then
                             notify-send --urgency=normal \
-                                "⚠ Token Usage — 70%" \
+                                "⚠ Token Usage - 70%" \
                                 "${TOKENS_K}K / ${USABLE_K}K used (${PCT}%)\n${FREE_K}K remaining\nPlenty of room, but be aware" \
                                 2>/dev/null
                             WARNED_70=1
@@ -94,7 +94,7 @@ monitor_tokens() {
 
                     # ── Normal: < 70% ──
                     else
-                        printf '\033]0;%s — %dK / %dK (%d%%) — %dK free\007' \
+                        printf '\033]0;%s - %dK / %dK (%d%%) - %dK free\007' \
                             "$PROJECT" "$TOKENS_K" "$USABLE_K" "$PCT" "$FREE_K"
                     fi
                 fi

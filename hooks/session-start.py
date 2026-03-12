@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""session-start.py — Claude Code SessionStart hook for claude-brain.
+"""session-start.py - Claude Code SessionStart hook for claude-brain.
 
 Fires once when a Claude Code session starts.
 1. Runs startup_check.py (scan for new JSONL, ingest, backup)
@@ -25,8 +25,8 @@ def main():
 
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-    # 1. Run startup check — ingest new files, verify folders, backup DB
-    #    stdout/stderr suppressed — hook stdout is SACRED (JSON only)
+    # 1. Run startup check - ingest new files, verify folders, backup DB
+    #    stdout/stderr suppressed - hook stdout is SACRED (JSON only)
     try:
         subprocess.run(
             [sys.executable, os.path.join(root, "scripts", "startup_check.py")],
@@ -52,12 +52,12 @@ def main():
 
         lines = []
 
-        # Verification checklist — always first, non-negotiable
+        # Verification checklist - always first, non-negotiable
         lines.append("## Session Start Checklist")
         lines.append("- **MANDATORY: Search the brain AND web (search_transcripts, search_semantic, get_recent_summaries, exa-search) BEFORE your first substantive response.** This is Rule #1. Brain has 24,000+ transcripts. Exa has the entire web. Use BOTH.")
         lines.append("- Before acting on inherited work: verify the premise independently")
         lines.append("- Before debugging: identify WHICH component is actually failing")
-        lines.append("- Do NOT trust prior session notes blindly — they may contain wrong assumptions")
+        lines.append("- Do NOT trust prior session notes blindly - they may contain wrong assumptions")
         lines.append("")
 
         # Get last session notes (most valuable context for continuity)

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-server.py — MCP server for claude-brain.
+server.py - MCP server for claude-brain.
 
 Read-only access to the claude-brain SQLite database.
 All writes are handled by hooks and scripts.
@@ -25,7 +25,7 @@ import sys
 import yaml
 from mcp.server.fastmcp import FastMCP
 
-# fuzzy_search is in scripts/ — add to path
+# fuzzy_search is in scripts/ - add to path
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 from scripts.fuzzy_search import fuzzy_correct
 
@@ -50,7 +50,7 @@ def get_db():
     conn.execute("PRAGMA busy_timeout=5000;")
     return conn
 
-# Semantic search — SQLite + numpy (Decision 89)
+# Semantic search - SQLite + numpy (Decision 89)
 SEMANTIC_AVAILABLE = False
 _embed_model = None
 try:
@@ -124,7 +124,7 @@ def get_profile() -> str:
 @mcp.tool()
 def get_project_state(project: str) -> str:
     """Returns recent decisions and key facts for a given project.
-    Args: project — project prefix (jg, mb, gen, js, lt, jga, oth)."""
+    Args: project - project prefix (jg, mb, gen, js, lt, jga, oth)."""
     conn = get_db()
     try:
         decisions = conn.execute(
@@ -279,12 +279,12 @@ def search_transcripts(
     recency_bias: bool = False,
 ) -> str:
     """FTS5 full-text search across all conversation transcripts.
-    Args: query — search terms (natural language or FTS5 syntax),
-    project — filter by prefix (optional),
-    limit — max results (default 20), recency_bias — weight newer results higher."""
+    Args: query - search terms (natural language or FTS5 syntax),
+    project - filter by prefix (optional),
+    limit - max results (default 20), recency_bias - weight newer results higher."""
     conn = get_db()
     try:
-        # FTS5 syntax passthrough — no fuzzy correction
+        # FTS5 syntax passthrough - no fuzzy correction
         if _is_fts5_syntax(query):
             fts_query = query.replace("'", "")
             rows = _run_fts_query(conn, fts_query, project, limit, recency_bias)
@@ -320,7 +320,7 @@ def search_transcripts(
 @mcp.tool()
 def get_session(session_id: str) -> str:
     """Returns the full transcript for a single session, ordered by timestamp.
-    Args: session_id — the session UUID."""
+    Args: session_id - the session UUID."""
     conn = get_db()
     try:
         rows = conn.execute(
@@ -365,7 +365,7 @@ def get_session(session_id: str) -> str:
 @mcp.tool()
 def get_recent_sessions(project: str | None = None, count: int = 10) -> str:
     """Lists recent sessions with metadata.
-    Args: project — filter by prefix (optional), count — max sessions (default 10)."""
+    Args: project - filter by prefix (optional), count - max sessions (default 10)."""
     conn = get_db()
     try:
         if project:
@@ -405,7 +405,7 @@ def get_recent_sessions(project: str | None = None, count: int = 10) -> str:
 @mcp.tool()
 def lookup_decision(project: str, topic: str) -> str:
     """Finds decisions by keyword search. Recency bias is always OFF for decisions.
-    Args: project — project prefix, topic — keyword to search."""
+    Args: project - project prefix, topic - keyword to search."""
     conn = get_db()
     try:
         rows = conn.execute(
@@ -445,8 +445,8 @@ def lookup_fact(
     recency_bias: bool = True,
 ) -> str:
     """Finds project-specific facts by category and/or key.
-    Args: project — project prefix, category — filter (character, location, etc.),
-    key — specific fact key, recency_bias — weight newer facts higher (default True)."""
+    Args: project - project prefix, category - filter (character, location, etc.),
+    key - specific fact key, recency_bias - weight newer facts higher (default True)."""
     conn = get_db()
     try:
         conditions = ["project = ?"]
@@ -498,7 +498,7 @@ def lookup_fact(
 @mcp.tool()
 def get_recent_summaries(project: str | None = None, count: int = 5) -> str:
     """Returns the last N session notes for fast context loading.
-    Args: project — filter by prefix (optional), count — max notes (default 5)."""
+    Args: project - filter by prefix (optional), count - max notes (default 5)."""
     conn = get_db()
     try:
         if project:
@@ -524,7 +524,7 @@ def get_recent_summaries(project: str | None = None, count: int = 5) -> str:
         lines = [f"## Session Notes ({len(rows)})", ""]
         for row in rows:
             date = row["started_at"][:10] if row["started_at"] else "?"
-            lines.append(f"### [{date}] {row['project']} — {row['session_id'][:12]}...")
+            lines.append(f"### [{date}] {row['project']} - {row['session_id'][:12]}...")
             lines.append(row["notes"] or "(empty)")
             lines.append("")
 
@@ -544,7 +544,7 @@ def search_semantic(
 ) -> str:
     """Searches by meaning using vector embeddings (SQLite + numpy).
     Example: 'illegal gambling' finds 'ran numbers on Pleasant Ave'.
-    Args: query — natural language query, project — filter (optional), limit — max results."""
+    Args: query - natural language query, project - filter (optional), limit - max results."""
     sem_config = CONFIG.get("semantic_search", {})
     if not sem_config.get("enabled", False):
         return "Semantic search is not enabled. Set semantic_search.enabled=true in config.yaml."
@@ -656,7 +656,7 @@ def get_status() -> str:
         embeddings = conn.execute("SELECT COUNT(*) as c FROM transcript_embeddings").fetchone()["c"]
         sem_status = "enabled" if sem_enabled else "disabled"
         if sem_enabled and not SEMANTIC_AVAILABLE:
-            sem_status += " (unavailable — sentence-transformers not installed)"
+            sem_status += " (unavailable - sentence-transformers not installed)"
         sem_status += f" ({embeddings} embeddings)"
 
         lines = [

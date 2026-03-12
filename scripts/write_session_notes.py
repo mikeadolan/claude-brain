@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-write_session_notes.py — Store session notes in the brain database.
+write_session_notes.py - Store session notes in the brain database.
 
 Replaces the LAST SESSION block in MEMORY.md. Notes are written to
 sys_sessions.notes and read by session-start.py on next session start.

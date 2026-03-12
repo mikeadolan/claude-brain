@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-brain_search.py — Raw transcript search against the brain database.
+brain_search.py - Raw transcript search against the brain database.
 
 Returns matching results like a search engine: timestamp, session ID,
 project prefix, and excerpt. No synthesis, no AI summary.
@@ -320,7 +320,7 @@ def main():
                 ts = format_timestamp(timestamp)
                 sid = session_id[:8] if session_id else "unknown"
                 excerpt = make_excerpt(content, keywords)
-                print(f'{ts} Session {sid} ({project}) — "{excerpt}"')
+                print(f'{ts} Session {sid} ({project}) - "{excerpt}"')
 
             print()
 
@@ -347,7 +347,7 @@ def main():
                     ts = format_timestamp(timestamp)
                     sid = session_id[:8] if session_id else "unknown"
                     excerpt = make_excerpt(content, keywords, 200)
-                    print(f'{ts} Session {sid} ({project}) [sim={sim:.3f}] — "{excerpt}"')
+                    print(f'{ts} Session {sid} ({project}) [sim={sim:.3f}] - "{excerpt}"')
 
                 print()
 

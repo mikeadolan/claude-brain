@@ -18,7 +18,7 @@ import sqlite3
 from difflib import get_close_matches
 
 # ---------------------------------------------------------------------------
-# Stop words — superset from all search files
+# Stop words - superset from all search files
 # ---------------------------------------------------------------------------
 STOP_WORDS = {
     "a", "an", "the", "is", "are", "was", "were", "be", "been", "being",
@@ -180,14 +180,14 @@ def fuzzy_correct(terms: list[str], db_path: str) -> tuple[list[str], dict[str, 
             cand_freq = freq.get(candidate, 0)
 
             if term_freq == 0:
-                # Term not in vocab at all — correct to any established match
+                # Term not in vocab at all - correct to any established match
                 if cand_freq >= _CANDIDATE_DOC_MIN:
                     corrected.append(candidate)
                     corrections[term] = candidate
                     found = True
                     break
             else:
-                # Term is in vocab but rare — need overwhelming freq difference
+                # Term is in vocab but rare - need overwhelming freq difference
                 if cand_freq >= term_freq * _RATIO_THRESHOLD:
                     corrected.append(candidate)
                     corrections[term] = candidate

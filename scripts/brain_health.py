@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-brain_health.py — 9-point health check for claude-brain.
+brain_health.py - 9-point health check for claude-brain.
 
 Performs a comprehensive diagnostic of the brain system and outputs
-a clear terminal report with PASS/WARN/FAIL indicators. Diagnosis only — no fixes.
+a clear terminal report with PASS/WARN/FAIL indicators. Diagnosis only - no fixes.
 
 Usage:
     python3 brain_health.py [--json]
@@ -48,12 +48,12 @@ def connect_db(db_path):
 
 
 # ---------------------------------------------------------------------------
-# Check functions — each returns (status, summary_line, details_dict)
+# Check functions - each returns (status, summary_line, details_dict)
 # status: "PASS", "WARN", "FAIL"
 # ---------------------------------------------------------------------------
 
 def check_database(config):
-    """1. DATABASE — file size, integrity_check, WAL status, freelist_count."""
+    """1. DATABASE - file size, integrity_check, WAL status, freelist_count."""
     db_path = config["storage"]["local_db_path"]
     details = {"db_path": db_path}
 
@@ -95,7 +95,7 @@ def check_database(config):
 
 
 def check_space(config):
-    """2. SPACE BREAKDOWN — size of raw_json, content, embeddings, tool_results."""
+    """2. SPACE BREAKDOWN - size of raw_json, content, embeddings, tool_results."""
     db_path = config["storage"]["local_db_path"]
     details = {}
 
@@ -160,7 +160,7 @@ def check_space(config):
 
 
 def check_data_health(config):
-    """3. DATA HEALTH — FTS5 sync, embedding coverage, summary coverage."""
+    """3. DATA HEALTH - FTS5 sync, embedding coverage, summary coverage."""
     db_path = config["storage"]["local_db_path"]
     details = {}
 
@@ -186,7 +186,7 @@ def check_data_health(config):
         else:
             issues.append(f"FTS5 synced ({transcript_count})")
 
-        # Embedding coverage — count content messages with 50+ chars
+        # Embedding coverage - count content messages with 50+ chars
         content_msgs = conn.execute(
             "SELECT COUNT(*) FROM transcripts WHERE LENGTH(content) >= 50"
         ).fetchone()[0]
@@ -233,7 +233,7 @@ def check_data_health(config):
 
 
 def check_backup(config):
-    """4. BACKUP — exists? age? integrity? row count delta vs main DB?"""
+    """4. BACKUP - exists? age? integrity? row count delta vs main DB?"""
     backup_dir = os.path.join(ROOT_PATH, "db-backup")
     details = {"backup_dir": backup_dir}
 
@@ -309,7 +309,7 @@ def check_backup(config):
 
 
 def check_performance(config):
-    """5. PERFORMANCE — timed FTS5 query, timed LIKE query, timed COUNT(*)."""
+    """5. PERFORMANCE - timed FTS5 query, timed LIKE query, timed COUNT(*)."""
     db_path = config["storage"]["local_db_path"]
     details = {}
 
@@ -348,7 +348,7 @@ def check_performance(config):
 
 
 def check_dependencies():
-    """6. DEPENDENCIES — check: yaml, sqlite3, sentence_transformers, numpy importable?"""
+    """6. DEPENDENCIES - check: yaml, sqlite3, sentence_transformers, numpy importable?"""
     packages = {
         "yaml": "PyYAML",
         "sqlite3": "sqlite3",
@@ -374,7 +374,7 @@ def check_dependencies():
 
 
 def check_mcp_server(config):
-    """7. MCP SERVER — check ~/.claude.json for brain-server registration; verify server.py exists."""
+    """7. MCP SERVER - check ~/.claude.json for brain-server registration; verify server.py exists."""
     details = {}
     claude_json_path = os.path.expanduser("~/.claude.json")
 
@@ -415,7 +415,7 @@ def check_mcp_server(config):
 
 
 def check_hooks():
-    """8. HOOKS — check ~/.claude/settings.json for all 4 hooks; verify hook files exist."""
+    """8. HOOKS - check ~/.claude/settings.json for all 4 hooks; verify hook files exist."""
     settings_path = os.path.expanduser("~/.claude/settings.json")
     details = {}
 
@@ -484,7 +484,7 @@ def check_hooks():
 
 
 def check_config():
-    """9. CONFIG — config.yaml exists? all storage paths valid? all project folders exist?"""
+    """9. CONFIG - config.yaml exists? all storage paths valid? all project folders exist?"""
     config_path = os.path.join(ROOT_PATH, "config.yaml")
     details = {}
 
@@ -550,7 +550,7 @@ def run_health_check():
     """Run all 9 checks, return list of (status, summary, details) tuples."""
     config = load_config()
     if config is None:
-        return [("FAIL", "Config: config.yaml not found — cannot run health check", {})]
+        return [("FAIL", "Config: config.yaml not found - cannot run health check", {})]
 
     results = []
     results.append(("Database", *check_database(config)))
@@ -653,7 +653,7 @@ def print_report(results):
                 detail = summary[len(prefix):].strip()
                 break
 
-        # Word-wrap detail into multiple lines — show everything
+        # Word-wrap detail into multiple lines - show everything
         detail_lines = _wrap_text(detail, DETAIL_W)
 
         # Pad status to center it (accounting for ANSI invisible chars)

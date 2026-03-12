@@ -1,4 +1,4 @@
-# SESSION PROTOCOLS — claude-brain
+# SESSION PROTOCOLS - claude-brain
 
 Human-readable backup of session start and end protocols.
 Primary source: brain database (brain_preferences table).
@@ -9,17 +9,17 @@ Primary source: brain database (brain_preferences table).
 
 Do this EVERY session:
 
-1. Read PROJECT_TRACKER.md FIRST — know where we are before doing anything
-2. Read CLAUDE_BRAIN_MVP_PLAN.txt (root) — the MASTER PROJECT PLAN with full architecture
+1. Read PROJECT_TRACKER.md FIRST - know where we are before doing anything
+2. Read CLAUDE_BRAIN_MVP_PLAN.txt (root) - the MASTER PROJECT PLAN with full architecture
 3. Check BUILD-PHASE DECISIONS section in tracker for recent decisions
 4. Check OPEN ITEMS in tracker for unresolved blockers
-5. Review the session-start hook output — it injects a verification checklist, last session notes, and flagged unfinished items automatically. Do NOT skip these.
+5. Review the session-start hook output - it injects a verification checklist, last session notes, and flagged unfinished items automatically. Do NOT skip these.
 6. If picking up unfinished work: VERIFY the premise independently before acting. Reproduce the problem. Identify which component is actually failing. Never trust prior notes blindly.
-7. Query brain MCP tools for full context — use search_transcripts, get_recent_summaries, or search_semantic as needed. Do this EVERY session, not just after gaps.
+7. Query brain MCP tools for full context - use search_transcripts, get_recent_summaries, or search_semantic as needed. Do this EVERY session, not just after gaps.
 8. Confirm current step with Mike before starting work
-9. Never re-ask locked decisions — they're in the tracker and MVP plan
+9. Never re-ask locked decisions - they're in the tracker and MVP plan
 10. Never start coding without Mike's GO
-11. When Mike says "start session" or opens with a task, follow this protocol then confirm ready with a brief status line: "MEMORY.md loaded. Last session: [one-line summary]. Tracker read. Current step: [phase/step]. Ready." — do not recite the full protocol, just this confirmation.
+11. When Mike says "start session" or opens with a task, follow this protocol then confirm ready with a brief status line: "MEMORY.md loaded. Last session: [one-line summary]. Tracker read. Current step: [phase/step]. Ready." - do not recite the full protocol, just this confirmation.
 
 ### Hook-Enforced Behaviors (automated, non-negotiable)
 
@@ -44,7 +44,7 @@ When Mike says "end session" (or similar: "wrap up", "done for today", "close it
    Include: date, provider, what was done, decisions, files modified, current state, next step.
 2. Update project summary in DB:
    `python3 scripts/write_project_summary.py --prefix <prefix> --summary "<text>"`
-   Rewrite the FULL summary reflecting current state — not a patch, a complete rewrite.
+   Rewrite the FULL summary reflecting current state - not a patch, a complete rewrite.
 3. Update MEMORY.md LAST SESSION section as backup.
 4. Update governance files: PROJECT_TRACKER.md, FEATURE_PLAN.md, NEXT_SESSION_START_PROMPT.txt.
 5. Git commit + push all changes.

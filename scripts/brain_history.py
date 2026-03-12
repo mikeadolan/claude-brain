@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-brain_history.py — Session timeline from the brain database.
+brain_history.py - Session timeline from the brain database.
 
 Clean list of recent sessions, one line each: date, project, message count,
 duration, and topic (from session notes).

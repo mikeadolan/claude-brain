@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""user-prompt-submit.py — Claude Code UserPromptSubmit hook for claude-brain.
+"""user-prompt-submit.py - Claude Code UserPromptSubmit hook for claude-brain.
 
 Fires before every user message is sent to Claude.
 1. Extracts user prompt text from stdin JSON
@@ -33,7 +33,7 @@ STOP_WORDS = {
 }
 
 # ---------------------------------------------------------------------------
-# Frustration detection — circuit breaker
+# Frustration detection - circuit breaker
 # ---------------------------------------------------------------------------
 
 FRUSTRATION_PATTERNS = [
@@ -103,7 +103,7 @@ def handle_frustration(prompt_text, root):
     topic_keywords = extract_topic_keywords(prompt_text)
 
     context_lines = [
-        "## FRUSTRATION DETECTED — STOP AND REASSESS",
+        "## FRUSTRATION DETECTED - STOP AND REASSESS",
         "Something is wrong with your current approach.",
         "Do NOT continue what you were doing. Instead:",
         "1. Review the brain context below",
@@ -174,7 +174,7 @@ def handle_frustration(prompt_text, root):
 
 
 # ---------------------------------------------------------------------------
-# GO check — Rule #2 enforcement
+# GO check - Rule #2 enforcement
 # Detects "discussion" messages that do NOT contain explicit GO trigger.
 # Prevents Claude from coding when Mike is asking for thoughts/opinions.
 # ---------------------------------------------------------------------------
@@ -245,16 +245,16 @@ def main():
             prompt_text = ""
         prompt_text = prompt_text.strip()
 
-        # Frustration circuit breaker — check BEFORE length filter
+        # Frustration circuit breaker - check BEFORE length filter
         if prompt_text and detect_frustration(prompt_text):
             context = handle_frustration(prompt_text, root)
             print(json.dumps({"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": context}}))
             return
 
-        # GO check — prevent coding without explicit GO (Rule #2 enforcement)
+        # GO check - prevent coding without explicit GO (Rule #2 enforcement)
         if prompt_text and detect_discussion_not_go(prompt_text):
             context = (
-                "## RULE #2 REMINDER — DO NOT CODE\n"
+                "## RULE #2 REMINDER - DO NOT CODE\n"
                 "Mike is asking for your THOUGHTS, not code.\n"
                 "PRESENT the plan. Do NOT write, edit, or create any files.\n"
                 "Wait for Mike to say 'GO' + name the specific step.\n"

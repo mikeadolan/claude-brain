@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-brain_query.py — Search the brain database and return formatted results.
+brain_query.py - Search the brain database and return formatted results.
 
 Takes a natural language question, extracts keywords, runs FTS5 + semantic
 search, and returns formatted results for Claude to synthesize. All search
@@ -328,7 +328,7 @@ def format_results(question, keywords, fts_results, semantic_results,
 
     # FTS5 transcript matches
     if fts_results:
-        lines.append(f"### Transcript Matches — Keyword ({len(fts_results)} results)")
+        lines.append(f"### Transcript Matches - Keyword ({len(fts_results)} results)")
         for row in fts_results:
             date = (row[4] or "")[:10]
             lines.append(f"- [{date}, {row[1]}, {row[2]}] {truncate(row[3])}")
@@ -336,7 +336,7 @@ def format_results(question, keywords, fts_results, semantic_results,
 
     # Semantic matches
     if semantic_results:
-        lines.append(f"### Transcript Matches — Semantic ({len(semantic_results)} results)")
+        lines.append(f"### Transcript Matches - Semantic ({len(semantic_results)} results)")
         for sim, row in semantic_results:
             date = (row[6] or "")[:10]
             lines.append(f"- [{date}, {row[3]}, {row[4]}, sim={sim:.3f}] {truncate(row[5])}")

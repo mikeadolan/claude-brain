@@ -1,6 +1,6 @@
 # Email Digest Design Specification
 
-## AI Coding Session Activity — Three Template System
+## AI Coding Session Activity - Three Template System
 
 **Version:** 1.0
 **Date:** 2026-03-12
@@ -25,13 +25,13 @@
 
 ### BLUF (Bottom Line Up Front)
 
-Every template in this system follows BLUF methodology, originating from U.S. military communication doctrine (Army Regulation 25-50). The core principle: state the conclusion, recommendation, or key status in the first line — then provide supporting context below.
+Every template in this system follows BLUF methodology, originating from U.S. military communication doctrine (Army Regulation 25-50). The core principle: state the conclusion, recommendation, or key status in the first line - then provide supporting context below.
 
 **Implementation rules:**
 
 - The hero section of every email answers: "What is the ONE thing the reader needs to know?"
-- Subject line IS the BLUF — it must convey the core status without opening the email
-- Preview text (preheader) reinforces the BLUF — never repeats the subject line
+- Subject line IS the BLUF - it must convey the core status without opening the email
+- Preview text (preheader) reinforces the BLUF - never repeats the subject line
 - Body content follows the inverted pyramid: most important → least important
 - Readers who stop after the first 3 lines should still understand the state of the world
 
@@ -76,13 +76,13 @@ Automated async standup replacement. Tells the developer and their team what hap
 
 **Examples:**
 - `[myapp] Daily: 14 files changed, 2 sessions | Mar 12`
-- `[myapp] Daily: Quiet day — no sessions | Mar 12`
+- `[myapp] Daily: Quiet day - no sessions | Mar 12`
 - `[myapp] Daily: 3 blockers flagged | Mar 12`
 
 **Variables:**
-- `{project}` — project name or repo shortname
-- `{summary_stat}` — the single most important metric (files changed, sessions count, or blocker count)
-- `{date_short}` — abbreviated date
+- `{project}` - project name or repo shortname
+- `{summary_stat}` - the single most important metric (files changed, sessions count, or blocker count)
+- `{date_short}` - abbreviated date
 
 **Preheader:** `{top_accomplishment_or_status_phrase}`
 
@@ -115,9 +115,9 @@ No AI coding sessions were recorded yesterday for {project}.
 
 **Examples:**
 - "You had 3 sessions across 2 projects yesterday, touching 14 files with +187 / -42 net lines."
-- "Quiet day — no AI coding sessions recorded for myapp."
+- "Quiet day - no AI coding sessions recorded for myapp."
 
-**Visual treatment:** 16px font, bold, dark gray (#1a1a1a) on white. No background color on the hero — let it breathe.
+**Visual treatment:** 16px font, bold, dark gray (#1a1a1a) on white. No background color on the hero - let it breathe.
 
 ### Key Metrics Bar Spec
 
@@ -136,7 +136,7 @@ Horizontal row of 3-4 metric cards, displayed inline.
 
 ### Handling "Nothing Happened" (Quiet Day)
 
-This is critical — most tools get this wrong by either skipping the email (breaking habit) or sending an empty shell.
+This is critical - most tools get this wrong by either skipping the email (breaking habit) or sending an empty shell.
 
 **Strategy:** Always send the daily email to preserve the habit loop. But adapt the content:
 
@@ -145,10 +145,10 @@ This is critical — most tools get this wrong by either skipping the email (bre
    - Show last activity date: "Last session: 2 days ago (Mar 10)"
    - Show streak data: "Current quiet streak: 2 days"
    - Optional: Show project health context: "3 open items from last session still unresolved"
-3. **CTA changes to:** "Review Last Session →" (not "View Dashboard" — give them somewhere specific to go)
+3. **CTA changes to:** "Review Last Session →" (not "View Dashboard" - give them somewhere specific to go)
 4. **Tone:** Neutral, not judgmental. No "You've been quiet!" gamification unless user opts in.
 
-### Actionability — CTA Design
+### Actionability - CTA Design
 
 | Scenario | Primary CTA | Secondary Link |
 |---|---|---|
@@ -189,8 +189,8 @@ Portfolio-level summary. Shows the week's activity across all projects/repos, su
 
 **Examples:**
 - `[Weekly] Mar 3-9: 47 sessions, +2,841 lines across 3 projects`
-- `[Weekly] Mar 3-9: Activity down 34% — 2 projects dormant`
-- `[Weekly] Mar 3-9: All green — steady progress on 4 projects`
+- `[Weekly] Mar 3-9: Activity down 34% - 2 projects dormant`
+- `[Weekly] Mar 3-9: All green - steady progress on 4 projects`
 
 **Preheader:** `{executive_summary_phrase}`
 
@@ -269,7 +269,7 @@ This is the core of the weekly email. One row per project.
 
 **Content per alert:**
 ```
-⚠ {project_name} — No activity for {days} days
+⚠ {project_name} - No activity for {days} days
    Last session: {date} ({summary_of_last_session})
    Open items from last session: {count}
 ```
@@ -278,11 +278,11 @@ This is the core of the weekly email. One row per project.
 
 The weekly email is explicitly designed to be forwarded to a manager or stakeholder. Design considerations:
 
-1. **Executive summary reads as a standalone paragraph** — no context needed from the rest of the email
-2. **Portfolio table is self-contained** — column headers are descriptive, not abbreviated
-3. **No internal jargon** — "sessions" not "ctx windows," "files changed" not "diffs"
+1. **Executive summary reads as a standalone paragraph** - no context needed from the rest of the email
+2. **Portfolio table is self-contained** - column headers are descriptive, not abbreviated
+3. **No internal jargon** - "sessions" not "ctx windows," "files changed" not "diffs"
 4. **"Forward this report" text link** in the footer to nudge sharing behavior
-5. **Branding is moderate** — professional enough to forward, not so heavy it looks like marketing
+5. **Branding is moderate** - professional enough to forward, not so heavy it looks like marketing
 
 ### Ideal Length
 
@@ -309,13 +309,13 @@ Single-project status report with full context. Triggered on-demand or on a conf
 ### Subject Line Formula
 
 ```
-[{project}] Status: {rag_emoji} {rag_word} — {headline_metric} | {date}
+[{project}] Status: {rag_emoji} {rag_word} - {headline_metric} | {date}
 ```
 
 **Examples:**
-- `[myapp] Status: 🟢 On Track — 78% milestone complete | Mar 12`
-- `[api-service] Status: 🟡 At Risk — 3 blockers, velocity declining | Mar 12`
-- `[frontend] Status: 🔴 Blocked — no activity for 7 days | Mar 12`
+- `[myapp] Status: 🟢 On Track - 78% milestone complete | Mar 12`
+- `[api-service] Status: 🟡 At Risk - 3 blockers, velocity declining | Mar 12`
+- `[frontend] Status: 🔴 Blocked - no activity for 7 days | Mar 12`
 
 **Preheader:** `{one_line_summary_of_project_state}`
 
@@ -335,7 +335,7 @@ Single-project status report with full context. Triggered on-demand or on a conf
 
 ### RAG Status Implementation
 
-**Criteria definitions — be explicit and quantitative:**
+**Criteria definitions - be explicit and quantitative:**
 
 | Status | Color | Hex | Criteria |
 |---|---|---|---|
@@ -375,11 +375,11 @@ Single-project status report with full context. Triggered on-demand or on a conf
 Best for projects with defined milestones:
 
 ```
-✅ Phase 1: Auth system          — Completed Mar 1
-✅ Phase 2: API endpoints        — Completed Mar 7
-🔄 Phase 3: Frontend integration — 60% (target: Mar 15)
-⬜ Phase 4: Testing & QA         — Not started (target: Mar 22)
-⬜ Phase 5: Deploy               — Not started (target: Mar 29)
+✅ Phase 1: Auth system          - Completed Mar 1
+✅ Phase 2: API endpoints        - Completed Mar 7
+🔄 Phase 3: Frontend integration - 60% (target: Mar 15)
+⬜ Phase 4: Testing & QA         - Not started (target: Mar 22)
+⬜ Phase 5: Deploy               - Not started (target: Mar 29)
 ```
 
 **Option B: Progress Bar**
@@ -391,7 +391,7 @@ Overall Progress: ████████████░░░░░░░░ 6
                   ↑ Was 48% last week
 ```
 
-**Implementation:** Use table cells with background colors for progress bars. Avoid CSS `width: X%` — Outlook ignores it on non-table elements.
+**Implementation:** Use table cells with background colors for progress bars. Avoid CSS `width: X%` - Outlook ignores it on non-table elements.
 
 ### Risks & Blockers (Structured for Action)
 
@@ -409,10 +409,10 @@ This section must DEMAND action, not just inform. Structure each blocker as an a
 
 **Design rules for blockers that demand action:**
 
-1. **Severity column is visual** — colored dot, not text
-2. **Age column creates urgency** — "3 days" feels more urgent than "opened Mar 9"
-3. **"STALE" status** — any unassigned blocker older than 3 days gets flagged as stale with amber highlight
-4. **Owner column** — "unassigned" in red text is a silent call to action
+1. **Severity column is visual** - colored dot, not text
+2. **Age column creates urgency** - "3 days" feels more urgent than "opened Mar 9"
+3. **"STALE" status** - any unassigned blocker older than 3 days gets flagged as stale with amber highlight
+4. **Owner column** - "unassigned" in red text is a silent call to action
 5. **Sort order:** Red → Amber, then oldest-first within severity. Oldest unresolved items float to top.
 
 ### Ideal Length
@@ -433,7 +433,7 @@ This section must DEMAND action, not just inform. Structure each blocker as an a
 | **Gmail (web)** | Custom DOM sanitizer | Strips `<style>` in `<head>`. Inline styles only. No media queries. Class names prefixed/mangled. |
 | **Gmail (mobile)** | Aggressive dark mode | Full color inversion on Android. Small images (<100px) may get color-inverted. |
 | **Outlook (desktop, classic)** | Microsoft Word HTML engine | No `border-radius`, `background-image`, `max-width`, `flexbox`, `grid`, or media queries. Tables-only layout. Uses VML for backgrounds. |
-| **Outlook (new/web)** | Chromium-based | Better CSS support. Does NOT support MSO conditional comments (they're ignored). 2025-2026 is "dual Outlook" transition — code for both. |
+| **Outlook (new/web)** | Chromium-based | Better CSS support. Does NOT support MSO conditional comments (they're ignored). 2025-2026 is "dual Outlook" transition - code for both. |
 | **Apple Mail** | WebKit | Most standards-compliant. Supports flexbox, grid, media queries, web fonts, animations. Does NOT invert HTML emails in dark mode (only plain-text). |
 | **Yahoo Mail** | Custom | Supports `<style>` in `<head>` but rewrites class names. Attribute selectors work. |
 | **Samsung Mail** | Chromium | Generally well-behaved. Test for dark mode. |
@@ -458,7 +458,7 @@ This section must DEMAND action, not just inform. Structure each blocker as an a
 ```
 
 **2. Dark mode color inversion**
-- Never use `#000000` for text — use `#1a1a1a` (dark gray). Pure black triggers aggressive inversion in some clients.
+- Never use `#000000` for text - use `#1a1a1a` (dark gray). Pure black triggers aggressive inversion in some clients.
 - Never use `#FFFFFF` for backgrounds without also setting it explicitly. Let it inherit where possible.
 - Use transparent PNGs for logos. Add a 1-2px white drop shadow or stroke to dark logos so they remain visible on dark backgrounds.
 - Include `<meta name="color-scheme" content="light dark">` and `<meta name="supported-color-schemes" content="light dark">` in `<head>`.
@@ -470,7 +470,7 @@ This section must DEMAND action, not just inform. Structure each blocker as an a
 
 **4. Outlook ignores `padding` on most elements**
 - Use `cellpadding` on `<td>` elements or add an inner `<div>` with `margin` for spacing.
-- For cell padding, use the `padding` property on `<td>` only — it's the one place Outlook respects it.
+- For cell padding, use the `padding` property on `<td>` only - it's the one place Outlook respects it.
 
 **5. Animated GIFs don't play in Outlook desktop**
 - Outlook shows only the first frame. Ensure the first frame is a meaningful static fallback.
@@ -521,7 +521,7 @@ This section must DEMAND action, not just inform. Structure each blocker as an a
   </xml></noscript>
   <![endif]-->
   <style>
-    /* Only for clients that support <style> — Gmail web ignores this */
+    /* Only for clients that support <style> - Gmail web ignores this */
     @media (prefers-color-scheme: dark) {
       .dark-bg { background-color: #1a1a1a !important; }
       .dark-text { color: #e0e0e0 !important; }
@@ -566,7 +566,7 @@ This section must DEMAND action, not just inform. Structure each blocker as an a
 - 43% of recipients open emails based on subject line alone
 - Subject lines with numbers outperform those without
 - Never start with the product name (the From field already signals that). Put it at the end if needed.
-- Use brackets `[ ]` for categorization — developers are trained to parse them (think: `[PATCH]`, `[RFC]`)
+- Use brackets `[ ]` for categorization - developers are trained to parse them (think: `[PATCH]`, `[RFC]`)
 
 ### Formulas for Each Template
 
@@ -582,14 +582,14 @@ Examples: [myapp] Daily: 14 files changed | Mar 12
 ```
 Formula:  [{cadence}] {date_range}: {headline_number} across {N} projects
 Examples: [Weekly] Mar 3-9: 47 sessions across 3 projects
-          [Weekly] Mar 3-9: Activity ↓34% — 2 projects dormant
+          [Weekly] Mar 3-9: Activity ↓34% - 2 projects dormant
 ```
 
 **Project Deep Dive:**
 ```
-Formula:  [{project}] Status: {RAG_emoji} {RAG_word} — {headline} | {date}
-Examples: [myapp] Status: 🟢 On Track — 78% complete | Mar 12
-          [api] Status: 🔴 Blocked — 3 unresolved issues | Mar 12
+Formula:  [{project}] Status: {RAG_emoji} {RAG_word} - {headline} | {date}
+Examples: [myapp] Status: 🟢 On Track - 78% complete | Mar 12
+          [api] Status: 🔴 Blocked - 3 unresolved issues | Mar 12
 ```
 
 ### Anti-Patterns (What NOT to Do)
@@ -614,9 +614,9 @@ If the subject line is the same two days in a row, it will be ignored. Always in
 
 | Cause | Mechanism | Fix |
 |---|---|---|
-| **No new information** | If today's email looks identical to yesterday's, the brain classifies it as noise via the reticular activating system — the brain's filter for what deserves attention. | Always include at least one variable delta. Show change, not just state. |
+| **No new information** | If today's email looks identical to yesterday's, the brain classifies it as noise via the reticular activating system - the brain's filter for what deserves attention. | Always include at least one variable delta. Show change, not just state. |
 | **Too long** | Cognitive load exceeds the perceived value. The reader subconsciously calculates effort vs. reward in < 2 seconds. | Cap word counts ruthlessly. Daily = 150-250 words. Weekly = 300-500. |
-| **No action required** | If the email never requires action, the brain trains itself to skip it (operant conditioning — no reward for opening). | Include conditional sections that only appear when action is needed. Blockers = built-in call to action. |
+| **No action required** | If the email never requires action, the brain trains itself to skip it (operant conditioning - no reward for opening). | Include conditional sections that only appear when action is needed. Blockers = built-in call to action. |
 | **Arrives at wrong time** | Status emails that arrive at 5 PM are dead on arrival. Developers check email at start-of-day. | Send daily at 8-9 AM local time. Weekly on Monday AM. |
 | **Pattern blindness** | Same visual template, same subject, same cadence = wallpaper. The brain's novelty detection (reticular activating system) ignores it. | Vary subject lines with dynamic content. Change the BLUF sentence every day. Conditional sections alter the visual shape of the email. |
 | **Feels like surveillance** | If the email reads like a performance report, trust erodes. Developers resent tools that feel like monitoring. | Frame as "your personal briefing," not "what you did." Use "you" language, not "we noticed." Never include comparative metrics against teammates. |
@@ -624,9 +624,9 @@ If the subject line is the same two days in a row, it will be ignored. Always in
 
 ### Design Principles That Fight Ignore Behavior
 
-1. **Variable content creates novelty.** The brain's reticular activating system flags things that are different. Every email must have visible differences from the last one — different numbers, different status, different section visibility.
+1. **Variable content creates novelty.** The brain's reticular activating system flags things that are different. Every email must have visible differences from the last one - different numbers, different status, different section visibility.
 
-2. **Conditional sections create surprise.** When a blocker section appears on a day it normally doesn't, it breaks the pattern and demands attention. Absence is also information — when the "Blockers" section is gone, that's a positive signal.
+2. **Conditional sections create surprise.** When a blocker section appears on a day it normally doesn't, it breaks the pattern and demands attention. Absence is also information - when the "Blockers" section is gone, that's a positive signal.
 
 3. **Urgency only when earned.** Reserve red/urgent treatment for actual blockers. If every email looks urgent, nothing is urgent. Amber and red should appear rarely enough to maintain their signal strength.
 
@@ -832,7 +832,7 @@ Before shipping any template, test in:
 
 ### Tools for Testing
 
-- **Litmus** — cross-client rendering previews, dark mode simulation
-- **Email on Acid** — rendering + accessibility + deliverability testing
-- **mailpeek** — dev-environment previews with dark mode simulation and compatibility scoring
-- **Can I Email (caniemail.com)** — the "Can I Use" for HTML email CSS property support
+- **Litmus** - cross-client rendering previews, dark mode simulation
+- **Email on Acid** - rendering + accessibility + deliverability testing
+- **mailpeek** - dev-environment previews with dark mode simulation and compatibility scoring
+- **Can I Email (caniemail.com)** - the "Can I Use" for HTML email CSS property support

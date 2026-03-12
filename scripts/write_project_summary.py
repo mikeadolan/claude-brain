@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-write_project_summary.py — Update project summary in the brain database.
+write_project_summary.py - Update project summary in the brain database.
 
 Writes to project_registry.summary and updates summary_updated_at.
 Called by Claude at end-of-session as part of the end-session protocol.

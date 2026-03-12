@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-brain_recap.py — Progress report for a time range.
+brain_recap.py - Progress report for a time range.
 
 Pulls session notes and produces a narrative organized by project:
 what was worked on, what was completed, key decisions, what's next.

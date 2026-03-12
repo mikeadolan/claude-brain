@@ -382,39 +382,39 @@ add_para(
 )
 
 add_heading('Lessons Learned (Instant, No Report Required)', level=3)
-add_bullet('"What did we try when the MCP server wouldn\'t connect?" — searches '
+add_bullet('"What did we try when the MCP server wouldn\'t connect?" - searches '
            'transcripts for that debugging session, returns the exact back-and-forth '
            'including failed approaches and the eventual fix.')
-add_bullet('"Show me every time we hit a token limit" — cross-session pattern that '
+add_bullet('"Show me every time we hit a token limit" - cross-session pattern that '
            'reveals workflow problems invisible in any single conversation.')
-add_bullet('"What was the reasoning behind Decision 89?" — pulls the full transcript '
+add_bullet('"What was the reasoning behind Decision 89?" - pulls the full transcript '
            'context around a specific decision, not just the one-line summary.')
 
 add_heading('Decision Archaeology', level=3)
-add_bullet('"When did we decide to drop ChromaDB, and what were the alternatives?" — '
+add_bullet('"When did we decide to drop ChromaDB, and what were the alternatives?" - '
            'retrieves the session, the discussion, and the competing options.')
-add_bullet('"Show me every decision that got reversed" — queries decisions table plus '
+add_bullet('"Show me every decision that got reversed" - queries decisions table plus '
            'transcript context to surface changed minds and why.')
 
 add_heading('Real-Time Project Status (Just Ask)', level=3)
-add_bullet('"What\'s the status of the Johnny Goods project?" — no report to run, no '
+add_bullet('"What\'s the status of the Johnny Goods project?" - no report to run, no '
            'dashboard to open. MCP tools query facts, recent sessions, and summaries '
            'to give an instant natural-language status update.')
-add_bullet('"What did I work on last week across all projects?" — cross-project '
+add_bullet('"What did I work on last week across all projects?" - cross-project '
            'session query with summaries, decisions, and open items.')
-add_bullet('"Is there anything stuck or blocked?" — dormant project detection plus '
+add_bullet('"Is there anything stuck or blocked?" - dormant project detection plus '
            'session notes with "next step" and "blocker" fields.')
 
 add_heading('Code Pattern Recall', level=3)
-add_bullet('"How did I set up the cosine similarity search?" — finds the session '
+add_bullet('"How did I set up the cosine similarity search?" - finds the session '
            'where the code was written and returns the full implementation discussion.')
-add_bullet('"What was the MCP server architecture?" — semantic search across all '
+add_bullet('"What was the MCP server architecture?" - semantic search across all '
            'sessions where MCP was discussed, ordered by relevance.')
 
 add_heading('Cross-Project Intelligence', level=3)
-add_bullet('"Find every time I discussed authentication across all projects" — '
+add_bullet('"Find every time I discussed authentication across all projects" - '
            'searches 13,000+ transcripts across 5 projects.')
-add_bullet('"Are there patterns in how long my sessions run?" — meta-analysis of '
+add_bullet('"Are there patterns in how long my sessions run?" - meta-analysis of '
            'session metadata reveals workflow habits.')
 
 add_heading('The Key Insight', level=2)
@@ -686,7 +686,7 @@ add_para(
     'The key message: most AI memory tools use lossy compression, deciding what to '
     'remember and discarding the rest. claude-brain keeps everything. Full transcripts, '
     'structured decisions, semantic search, proactive digests. Every past conversation '
-    'is instantly queryable. Lessons learned, project status, decision history — '
+    'is instantly queryable. Lessons learned, project status, decision history - '
     'just ask. No reports to run, no dashboards to open.',
 )
 
@@ -717,7 +717,7 @@ add_heading('Tier 1: Anthropic / Claude Code Team (Highest Priority)', level=2)
 add_bullet(
     'Boris Cherny is the creator of Claude Code and active on X/Twitter and in '
     'the Claude Code community. A concise demo showing the architecture and what it '
-    'solves — tagged directly — puts it on his radar.',
+    'solves - tagged directly - puts it on his radar.',
     bold_prefix='Boris Cherny (Claude Code creator): '
 )
 add_bullet(
@@ -776,7 +776,7 @@ add_heading('Pre-Launch Work Items')
 
 add_para(
     'The following items must be completed before going public. Each step is '
-    'designed to be completable in a single session. Work them in order — '
+    'designed to be completable in a single session. Work them in order - '
     'each step builds on the previous one.',
     bold=True
 )
@@ -872,7 +872,7 @@ add_table(
 add_heading('Step 6: Launch Posts', level=2)
 add_para(
     'Targeted posts to the communities identified in the Outreach Plan. These should '
-    'be crafted carefully — each community has different norms and expectations.'
+    'be crafted carefully - each community has different norms and expectations.'
 )
 add_table(
     ['Item', 'Details'],
@@ -894,7 +894,7 @@ add_para(
 )
 add_bullet('Respond to GitHub issues within 24 hours')
 add_bullet('Accept and review community PRs')
-add_bullet('Iterate on feedback — the community will tell you what matters')
+add_bullet('Iterate on feedback - the community will tell you what matters')
 add_bullet('Write a CONTRIBUTING.md guide for contributors')
 add_bullet('Track star growth: 100 first week, 1K in 90 days is the target')
 add_bullet('At month 3: evaluate traction and decide on broader expansion (Option B: universal memory layer)')
@@ -909,7 +909,7 @@ add_heading('Decision Summary')
 add_para(
     'Go public with open-source Claude Code Power Tool positioning. '
     'Targeted outreach to Boris Cherny, the Claude Code team, and the power user '
-    'community. Not spray-and-pray — strategic positioning as the production-quality '
+    'community. Not spray-and-pray - strategic positioning as the production-quality '
     'answer to Claude Code\'s biggest gap.',
     bold=True
 )
@@ -947,39 +947,39 @@ add_para('Research conducted March 9, 2026 via comprehensive web search across m
 add_para('')
 
 sources = [
-    'Anthropic Acquires Bun — anthropic.com/news',
-    'OpenClaw GitHub Repository — github.com/openclaw/openclaw',
-    'OpenClaw Wikipedia — en.wikipedia.org/wiki/OpenClaw',
-    'OpenClaw Security Crisis — reco.ai/blog',
-    'OpenClaw Creator Joins OpenAI — TechCrunch, Feb 2026',
-    'claude-mem GitHub — github.com/thedotmack/claude-mem',
-    'claude-mem Official Docs — docs.claude-mem.ai',
-    'Mem0 GitHub — github.com/mem0ai/mem0',
-    'Mem0 Series A — TechCrunch, Oct 2025',
-    'Letta / MemGPT GitHub — github.com/letta-ai/letta',
-    'Letta $10M Seed — PR Newswire',
-    'Graphiti / Zep GitHub — github.com/getzep/graphiti',
-    'Khoj GitHub — github.com/khoj-ai/khoj',
-    'Cognee $7.5M Seed — cognee.ai/blog',
-    'Supermemory GitHub — github.com/supermemoryai/supermemory',
-    'Supermemory Funding — TechCrunch, Oct 2025',
-    'OpenMemory GitHub — github.com/CaviraOSS/OpenMemory',
-    'MemOS GitHub — github.com/MemTensor/MemOS',
-    'LangMem GitHub — github.com/langchain-ai/langmem',
-    'Claude Code Memory Docs — code.claude.com/docs/en/memory',
-    'Claude Code Auto Memory Internals — giuseppegurgone.com',
-    'Cursor Rules Documentation — cursor.com/docs/context/rules',
-    'Windsurf Cascade Memories — docs.windsurf.com',
-    'Copilot Memory — GitHub Blog Changelog, Mar 2026',
-    'Cline Memory Bank — docs.cline.bot/features/memory-bank',
-    'Aider Conventions — aider.chat/docs/usage/conventions.html',
-    'IBM Closes HashiCorp — TechCrunch, Feb 2025',
-    'Cursor $2.3B Series D — CNBC, Nov 2025',
-    'Cursor $2B+ ARR — TechCrunch, Mar 2026',
-    'Windsurf Acquisition Saga — DeepLearning.ai, Fortune, VentureBeat',
-    'Replit $9B Valuation — Bloomberg, Jan 2026',
-    'State of Agent Memory 2026 — blog.virenmohindra.me',
-    'AI Coding Tools Compared 2026 — tldl.io',
+    'Anthropic Acquires Bun - anthropic.com/news',
+    'OpenClaw GitHub Repository - github.com/openclaw/openclaw',
+    'OpenClaw Wikipedia - en.wikipedia.org/wiki/OpenClaw',
+    'OpenClaw Security Crisis - reco.ai/blog',
+    'OpenClaw Creator Joins OpenAI - TechCrunch, Feb 2026',
+    'claude-mem GitHub - github.com/thedotmack/claude-mem',
+    'claude-mem Official Docs - docs.claude-mem.ai',
+    'Mem0 GitHub - github.com/mem0ai/mem0',
+    'Mem0 Series A - TechCrunch, Oct 2025',
+    'Letta / MemGPT GitHub - github.com/letta-ai/letta',
+    'Letta $10M Seed - PR Newswire',
+    'Graphiti / Zep GitHub - github.com/getzep/graphiti',
+    'Khoj GitHub - github.com/khoj-ai/khoj',
+    'Cognee $7.5M Seed - cognee.ai/blog',
+    'Supermemory GitHub - github.com/supermemoryai/supermemory',
+    'Supermemory Funding - TechCrunch, Oct 2025',
+    'OpenMemory GitHub - github.com/CaviraOSS/OpenMemory',
+    'MemOS GitHub - github.com/MemTensor/MemOS',
+    'LangMem GitHub - github.com/langchain-ai/langmem',
+    'Claude Code Memory Docs - code.claude.com/docs/en/memory',
+    'Claude Code Auto Memory Internals - giuseppegurgone.com',
+    'Cursor Rules Documentation - cursor.com/docs/context/rules',
+    'Windsurf Cascade Memories - docs.windsurf.com',
+    'Copilot Memory - GitHub Blog Changelog, Mar 2026',
+    'Cline Memory Bank - docs.cline.bot/features/memory-bank',
+    'Aider Conventions - aider.chat/docs/usage/conventions.html',
+    'IBM Closes HashiCorp - TechCrunch, Feb 2025',
+    'Cursor $2.3B Series D - CNBC, Nov 2025',
+    'Cursor $2B+ ARR - TechCrunch, Mar 2026',
+    'Windsurf Acquisition Saga - DeepLearning.ai, Fortune, VentureBeat',
+    'Replit $9B Valuation - Bloomberg, Jan 2026',
+    'State of Agent Memory 2026 - blog.virenmohindra.me',
+    'AI Coding Tools Compared 2026 - tldl.io',
 ]
 for s in sources:
     add_bullet(s)

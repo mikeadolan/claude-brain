@@ -1,5 +1,5 @@
 ################################################################################
-# claude-brain Configuration File — EXAMPLE
+# claude-brain Configuration File - EXAMPLE
 # config.yaml.example
 ################################################################################
 #
@@ -11,7 +11,7 @@
 #            The setup script generates config.yaml interactively.
 #   Option 2 (manual): Copy this file to config.yaml and edit with your values.
 #
-# YOUR REAL config.yaml IS IN .gitignore — IT NEVER REACHES GITHUB.
+# YOUR REAL config.yaml IS IN .gitignore - IT NEVER REACHES GITHUB.
 #
 # DOCUMENTATION:
 #   Full system documentation: README.md
@@ -80,7 +80,7 @@ backup:
 #
 # NAMING:
 #   folder_name: lowercase, hyphens only (e.g., "my-project")
-#   prefix:      lowercase, 2-4 chars (e.g., "mp") — NO trailing underscore
+#   prefix:      lowercase, 2-4 chars (e.g., "mp") - NO trailing underscore
 #   label:       human-readable name shown in brain-import picklist
 
 projects:
@@ -100,7 +100,7 @@ projects:
 # BRAIN PROFILE
 # ==============================================================================
 # brain tables store personal profile data (from questionnaire).
-# These are NOT project-specific — they apply across ALL projects.
+# These are NOT project-specific - they apply across ALL projects.
 # Data is written only after Y/F/R verification by the user.
 
 brain:
@@ -224,9 +224,9 @@ scripts:
 # ==============================================================================
 # EMAIL DIGESTS
 # ==============================================================================
-# Proactive email summaries — the brain reaches out to YOU.
+# Proactive email summaries - the brain reaches out to YOU.
 # Three templates: daily standup, weekly digest, project deep dive.
-# Uses Gmail SMTP (App Password required — NOT your regular password).
+# Uses Gmail SMTP (App Password required - NOT your regular password).
 #
 # GMAIL APP PASSWORD SETUP:
 #   1. Go to myaccount.google.com → Security → 2-Step Verification (must be ON)

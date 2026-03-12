@@ -1,4 +1,4 @@
-# POST-MVP ROADMAP — claude-brain
+# POST-MVP ROADMAP - claude-brain
 
 Everything deferred, pushed, or identified as "after v0.1" across all sessions,
 decisions, and documentation. Compiled from the brain database, MVP plan,
@@ -10,8 +10,8 @@ tracker, HOW_TO, and DEPENDENCIES.md.
 
 | Step | Description | Status | Blocker |
 |------|------------|--------|---------|
-| 7.8 | Beta tester onboarding — friend clones, runs setup, tests on Mac | Not started | Waiting on friend's GitHub username |
-| 7.9 | Document known limitations and post-MVP roadmap | **Done** | — |
+| 7.8 | Beta tester onboarding - friend clones, runs setup, tests on Mac | Not started | Waiting on friend's GitHub username |
+| 7.9 | Document known limitations and post-MVP roadmap | **Done** | - |
 | 6.7 | Laptop switch test (second Fedora laptop via Dropbox) | Deferred | Second laptop not set up |
 
 ---
@@ -22,24 +22,24 @@ Do NOT build in v0.1. Added to PROJECT_TRACKER.md.
 
 | Command | Description | Status |
 |---------|------------|--------|
-| `/brain-forget` | Delete specific records from database | Deferred — too dangerous for v0.1. Needs confirmation dialogs and undo capability. |
-| `/brain-tag` | Tag management for conversations | Deferred — Decision 54, not needed for core functionality. |
-| `/brain-sync` | Manual sync trigger | Deferred — hooks handle sync automatically. Terminal command `brain_sync.py` already exists. |
-| ~~`/brain-doctor`~~ | ~~Full health check~~ | **DONE** — Renamed to `/brain-health` (Decision 100). 9-point diagnostic. scripts/brain_health.py. |
+| `/brain-forget` | Delete specific records from database | Deferred - too dangerous for v0.1. Needs confirmation dialogs and undo capability. |
+| `/brain-tag` | Tag management for conversations | Deferred - Decision 54, not needed for core functionality. |
+| `/brain-sync` | Manual sync trigger | Deferred - hooks handle sync automatically. Terminal command `brain_sync.py` already exists. |
+| ~~`/brain-doctor`~~ | ~~Full health check~~ | **DONE** - Renamed to `/brain-health` (Decision 100). 9-point diagnostic. scripts/brain_health.py. |
 
 ---
 
-## 3. DEFERRED FEATURES — FROM LOCKED DECISIONS
+## 3. DEFERRED FEATURES - FROM LOCKED DECISIONS
 
 | Decision | What Was Deferred | Rationale |
 |----------|------------------|-----------|
-| 52 | ~~Multi-OS support (macOS, Windows)~~ | **PARTIALLY RESOLVED** — Bash-to-Python migration complete (Decision 103-104). All hooks + scripts now pure Python. macOS should work out of box. Windows needs WSL. |
+| 52 | ~~Multi-OS support (macOS, Windows)~~ | **PARTIALLY RESOLVED** - Bash-to-Python migration complete (Decision 103-104). All hooks + scripts now pure Python. macOS should work out of box. Windows needs WSL. |
 | 53 | Provider-agnostic storage (iCloud, OneDrive, etc.) | MVP is Dropbox-only. |
 | 53 | Open-source packaging polish | MVP works; packaging is cosmetic. |
 | 54 | brain-tags management | Not needed for core functionality. |
 | 54 | brain-doctor health check | Not needed for core functionality. |
 | 56 | Y/F/R verification of questionnaire answers | Mike answered directly; formal verification not needed. |
-| ~~81~~ | ~~LLM-generated session summaries (Claude Haiku)~~ | **DELETED** — generate_summary.py removed (session 22). Claude writes notes directly. No OpenRouter. No fallback. |
+| ~~81~~ | ~~LLM-generated session summaries (Claude Haiku)~~ | **DELETED** - generate_summary.py removed (session 22). Claude writes notes directly. No OpenRouter. No fallback. |
 
 ---
 
@@ -50,15 +50,15 @@ Do NOT build in v0.1. Added to PROJECT_TRACKER.md.
 | Limitation | Detail | Post-MVP Fix |
 |-----------|--------|-------------|
 | **Python 3.10+** | Tested on 3.13 and 3.14. Older 3.10+ versions should work but are untested. | Expand testing matrix. |
-| **Single-user design** | No multi-user support. One person, one database. No authentication, no user accounts, no permissions. | Not planned — this is a personal memory tool. |
-| **Fedora + macOS only** | Tested on Fedora 43. All scripts now pure Python (bash-to-python migration complete). macOS should work — needs beta tester verification. Windows needs WSL. | Beta test on Mac is the remaining gate. |
+| **Single-user design** | No multi-user support. One person, one database. No authentication, no user accounts, no permissions. | Not planned - this is a personal memory tool. |
+| **Fedora + macOS only** | Tested on Fedora 43. All scripts now pure Python (bash-to-python migration complete). macOS should work - needs beta tester verification. Windows needs WSL. | Beta test on Mac is the remaining gate. |
 
 ### Search & Performance
 
 | Limitation | Detail | Post-MVP Fix |
 |-----------|--------|-------------|
 | **Semantic search cold-start ~4-5s** | First query loads the all-MiniLM-L6-v2 model into memory (~80MB). Subsequent queries are fast (<100ms). | Accept as tradeoff. Model stays loaded for session duration. |
-| ~~**FTS5 search only (no fuzzy match)**~~ | ~~Keyword search uses SQLite FTS5 — exact token matching.~~ | **DONE** — Feature 1 (Fuzzy Search) complete. `scripts/fuzzy_search.py` + `clean_transcripts.py`. Frequency-ratio correction before FTS query. |
+| ~~**FTS5 search only (no fuzzy match)**~~ | ~~Keyword search uses SQLite FTS5 - exact token matching.~~ | **DONE** - Feature 1 (Fuzzy Search) complete. `scripts/fuzzy_search.py` + `clean_transcripts.py`. Frequency-ratio correction before FTS query. |
 | **No cross-machine real-time sync** | DB is local. Dropbox syncs project files but not the database. | Move DB to Dropbox, or build a sync script. |
 
 ### Data Capture
@@ -66,8 +66,8 @@ Do NOT build in v0.1. Added to PROJECT_TRACKER.md.
 | Limitation | Detail | Post-MVP Fix |
 |-----------|--------|-------------|
 | **No auto-capture from claude.ai** | Claude.ai has no hook system. Manual export via Chrome extension + `/brain-import`. | Blocked on claude.ai adding hook/API support. |
-| **Summaries require normal exit** | session-end hook only fires on clean exit (`/exit` or terminal close). If Claude Code crashes, summary is lost (but exchanges are saved by stop hook). | Accept as tradeoff — exchanges capture the important data. |
-| **No automatic fact extraction** | brain_facts populated manually from questionnaire. | DEFERRED — value thin after session note rewrites. Search paths cover recall needs. |
+| **Summaries require normal exit** | session-end hook only fires on clean exit (`/exit` or terminal close). If Claude Code crashes, summary is lost (but exchanges are saved by stop hook). | Accept as tradeoff - exchanges capture the important data. |
+| **No automatic fact extraction** | brain_facts populated manually from questionnaire. | DEFERRED - value thin after session note rewrites. Search paths cover recall needs. |
 
 ### Feature Gaps
 
@@ -75,7 +75,7 @@ Do NOT build in v0.1. Added to PROJECT_TRACKER.md.
 |-----------|--------|-------------|
 | **No web UI** | CLI-only via Claude Code. | Post-MVP consideration. DOCX report generation (docxtpl) captured as future feature. |
 | **No lessons learned extractor** | No tool to aggregate patterns across sessions. | Build tool that finds "mistake"/"redo"/"should have" patterns. |
-| ~~**No session narrative generation**~~ | ~~LLM summaries are structured.~~ | **DONE** — All 113 session notes rewritten by Opus 4.6. Rich narratives, not mechanical summaries. |
+| ~~**No session narrative generation**~~ | ~~LLM summaries are structured.~~ | **DONE** - All 113 session notes rewritten by Opus 4.6. Rich narratives, not mechanical summaries. |
 
 ---
 
@@ -85,7 +85,7 @@ Already on GitHub (PRIVATE, Decision 96). Some packaging items remain:
 
 | Item | Purpose | Status |
 |------|---------|--------|
-| ~~`requirements.txt`~~ | ~~`pip install -r requirements.txt`~~ | **DONE** — ships with repo |
+| ~~`requirements.txt`~~ | ~~`pip install -r requirements.txt`~~ | **DONE** - ships with repo |
 | `requirements-semantic.txt` | Optional semantic search deps | Not created |
 | `setup.py` or `pyproject.toml` | Package metadata for distribution | Not created |
 | ~~README.md~~ | ~~GitHub landing page~~ | **DONE** (Step 7.5) |
@@ -99,7 +99,7 @@ Already on GitHub (PRIVATE, Decision 96). Some packaging items remain:
 
 | # | Item | Status |
 |---|------|--------|
-| ~~O.4~~ | ~~OpenRouter — verify works in Claude Code on Fedora~~ | **RESOLVED** — Works but unsupported. Decision: migrate to Amazon Bedrock (session 21). |
+| ~~O.4~~ | ~~OpenRouter - verify works in Claude Code on Fedora~~ | **RESOLVED** - Works but unsupported. Decision: migrate to Amazon Bedrock (session 21). |
 
 ---
 
@@ -107,10 +107,10 @@ Already on GitHub (PRIVATE, Decision 96). Some packaging items remain:
 
 | Item | Description | Source |
 |------|------------|--------|
-| ~~Progressive retrieval layers (L1/L2/L3)~~ | ~~Formalize the retrieval hierarchy~~ | **DONE** — L1 structured tables, L2 FTS5, L3 semantic. Already built, just was unlabeled. |
-| ~~Forked subagent for memory recall~~ | ~~Dedicated subagent for memory ops~~ | **DONE** — Solved by Decision 94 (local script replaces subagent). |
-| ~~LLM-powered summaries~~ | ~~Replace pure-Python summary generator~~ | **DELETED** — generate_summary.py removed (session 22). Claude writes notes directly. No OpenRouter. No fallback. |
-| ~~MEMORY.md trimming~~ | ~~Move stable info to DB to save context tokens~~ | **DONE** — Stable info moved to DB + ARCHITECTURE.md + SESSION_PROTOCOLS.md. session-history.md retired (Decision 102). |
+| ~~Progressive retrieval layers (L1/L2/L3)~~ | ~~Formalize the retrieval hierarchy~~ | **DONE** - L1 structured tables, L2 FTS5, L3 semantic. Already built, just was unlabeled. |
+| ~~Forked subagent for memory recall~~ | ~~Dedicated subagent for memory ops~~ | **DONE** - Solved by Decision 94 (local script replaces subagent). |
+| ~~LLM-powered summaries~~ | ~~Replace pure-Python summary generator~~ | **DELETED** - generate_summary.py removed (session 22). Claude writes notes directly. No OpenRouter. No fallback. |
+| ~~MEMORY.md trimming~~ | ~~Move stable info to DB to save context tokens~~ | **DONE** - Stable info moved to DB + ARCHITECTURE.md + SESSION_PROTOCOLS.md. session-history.md retired (Decision 102). |
 | Session narratives | Richer session summaries that read like a story of what happened | LLM summaries are a step toward this. Post-MVP. |
 | Token optimization | Hook output and context injection could be further optimized | Post-MVP. |
 
@@ -121,13 +121,13 @@ Already on GitHub (PRIVATE, Decision 96). Some packaging items remain:
 - **Decision 52:** Scope = Fedora + Dropbox only
 - **Decision 53:** Multi-OS + provider-agnostic + open-source polish = post-MVP
 - **Decision 54:** brain-tags + brain-doctor = post-MVP
-- **Decision 55:** brain-setup wizard deferred (REVERSED — built in Step 7.4)
+- **Decision 55:** brain-setup wizard deferred (REVERSED - built in Step 7.4)
 - **Decision 56:** Y/F/R verification deferred
 - **Decision 81:** LLM summaries blocked (claude -p hangs). **RESOLVED** by Decision 99 (direct API call).
 - **Decision 85:** Phase 7 rewritten, brain-setup moved IN to MVP (un-deferring Decision 55)
 - **Decision 89:** ChromaDB replaced with SQLite+numpy (**RESOLVED** the Python 3.14 blocker)
 - **Decision 96:** Repo starts PRIVATE for beta testing
-- **Decision 99:** ~~LLM summaries via direct API call to OpenRouter/Anthropic.~~ **SUPERSEDED** — generate_summary.py deleted (session 22). Claude writes notes directly.
+- **Decision 99:** ~~LLM summaries via direct API call to OpenRouter/Anthropic.~~ **SUPERSEDED** - generate_summary.py deleted (session 22). Claude writes notes directly.
 - **Decision 100:** /brain-doctor renamed to /brain-health. **DONE.**
 - **Decision 102:** session-history.md retired. Brain DB replaces it.
 
@@ -138,12 +138,12 @@ Already on GitHub (PRIVATE, Decision 96). Some packaging items remain:
 If Mike wants to tackle these post-MVP, here's a rough grouping:
 
 **Quick wins (hours):**
-- `requirements.txt` + `requirements-semantic.txt` — simple file creation
-- Token optimization — reduce hook output size
+- `requirements.txt` + `requirements-semantic.txt` - simple file creation
+- Token optimization - reduce hook output size
 
 **Medium effort (1-2 sessions):**
-- `/brain-forget` — needs careful UX (confirmation + undo)
-- `/brain-tag` — tag management
+- `/brain-forget` - needs careful UX (confirmation + undo)
+- `/brain-tag` - tag management
 - Automatic fact extraction from conversations
 - Cross-machine DB sync (move DB to Dropbox or build sync script)
 - Fuzzy search fallback (typo-tolerant matching)

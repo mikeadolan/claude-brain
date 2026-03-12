@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-status.py — Database stats and health check for claude-brain.
+status.py - Database stats and health check for claude-brain.
 
 Displays session counts, message counts, project breakdown, backup info,
 and semantic search status.

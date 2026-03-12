@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""brain_sync.py — Rotating backup of SQLite database for claude-brain.
+"""brain_sync.py - Rotating backup of SQLite database for claude-brain.
 
 Rotation: max 2 copies. .bak2 deleted, .bak1 renamed to .bak2, new copy to .bak1.
 Verifies backup with sqlite3 integrity_check.

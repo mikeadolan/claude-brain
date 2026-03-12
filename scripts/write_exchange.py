@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-write_exchange.py — Live exchange writer for claude-brain.
+write_exchange.py - Live exchange writer for claude-brain.
 
 Captures new messages from the current session's JSONL file into the database.
 Called by hooks/stop.py after every Claude response.
@@ -31,7 +31,7 @@ os.environ["TQDM_DISABLE"] = "1"
 os.environ["TRANSFORMERS_VERBOSITY"] = "error"
 
 # ---------------------------------------------------------------------------
-# Constants — shared with ingest_jsonl.py
+# Constants - shared with ingest_jsonl.py
 # ---------------------------------------------------------------------------
 SKIP_TYPES = {"progress", "file-history-snapshot", "queue-operation"}
 STORABLE_TYPES = {"user", "assistant", "system"}
@@ -96,7 +96,7 @@ def connect_db(db_path):
 
 
 # ---------------------------------------------------------------------------
-# Content extraction — same logic as ingest_jsonl.py
+# Content extraction - same logic as ingest_jsonl.py
 # ---------------------------------------------------------------------------
 
 def extract_content(message_data):
@@ -143,7 +143,7 @@ def detect_project(config, jsonl_path, cwd):
 
 
 # ---------------------------------------------------------------------------
-# Semantic embedding (conditional — SQLite + numpy, Decision 89)
+# Semantic embedding (conditional - SQLite + numpy, Decision 89)
 # ---------------------------------------------------------------------------
 
 SEMANTIC_AVAILABLE = False

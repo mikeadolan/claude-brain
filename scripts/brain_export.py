@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-brain_export.py — Export brain data to human-readable text files.
+brain_export.py - Export brain data to human-readable text files.
 
 Exports sessions, search results, profile, decisions, or weekly recap
 to timestamped files in the exports/ folder.

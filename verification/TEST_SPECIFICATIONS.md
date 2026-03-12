@@ -1,4 +1,4 @@
-# CLAUDE-BRAIN — TEST SPECIFICATIONS
+# CLAUDE-BRAIN - TEST SPECIFICATIONS
 
 **Created:** 2026-03-03
 **Last Updated:** 2026-03-03
@@ -45,15 +45,15 @@ Core ingestion engine. Parses JSONL, maps projects, deduplicates, writes to DB.
 
 | ID | Test | Input | Expected |
 |----|------|-------|----------|
-| T-INGEST-01 | Ingest a valid session | `fixtures/valid_session.jsonl`, project mapping → "gen" | → sys_sessions(1), transcripts(7 — user+assistant+system, NOT progress or file-history-snapshot), sys_ingest_log(1) |
+| T-INGEST-01 | Ingest a valid session | `fixtures/valid_session.jsonl`, project mapping → "gen" | → sys_sessions(1), transcripts(7 - user+assistant+system, NOT progress or file-history-snapshot), sys_ingest_log(1) |
 | T-INGEST-02 | Extract session metadata | Same fixture | sys_sessions row: session_id matches JSONL, project="gen", started_at = earliest timestamp, model from assistant message, source="jsonl_ingest" |
 | T-INGEST-03 | Store raw JSON | Same fixture | Every transcripts row has non-null raw_json. raw_json parses back to valid JSON matching original line. |
 | T-INGEST-04 | Ingest session with tool_use/tool_result | `fixtures/valid_session_with_tools.jsonl` | Tool use and tool result blocks stored. Content field captures text content. |
 | T-INGEST-05 | Ingest subagent JSONL | `fixtures/subagent_session.jsonl` | → transcripts rows have is_subagent=1. Session ID from JSONL. Ingest log: file_type="subagent". |
 | T-INGEST-06 | Ingest tool result txt file | `fixtures/tool_result_sample.txt` in a session folder | → tool_results(1). tool_use_id = filename minus .txt. content = file contents. |
-| T-INGEST-07 | Project mapping — Windows folder name | Folder name "C--Users-micha-OneDrive-Documents-Projects-Johnny-Goods-claude-code" | project = "jg" |
-| T-INGEST-08 | Project mapping — Fedora cwd path | cwd = "/home/user/claude-brain/johnny-goods-assistant/..." | project = "jga" (NOT "jg" — longer match wins) |
-| T-INGEST-09 | Project mapping — no match | cwd = "/tmp/randomfolder" | project = "oth" (default) |
+| T-INGEST-07 | Project mapping - Windows folder name | Folder name "C--Users-micha-OneDrive-Documents-Projects-Johnny-Goods-claude-code" | project = "jg" |
+| T-INGEST-08 | Project mapping - Fedora cwd path | cwd = "/home/user/claude-brain/johnny-goods-assistant/..." | project = "jga" (NOT "jg" - longer match wins) |
+| T-INGEST-09 | Project mapping - no match | cwd = "/tmp/randomfolder" | project = "oth" (default) |
 | T-INGEST-10 | Message count | Valid session with 3 user + 3 assistant + 1 system = 7 storable messages | sys_sessions.message_count = 7 |
 
 ### Deduplication
@@ -81,8 +81,8 @@ Core ingestion engine. Parses JSONL, maps projects, deduplicates, writes to DB.
 | T-INGEST-40 | FTS5 sync after ingest | Ingest valid session, then search FTS5 for a word from content | FTS5 returns matching row. Triggers kept index in sync. |
 | T-INGEST-41 | Timestamps preserved | Ingest valid session | transcripts.timestamp matches JSONL timestamp exactly (ISO 8601). |
 | T-INGEST-42 | Parent UUID chain | Messages with parentUuid values | transcripts.parent_uuid matches JSONL parentUuid. |
-| T-INGEST-43 | Content extraction — text blocks | Assistant message with content: [{type: "text", text: "hello"}] | transcripts.content = "hello" |
-| T-INGEST-44 | Content extraction — thinking blocks | Assistant message with thinking + text blocks | transcripts.content captures text blocks. Thinking blocks handled (stored or excluded — decision needed). |
+| T-INGEST-43 | Content extraction - text blocks | Assistant message with content: [{type: "text", text: "hello"}] | transcripts.content = "hello" |
+| T-INGEST-44 | Content extraction - thinking blocks | Assistant message with thinking + text blocks | transcripts.content captures text blocks. Thinking blocks handled (stored or excluded - decision needed). |
 | T-INGEST-45 | System message subtypes | System messages with subtype "compact_boundary" | transcripts.subtype = "compact_boundary" |
 
 ---
@@ -177,7 +177,7 @@ Rotating backup of SQLite database.
 | ID | Test | Input | Expected |
 |----|------|-------|----------|
 | T-SYNC-01 | First backup | No existing backups in db-backup/ | 1 backup file created. File size matches source DB size (±1%). |
-| T-SYNC-02 | Rotation — 2 copies | 2 existing backups | Oldest deleted. Current renamed. New copy created. Total = 2 files. |
+| T-SYNC-02 | Rotation - 2 copies | 2 existing backups | Oldest deleted. Current renamed. New copy created. Total = 2 files. |
 | T-SYNC-03 | Verify after copy | backup.verify_after_copy=true in config | Script checks file size > 0 and SQLite integrity_check passes. |
 | T-SYNC-04 | Log output | Normal run | Prints: timestamp, file size, backup path. |
 
@@ -418,16 +418,16 @@ Same structure as main JSONL but includes `agentId` field on every line.
 Tests should be run in this order (dependency chain):
 
 1. **Fixtures created** (prerequisite for everything)
-2. **ingest_jsonl.py tests** (T-INGEST-*) — core engine, no other script depends on it being wrong
-3. **startup_check.py tests** (T-STARTUP-*) — depends on ingest working
-4. **write_exchange.py tests** (T-WRITE-*) — independent of ingest
-5. **brain_sync.py tests** (T-SYNC-*) — independent
-6. **status.py tests** (T-STATUS-*) — reads DB populated by above
-7. **copy_chat_file.py tests** (T-COPY-*) — independent
-8. **import_claude_ai.py tests** (T-IMPORT-*) — independent
-10. **Hook tests** (T-HOOK-*) — depends on scripts working
-11. **MCP tests** (T-MCP-*) — depends on data existing
-12. **Integration tests** (T-INT-*) — depends on everything
+2. **ingest_jsonl.py tests** (T-INGEST-*) - core engine, no other script depends on it being wrong
+3. **startup_check.py tests** (T-STARTUP-*) - depends on ingest working
+4. **write_exchange.py tests** (T-WRITE-*) - independent of ingest
+5. **brain_sync.py tests** (T-SYNC-*) - independent
+6. **status.py tests** (T-STATUS-*) - reads DB populated by above
+7. **copy_chat_file.py tests** (T-COPY-*) - independent
+8. **import_claude_ai.py tests** (T-IMPORT-*) - independent
+10. **Hook tests** (T-HOOK-*) - depends on scripts working
+11. **MCP tests** (T-MCP-*) - depends on data existing
+12. **Integration tests** (T-INT-*) - depends on everything
 
 ---
 
@@ -436,13 +436,13 @@ Tests should be run in this order (dependency chain):
 | Component | Happy | Dedup/Edge | Error | Total |
 |-----------|-------|------------|-------|-------|
 | ingest_jsonl.py | 10 | 3 | 5 | 18 |
-| startup_check.py | 7 | — | 3 | 10 |
-| write_exchange.py | 6 | — | 2 | 8 |
-| import_claude_ai.py | 4 | — | 3 | 7 |
-| brain_sync.py | 4 | — | 2 | 6 |
-| status.py | 4 | — | — | 4 |
-| copy_chat_file.py | 3 | — | 2 | 5 |
-| Hooks (4 hooks) | 11 | — | — | 11 |
-| MCP Server (10 functions) | 18 | — | — | 18 |
-| Integration | 7 | — | — | 7 |
+| startup_check.py | 7 | - | 3 | 10 |
+| write_exchange.py | 6 | - | 2 | 8 |
+| import_claude_ai.py | 4 | - | 3 | 7 |
+| brain_sync.py | 4 | - | 2 | 6 |
+| status.py | 4 | - | - | 4 |
+| copy_chat_file.py | 3 | - | 2 | 5 |
+| Hooks (4 hooks) | 11 | - | - | 11 |
+| MCP Server (10 functions) | 18 | - | - | 18 |
+| Integration | 7 | - | - | 7 |
 | **TOTAL** | **77** | **3** | **20** | **100** |

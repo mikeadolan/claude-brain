@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 """
-clean_transcripts.py — Find and fix misspellings in transcript content.
+clean_transcripts.py - Find and fix misspellings in transcript content.
 
 Auto-detects typos by scanning the FTS5 vocabulary for rare terms that have
 a close match with much higher frequency. Replaces typos in the transcripts
-table directly — the FTS5 UPDATE trigger rebuilds the index automatically.
+table directly - the FTS5 UPDATE trigger rebuilds the index automatically.
 
-This is a recurring maintenance tool. Safe to run multiple times — each run
+This is a recurring maintenance tool. Safe to run multiple times - each run
 only fixes what's currently misspelled.
 
 Usage:
-    python3 clean_transcripts.py              # Dry run — show what would change
+    python3 clean_transcripts.py              # Dry run - show what would change
     python3 clean_transcripts.py --apply      # Actually fix the transcripts
     python3 clean_transcripts.py --verbose     # Show per-row details
 
@@ -55,21 +55,21 @@ def connect_db(db_path):
 
 
 # ---------------------------------------------------------------------------
-# Typo detection — scan FTS5 vocab for likely misspellings
+# Typo detection - scan FTS5 vocab for likely misspellings
 # ---------------------------------------------------------------------------
 
 # Import the shared stop words list
 from fuzzy_search import STOP_WORDS
 
-# Detection thresholds — VERY STRICT for bulk cleanup (not search-time correction)
+# Detection thresholds - VERY STRICT for bulk cleanup (not search-time correction)
 # We only fix single-character typos (ED=1) to avoid false positives between
 # real word pairs. Combined with dictionary check and morphological filtering,
 # this catches obvious misspellings while leaving real words alone.
 _RARE_DOC_MAX = 50        # Only consider terms appearing in < 50 docs
-_RATIO_THRESHOLD = 2      # Candidate must have 2x+ higher frequency (low bar —
+_RATIO_THRESHOLD = 2      # Candidate must have 2x+ higher frequency (low bar -
                           # dictionary filter is the main guard against false positives)
 _CANDIDATE_DOC_MIN = 5    # Candidate must appear in at least this many docs
-_FUZZY_CUTOFF = 0.85      # Strict similarity — only near-identical strings
+_FUZZY_CUTOFF = 0.85      # Strict similarity - only near-identical strings
 _FUZZY_MAX_MATCHES = 3    # Candidates to evaluate per term
 _MIN_TERM_LEN = 5         # Skip short terms (too many false positives)
 _MAX_EDIT_DISTANCE = 1    # ONLY single-character typos (strictest filter)
@@ -109,7 +109,7 @@ _TECH_EXCLUSIONS = {
     "cpython", "popen", "printf", "sprintf", "assed",
 }
 
-# Common English suffixes/prefixes — if the edit is just adding/removing one
+# Common English suffixes/prefixes - if the edit is just adding/removing one
 # of these, it's a word variant, not a typo.
 _SUFFIXES = {
     "s", "es", "ed", "er", "ly", "al", "ty", "ry", "le",
@@ -235,7 +235,7 @@ def detect_typos(conn):
     if not vocab_list:
         return {}
 
-    # Load system dictionary — real words are never treated as typos,
+    # Load system dictionary - real words are never treated as typos,
     # and corrections must target real words (prevents chain corrections)
     dictionary = _load_dictionary()
 
@@ -248,7 +248,7 @@ def detect_typos(conn):
         # Skip short terms (too many false positives)
         if len(term) < _MIN_TERM_LEN:
             continue
-        # Skip real English words — the key filter that prevents false positives
+        # Skip real English words - the key filter that prevents false positives
         if term in dictionary:
             continue
         # Skip known technical terms not in the dictionary
@@ -276,14 +276,14 @@ def detect_typos(conn):
             if _is_morphological_variant(term, candidate):
                 continue
 
-            # Correction target must be a real word — prevents chain corrections
+            # Correction target must be a real word - prevents chain corrections
             # where one typo corrects to another typo (e.g., "eveyrthing" → "eveything")
             if candidate not in dictionary and all_terms.get(candidate, 0) < _RARE_DOC_MAX:
                 continue
 
             cand_freq = all_terms.get(candidate, 0)
 
-            # Rare term — need higher frequency correction target
+            # Rare term - need higher frequency correction target
             if cand_freq >= max(doc * _RATIO_THRESHOLD, _CANDIDATE_DOC_MIN):
                 typo_map[term] = candidate
                 break

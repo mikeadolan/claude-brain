@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-copy_chat_file.py — File versioning to chat-files/ per project for claude-brain.
+copy_chat_file.py - File versioning to chat-files/ per project for claude-brain.
 
 Copies a file to a project's chat-files/ subfolder organized by date/session.
 

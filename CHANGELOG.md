@@ -4,78 +4,78 @@ All notable changes to claude-brain.
 
 ---
 
-## [0.2.0] — 2026-03-12
+## [0.2.0] - 2026-03-12
 
-### Added — Feature 3: Email Digests (the brain reaches OUT to you)
+### Added - Feature 3: Email Digests (the brain reaches OUT to you)
 - **3 email templates** via `scripts/brain_digest.py`:
-  - **Daily standup** (`--daily`) — BLUF "Pick Up Here" per project, RAG health badges, blockers, in-progress, 7-day rolling average, quiet day handling. 150-250 words.
-  - **Weekly digest** (default) — executive summary, week-over-week trend table, RAG portfolio with project context, top accomplishments, amber dormant alerts, forward nudge. 300-500 words.
-  - **Project deep dive** (`--project mb`) — RAG header, executive summary, health metrics, in-progress, recent sessions, risks & blockers, next steps, decisions, architecture. 500-800 words.
-- **Dark mode** (`--dark` flag or `email.dark_mode: true` in config) — full dark palette.
-- **Email setup wizard** — Phase 7 in `brain-setup.py`: Gmail App Password, SMTP test, auto cron install.
-- **`scripts/write_project_summary.py`** — update project summaries from CLI (end-session protocol).
-- **10 email use cases** in README.md — Morning Kickoff, Stakeholder Update, Sprint Retro, etc.
-- **Email design spec** — `email-digest-design-spec.md` (839 lines, BLUF methodology, HTML constraints).
+  - **Daily standup** (`--daily`) - BLUF "Pick Up Here" per project, RAG health badges, blockers, in-progress, 7-day rolling average, quiet day handling. 150-250 words.
+  - **Weekly digest** (default) - executive summary, week-over-week trend table, RAG portfolio with project context, top accomplishments, amber dormant alerts, forward nudge. 300-500 words.
+  - **Project deep dive** (`--project mb`) - RAG header, executive summary, health metrics, in-progress, recent sessions, risks & blockers, next steps, decisions, architecture. 500-800 words.
+- **Dark mode** (`--dark` flag or `email.dark_mode: true` in config) - full dark palette.
+- **Email setup wizard** - Phase 7 in `brain-setup.py`: Gmail App Password, SMTP test, auto cron install.
+- **`scripts/write_project_summary.py`** - update project summaries from CLI (end-session protocol).
+- **10 email use cases** in README.md - Morning Kickoff, Stakeholder Update, Sprint Retro, etc.
+- **Email design spec** - `email-digest-design-spec.md` (839 lines, BLUF methodology, HTML constraints).
 
-### Added — Feature 1: Fuzzy Search (completed earlier, not in prior changelog)
-- **`scripts/fuzzy_search.py`** — typo correction before FTS query using frequency-ratio approach.
-- **`scripts/clean_transcripts.py`** — recurring maintenance tool, fixes typos at the source.
+### Added - Feature 1: Fuzzy Search (completed earlier, not in prior changelog)
+- **`scripts/fuzzy_search.py`** - typo correction before FTS query using frequency-ratio approach.
+- **`scripts/clean_transcripts.py`** - recurring maintenance tool, fixes typos at the source.
 - Integrated into MCP server, brain_search.py, brain_query.py.
 
-### Added — Infrastructure
-- **Rule #2 GO check hook** — `user-prompt-submit.py` detects "thoughts?" without GO, injects STOP reminder.
-- **Rule #1 expanded** — brain search + Exa web search before all work.
-- **End-session verified checklist** — table with solid lines, every row must show DONE.
-- **`CLAUDE.md.example`** — generic version for new users (brain-first rule included).
-- **Token monitor** — `cc-updated.sh` with terminal title bar usage + desktop popups at 70/80/90%.
-- **Office skills** — docx, xlsx, pdf, pptx skills installed from tfriedel/claude-office-skills.
-- **Exa MCP** — web search registered for Claude Code.
+### Added - Infrastructure
+- **Rule #2 GO check hook** - `user-prompt-submit.py` detects "thoughts?" without GO, injects STOP reminder.
+- **Rule #1 expanded** - brain search + Exa web search before all work.
+- **End-session verified checklist** - table with solid lines, every row must show DONE.
+- **`CLAUDE.md.example`** - generic version for new users (brain-first rule included).
+- **Token monitor** - `cc-updated.sh` with terminal title bar usage + desktop popups at 70/80/90%.
+- **Office skills** - docx, xlsx, pdf, pptx skills installed from tfriedel/claude-office-skills.
+- **Exa MCP** - web search registered for Claude Code.
 
-### Changed — Phase 8: Architecture Merge (CLOSED)
+### Changed - Phase 8: Architecture Merge (CLOSED)
 - `sys_session_summaries` table eliminated. Single source: `sys_sessions.notes`.
 - `project_registry` gained 4 columns: `summary`, `summary_updated_at`, `status`, `health`.
 - All 113 session notes rewritten by Opus. All 7 project summaries regenerated.
 - Tag: `post-architecture-merge` (15/15 tests pass).
 
-### Changed — HTML Email Foundation
+### Changed - HTML Email Foundation
 - All email styles inline (Gmail web strips `<style>` blocks).
 - Safe HTML skeleton: DOCTYPE, xmlns, MSO conditional comments, color-scheme meta.
 - Preheader text for inbox preview. #1a1a1a text (not #000000) for dark mode safety.
 
 ### Fixed
-- **All 9 bugs closed** — B1-B7 FIXED, B8-B9 WONTFIX (upstream CC bug #5506).
-- **Project summary staleness** — end-session protocol now requires summary update with verified checklist.
+- **All 9 bugs closed** - B1-B7 FIXED, B8-B9 WONTFIX (upstream CC bug #5506).
+- **Project summary staleness** - end-session protocol now requires summary update with verified checklist.
 
 ---
 
-## [0.1.1] — 2026-03-10
+## [0.1.1] - 2026-03-10
 
 ### Fixed
-- **SessionEnd hook timeout (Bug 1)** — Root cause: `generate_summary.py` made 30s OpenRouter API call, exceeding hook timeout. Fix: deleted `generate_summary.py` entirely. `session-end.py` now only runs `brain_sync.py` (detached).
-- **MCP server unclean shutdown (Bug 2)** — Root cause: `sys.exit(0)` in signal handler raises `SystemExit` through asyncio event loop. Fix: changed to `os._exit(0)` for clean OS-level exit.
-- **UTC timestamps** — All 4 scripts with logging now use `time.gmtime` converter so "Z" suffix is accurate (was using local time).
+- **SessionEnd hook timeout (Bug 1)** - Root cause: `generate_summary.py` made 30s OpenRouter API call, exceeding hook timeout. Fix: deleted `generate_summary.py` entirely. `session-end.py` now only runs `brain_sync.py` (detached).
+- **MCP server unclean shutdown (Bug 2)** - Root cause: `sys.exit(0)` in signal handler raises `SystemExit` through asyncio event loop. Fix: changed to `os._exit(0)` for clean OS-level exit.
+- **UTC timestamps** - All 4 scripts with logging now use `time.gmtime` converter so "Z" suffix is accurate (was using local time).
 
 ### Removed
-- **`scripts/generate_summary.py`** — Deleted. Claude writes session notes directly. No LLM summary generation. No OpenRouter dependency.
-- **`summary_llm` config section** — Removed from `config.yaml`, `config.yaml.example`, and `brain-setup.py` setup wizard.
-- **`repair_missing_summaries()`** — Removed from `startup_check.py` (called deleted generate_summary.py).
-- **generate_summary call in `import_claude_ai.py`** — Removed dead subprocess call block.
+- **`scripts/generate_summary.py`** - Deleted. Claude writes session notes directly. No LLM summary generation. No OpenRouter dependency.
+- **`summary_llm` config section** - Removed from `config.yaml`, `config.yaml.example`, and `brain-setup.py` setup wizard.
+- **`repair_missing_summaries()`** - Removed from `startup_check.py` (called deleted generate_summary.py).
+- **generate_summary call in `import_claude_ai.py`** - Removed dead subprocess call block.
 
 ### Changed
-- `hooks/session-end.py` — Complete rewrite. Only runs `brain_sync.py` (detached via `Popen`).
-- `mcp/server.py` — Signal handler uses `os._exit(0)` instead of `sys.exit(0)`.
+- `hooks/session-end.py` - Complete rewrite. Only runs `brain_sync.py` (detached via `Popen`).
+- `mcp/server.py` - Signal handler uses `os._exit(0)` instead of `sys.exit(0)`.
 - Documentation updated: ARCHITECTURE.md, FOLDER_SCHEMA.md, SCRIPT_CONTRACTS.md, TEST_SPECIFICATIONS.md, POST_MVP_ROADMAP.md, PROJECT_TRACKER.md, CHANGELOG.md.
 - Added CODE CHANGE CHECKLIST to CLAUDE.md and MEMORY.md.
 
 ---
 
-## [0.1.0] — 2026-03-09
+## [0.1.0] - 2026-03-09
 
 ### Added
-- **Bash-to-Python migration complete** — all hooks and scripts are now pure Python. No bash dependencies. Cross-platform ready (Linux, macOS; Windows via WSL).
-- **Batch embedding backfill** — `scripts/batch_embed.py` backfills semantic search vectors for all existing transcripts.
-- **requirements.txt** — standard Python dependency file for pip install.
-- **Email digest framework** — architecture supports scheduled email summaries (daily recaps, weekly progress, dormant project alerts).
+- **Bash-to-Python migration complete** - all hooks and scripts are now pure Python. No bash dependencies. Cross-platform ready (Linux, macOS; Windows via WSL).
+- **Batch embedding backfill** - `scripts/batch_embed.py` backfills semantic search vectors for all existing transcripts.
+- **requirements.txt** - standard Python dependency file for pip install.
+- **Email digest framework** - architecture supports scheduled email summaries (daily recaps, weekly progress, dormant project alerts).
 
 ### Changed
 - All 4 hooks rewritten from bash to Python (`hooks/*.py`).
@@ -90,14 +90,14 @@ All notable changes to claude-brain.
 
 ---
 
-## [0.0.1] — 2026-02-01
+## [0.0.1] - 2026-02-01
 
 ### Added
-- Initial implementation — SQLite database, 4 lifecycle hooks (bash), MCP server with 11 tools.
+- Initial implementation - SQLite database, 4 lifecycle hooks (bash), MCP server with 11 tools.
 - 11 slash commands (`/brain-question`, `/brain-search`, `/brain-history`, `/brain-recap`, `/brain-decide`, `/brain-health`, `/brain-status`, `/brain-import`, `/brain-questionnaire`, `/brain-setup`, `/brain-export`).
 - Dual search: FTS5 keyword search + semantic search (sentence-transformers + numpy).
 - Session quality scoring and tagging.
 - Claude.ai conversation import via Chrome extension export.
 - Interactive setup wizard (`brain-setup.py`).
 - Multi-machine support via Dropbox/cloud sync.
-- ~~LLM-powered session summaries via direct API call (OpenRouter/Anthropic).~~ (Removed in 0.1.1 — generate_summary.py deleted, Claude writes notes directly.)
+- ~~LLM-powered session summaries via direct API call (OpenRouter/Anthropic).~~ (Removed in 0.1.1 - generate_summary.py deleted, Claude writes notes directly.)

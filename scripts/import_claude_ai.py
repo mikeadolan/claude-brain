@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-import_claude_ai.py — Import claude.ai JSON conversation exports into claude-brain.
+import_claude_ai.py - Import claude.ai JSON conversation exports into claude-brain.
 
 Parses claude.ai export JSON (single conversation per file), maps messages,
 writes to sys_sessions + transcripts + sys_ingest_log, moves file to completed/.

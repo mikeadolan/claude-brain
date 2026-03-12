@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-batch_embed.py — Backfill embeddings for all un-embedded transcripts.
+batch_embed.py - Backfill embeddings for all un-embedded transcripts.
 
 Reuses embed_message() from write_exchange.py. Processes in batches of 500
 with progress reporting. Safe to re-run (INSERT OR REPLACE).
@@ -95,7 +95,7 @@ def main():
             elapsed = time.time() - start
             rate = i / elapsed
             remaining = (total - i) / rate
-            print(f"  {i}/{total} ({i*100//total}%) — {rate:.0f}/sec — ~{remaining:.0f}s remaining")
+            print(f"  {i}/{total} ({i*100//total}%) - {rate:.0f}/sec - ~{remaining:.0f}s remaining")
 
     conn.commit()
     conn.close()

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-startup_check.py — Session start orchestrator for claude-brain.
+startup_check.py - Session start orchestrator for claude-brain.
 
 Scans for new JSONL files, calls ingest_jsonl.ingest() for each,
 verifies required folders, triggers DB backup, prints summary.
@@ -24,7 +24,7 @@ import time
 import yaml
 
 # ---------------------------------------------------------------------------
-# Config / Logging / DB — same patterns as ingest_jsonl.py
+# Config / Logging / DB - same patterns as ingest_jsonl.py
 # ---------------------------------------------------------------------------
 
 def get_root_path():

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-brain-setup.py — First-run installer for claude-brain.
+brain-setup.py - First-run installer for claude-brain.
 
 Creates database, config, directories, hooks, MCP registration,
-and seeds initial brain data. Idempotent — safe to re-run.
+and seeds initial brain data. Idempotent - safe to re-run.
 
 Usage:
     python3 scripts/brain-setup.py
@@ -88,14 +88,14 @@ def generate_prefix(name, existing_prefixes):
     if candidate not in existing_prefixes:
         return candidate
 
-    # Collision — try adding more letters
+    # Collision - try adding more letters
     for length in range(2, min(len(name.replace("-", "")), 5)):
         flat = name.replace("-", "")
         candidate = flat[:length]
         if candidate not in existing_prefixes:
             return candidate
 
-    # Last resort — append digit
+    # Last resort - append digit
     base = name.replace("-", "")[:2]
     for i in range(2, 100):
         candidate = f"{base}{i}"
@@ -116,7 +116,7 @@ def phase_preflight():
     if v >= MIN_PYTHON:
         ok(f"Python {v.major}.{v.minor}.{v.micro}")
     else:
-        fail(f"Python {v.major}.{v.minor} — need {MIN_PYTHON[0]}.{MIN_PYTHON[1]}+")
+        fail(f"Python {v.major}.{v.minor} - need {MIN_PYTHON[0]}.{MIN_PYTHON[1]}+")
         errors.append("Python version too old")
 
     # Claude Code
@@ -198,9 +198,9 @@ def phase_projects():
 
     # --- Storage mode ---
     print("\n  Storage mode:")
-    print("    synced — Root folder in a sync service (Dropbox, OneDrive, etc.)")
+    print("    synced - Root folder in a sync service (Dropbox, OneDrive, etc.)")
     print("             Database stored separately on local disk.")
-    print("    local  — Everything in one folder. Single computer setup.")
+    print("    local  - Everything in one folder. Single computer setup.")
     storage_mode = ask("Storage mode", "synced").lower()
     while storage_mode not in ("synced", "local"):
         storage_mode = ask("Enter 'synced' or 'local'", "synced").lower()
@@ -295,7 +295,7 @@ def phase_projects():
             "label": "Uncategorized"
         })
         prefixes_used.add(oth_prefix)
-        ok(f"Auto-added: other (prefix: {oth_prefix}) — catch-all for unmatched sessions")
+        ok(f"Auto-added: other (prefix: {oth_prefix}) - catch-all for unmatched sessions")
 
     # --- Quick identity questions ---
     print("\n  Quick identity setup (seeds your brain profile):")
@@ -327,7 +327,7 @@ def phase_projects():
     print(f"    DB:      {db_path}")
     print(f"    Projects:")
     for p in projects:
-        print(f"      {p['folder_name']} ({p['prefix']}) — {p['label']}")
+        print(f"      {p['folder_name']} ({p['prefix']}) - {p['label']}")
     if identity:
         print(f"    Identity: {', '.join(f'{k}={v}' for k, v in identity.items())}")
     print()
@@ -415,7 +415,7 @@ DDL_STATEMENTS = [
         records_imported INTEGER,
         ingested_at      TEXT
     )""",
-    # sys_session_summaries REMOVED — sys_sessions.notes is the single source of truth
+    # sys_session_summaries REMOVED - sys_sessions.notes is the single source of truth
     """CREATE TABLE IF NOT EXISTS project_registry (
         folder_name      TEXT PRIMARY KEY,
         prefix           TEXT UNIQUE,
@@ -782,7 +782,7 @@ def phase_config(cfg):
         ok("config.yaml.example already exists (shipped with repo, skipping)")
     else:
         with open(example_path, "w") as f:
-            f.write("# claude-brain Configuration File — EXAMPLE\n")
+            f.write("# claude-brain Configuration File - EXAMPLE\n")
             f.write("# Copy this to config.yaml and edit with your values.\n")
             f.write("# Or run: python3 scripts/brain-setup.py (generates config for you)\n\n")
             yaml.dump(example_data, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
@@ -799,11 +799,11 @@ def phase_config(cfg):
             PROJECT: {p['folder_name']}
             PREFIX: {p['prefix']}
 
-            ## RULE #1 — USE THE BRAIN FIRST. ALWAYS.
+            ## RULE #1 - USE THE BRAIN FIRST. ALWAYS.
             **You have a brain with persistent memory across sessions. USE IT before doing anything substantive.**
             - Before proposing a plan, starting a task, debugging, answering questions, or suggesting changes: **search the brain.**
             - Use `search_transcripts`, `search_semantic`, `get_recent_summaries`, `lookup_decision`, `lookup_fact`.
-            - Files tell you WHAT exists. The brain tells you WHY — strategic context, prior decisions, rejected approaches.
+            - Files tell you WHAT exists. The brain tells you WHY - strategic context, prior decisions, rejected approaches.
             - Not using the brain is the same as not having it.
 
             ## BRAIN CONNECTION
@@ -811,7 +811,7 @@ def phase_config(cfg):
             Database: {cfg['db_path']}
 
             ## SESSION START
-            1. **Search the brain** — query search_transcripts + get_recent_summaries for this project. This is step ONE.
+            1. **Search the brain** - query search_transcripts + get_recent_summaries for this project. This is step ONE.
             2. Call get_profile() and get_project_state('{p['prefix']}') to load working context.
             3. Hooks handle startup check and context injection automatically.
 
@@ -871,7 +871,7 @@ def phase_email(cfg):
     - Project deep dives (on demand)
 
   Requires a Gmail account with an App Password.
-  (Not your regular password — a 16-character App Password from Google.)
+  (Not your regular password - a 16-character App Password from Google.)
 """)
 
     if not ask_yn("Do you want to set up email digests?", "n"):
@@ -918,7 +918,7 @@ def phase_email(cfg):
         ok("SMTP connection successful!")
     except Exception as e:
         warn(f"SMTP test failed: {e}")
-        warn("Email config saved anyway — you can fix the password later in config.yaml.")
+        warn("Email config saved anyway - you can fix the password later in config.yaml.")
 
     # Write email config directly to config.yaml
     config_path = Path(cfg["root_path"]) / "config.yaml"
@@ -938,7 +938,7 @@ def phase_email(cfg):
             yaml.dump(config_data, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
         ok("Email config written to config.yaml")
     else:
-        warn("config.yaml not found — run full setup first. Email config skipped.")
+        warn("config.yaml not found - run full setup first. Email config skipped.")
         return
 
     # Offer to set up cron
@@ -1035,7 +1035,7 @@ def phase_registration(cfg):
                 json.dump(settings, f, indent=4)
             ok(f"{hooks_added} hooks registered")
         else:
-            warn("Hooks not registered — brain won't auto-capture sessions")
+            warn("Hooks not registered - brain won't auto-capture sessions")
     else:
         ok("All 4 hooks already registered")
 
@@ -1099,7 +1099,7 @@ def phase_registration(cfg):
                 json.dump(claude_json, f, indent=4)
             ok(f"MCP server registered for {mcp_added} paths")
         else:
-            warn("MCP not registered — brain queries won't work until registered")
+            warn("MCP not registered - brain queries won't work until registered")
     else:
         ok("MCP server already registered for all projects")
 
@@ -1126,7 +1126,7 @@ def phase_registration(cfg):
             Ask: "Which file do you want to import?" (they can say a number or filename)
 
             Step 3: Ask which project to assign it to. Show the available projects by running:
-              python3 -c "import sqlite3; conn=sqlite3.connect('{db_path}'); [print(f'  {{r[1]}} — {{r[2]}}') for r in conn.execute('SELECT folder_name, prefix, label FROM project_registry ORDER BY folder_name')]"
+              python3 -c "import sqlite3; conn=sqlite3.connect('{db_path}'); [print(f'  {{r[1]}} - {{r[2]}}') for r in conn.execute('SELECT folder_name, prefix, label FROM project_registry ORDER BY folder_name')]"
 
             Step 4: Run the import with their choices:
               python3 {root}/scripts/import_claude_ai.py "<chosen_file_path>" --project <chosen_prefix>
@@ -1218,7 +1218,7 @@ def phase_registration(cfg):
                 else:
                     info("Sessions will be imported automatically on your first Claude Code session.")
             else:
-                info("startup_check.py not found — sessions will be imported on first Claude Code session.")
+                info("startup_check.py not found - sessions will be imported on first Claude Code session.")
     else:
         info("No existing JSONL files found (new Claude Code installation)")
 
@@ -1231,7 +1231,7 @@ def phase_registration(cfg):
         if import_script.exists():
             info(f"Run: python3 {import_script} to import them")
         else:
-            info("import_claude_ai.py not found — will be available after full setup")
+            info("import_claude_ai.py not found - will be available after full setup")
 
 # ---------------------------------------------------------------------------
 # Phase 8: Health Check + Next Steps
@@ -1354,7 +1354,7 @@ def phase_health_check(cfg):
   A questionnaire template has been created at:
     {questionnaire_path}
 
-  Fill it out to teach the brain about you — your background,
+  Fill it out to teach the brain about you - your background,
   preferences, family, goals, and working style. This makes Claude
   actually know who you are across every session.
 
@@ -1384,14 +1384,14 @@ def phase_health_check(cfg):
      Open Claude Code in any project folder:
        cd {root / cfg['projects'][0]['folder_name']}
        claude
-     The brain activates automatically — hooks fire, MCP connects,
+     The brain activates automatically - hooks fire, MCP connects,
      context loads. Nothing else to configure.
 
   2. IMPORT CLAUDE.AI CONVERSATIONS (optional)
      If you've been using claude.ai (the website), you can import
      your conversation history into the brain.
 
-     Step 1 — Install the Chrome extension:
+     Step 1 - Install the Chrome extension:
        Open Chrome and go to the Chrome Web Store:
          https://chromewebstore.google.com
        Search for "AI Chat Exporter" (by Ankit Maity).
@@ -1399,21 +1399,21 @@ def phase_health_check(cfg):
        Click "Add to Chrome" and confirm the install.
        You'll see a small icon appear in your browser toolbar.
 
-     Step 2 — Export conversations:
+     Step 2 - Export conversations:
        Go to https://claude.ai and open any conversation.
        Click the AI Chat Exporter icon in your toolbar
        (top-right of Chrome, may be under the puzzle piece menu).
        Select "JSON" as the export format.
-       Click "Export" — a .json file downloads to your
+       Click "Export" - a .json file downloads to your
        Downloads folder.
 
        Repeat for each conversation you want to import.
 
-     Step 3 — Move the exported files:
+     Step 3 - Move the exported files:
        Move all the .json files into your imports folder:
          mv ~/Downloads/*.json {root / 'imports'}/
 
-     Step 4 — Import into the brain:
+     Step 4 - Import into the brain:
        Open Claude Code in any project folder and type:
          /brain-import
        Claude will walk you through assigning each conversation
@@ -1522,7 +1522,7 @@ def import_questionnaire(root_path, db_path):
             key = key.strip().lower().replace(" ", "_")
             value = value.strip()
             if value:  # Only insert if there's a value
-                # Upsert — update if same category+key exists
+                # Upsert - update if same category+key exists
                 existing = cursor.execute(
                     "SELECT id FROM brain_facts WHERE category=? AND key=?",
                     (current_category, key)

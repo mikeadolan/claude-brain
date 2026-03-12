@@ -11,10 +11,10 @@
 3. [How to Search Your Brain](#3-how-to-search-your-brain)
 4. [MCP Tools Reference](#4-mcp-tools-reference)
 5. [Session Quality & Analysis](#5-session-quality--analysis)
-6. [Example Queries — What to Type in Claude Code](#6-example-queries)
+6. [Example Queries - What to Type in Claude Code](#6-example-queries)
 7. [Importing Claude.ai Conversations](#7-importing-claudeai-conversations)
 8. [Running Status and Health Checks](#8-status-and-health-checks)
-8.5. [**Email Digests** — The brain emails YOU (no other tool does this)](#85-email-digests)
+8.5. [**Email Digests** - The brain emails YOU (no other tool does this)](#85-email-digests)
 9. [How Data Gets Into the Brain](#9-how-data-gets-into-the-brain)
 10. [Adding a New Project](#10-adding-a-new-project)
 11. [Troubleshooting](#11-troubleshooting)
@@ -23,7 +23,7 @@
 ---
 
 > **Note:** The examples throughout this guide use made-up projects to show how the
-> brain works in practice. Your projects will be different — maybe you're building a
+> brain works in practice. Your projects will be different - maybe you're building a
 > mobile app (`app` prefix), tracking a job search (`js` prefix), writing a novel
 > (`nv` prefix), or managing freelance clients (`fr` prefix). Whatever you're working
 > on, you define your own projects during setup and the brain adapts to you.
@@ -32,20 +32,20 @@
 
 ## 1. WHAT IS CLAUDE-BRAIN?
 
-**Your AI finally has a real memory.** Not just RAG — RAG and beyond.
+**Your AI finally has a real memory.** Not just RAG - RAG and beyond.
 
-claude-brain gives Claude Code 100% lossless recall across every session and every project. No silos. Every word captured, every decision tracked, every project connected. It searches by keyword, meaning, or fuzzy match. It emails you a morning briefing before you open your laptop. Zero cloud dependencies — your data never leaves your machine.
+claude-brain gives Claude Code 100% lossless recall across every session and every project. No silos. Every word captured, every decision tracked, every project connected. It searches by keyword, meaning, or fuzzy match. It emails you a morning briefing before you open your laptop. Zero cloud dependencies - your data never leaves your machine.
 
 **Without it:** Claude Code starts every session from zero. Close the terminal, everything is gone. MEMORY.md has a 200-line cap. Context compaction throws away your earlier conversation. Projects are siloed.
 
 **With it, Claude knows:**
-- **Who you are** — name, preferences, working style, career goals
-- **What you've discussed** — every conversation, searchable by keyword, meaning, or fuzzy match
-- **What you've decided** — numbered, locked decisions that Claude won't re-ask
-- **What's true about your projects** — features, architecture, timelines, status
-- **What happened recently** — session summaries, project health, next steps
-- **What connects your projects** — cross-project search finds related work, shared patterns, decisions
-- **What you should do today** — proactive email briefings with per-project next steps and blockers
+- **Who you are** - name, preferences, working style, career goals
+- **What you've discussed** - every conversation, searchable by keyword, meaning, or fuzzy match
+- **What you've decided** - numbered, locked decisions that Claude won't re-ask
+- **What's true about your projects** - features, architecture, timelines, status
+- **What happened recently** - session summaries, project health, next steps
+- **What connects your projects** - cross-project search finds related work, shared patterns, decisions
+- **What you should do today** - proactive email briefings with per-project next steps and blockers
 
 Everything stays on YOUR machine. No cloud. No API calls for memory. Zero token burn.
 
@@ -65,7 +65,7 @@ get answers from your own history. Here are real things you can ask:
 ```
 "What did we work on two days ago around 2pm?"
 "Show me every decision we made about the database"
-"Find conversations where I was frustrated — what went wrong?"
+"Find conversations where I was frustrated - what went wrong?"
 "Compare my most productive sessions to my worst ones"
 "What's the full history of this project from the beginning?"
 ```
@@ -80,7 +80,7 @@ get answers from your own history. Here are real things you can ask:
 ```
 "Search all projects for anything about Docker"
 "What decisions have we made about APIs across every project?"
-"Find sessions where we discussed deployment — any project"
+"Find sessions where we discussed deployment - any project"
 "What patterns show up in my worst sessions across all projects?"
 ```
 
@@ -88,16 +88,16 @@ get answers from your own history. Here are real things you can ask:
 ```
 "Look at my worst-rated sessions and tell me what went wrong"
 "What mistakes keep repeating across my projects?"
-"Compare my best and worst sessions — what patterns do you see?"
+"Compare my best and worst sessions - what patterns do you see?"
 "What lessons should I take from the last month of work?"
-"Find every time I had to redo something — what caused it?"
+"Find every time I had to redo something - what caused it?"
 ```
 
-**Proactive email digests** — the brain reaches out to YOU (see Section 8.5):
+**Proactive email digests** - the brain reaches out to YOU (see Section 8.5):
 ```
 Daily:   Per-project "Pick Up Here" + blockers + accomplishments at 8am
-Weekly:  Executive summary, RAG portfolio, trends, dormant alerts — forwardable
-Project: Full status report for one project — health, risks, decisions, architecture
+Weekly:  Executive summary, RAG portfolio, trends, dormant alerts - forwardable
+Project: Full status report for one project - health, risks, decisions, architecture
 ```
 
 **Personal profile queries:**
@@ -108,8 +108,8 @@ Project: Full status report for one project — health, risks, decisions, archit
 ```
 
 You can search from two places:
-1. **Just ask Claude** — type a question naturally and Claude calls the right brain tool
-2. **Slash commands** — type `/brain-question`, `/brain-search`, `/brain-history`,
+1. **Just ask Claude** - type a question naturally and Claude calls the right brain tool
+2. **Slash commands** - type `/brain-question`, `/brain-search`, `/brain-history`,
    `/brain-recap`, `/brain-decide`, or any of the 11 brain commands for direct access
 
 ---
@@ -118,7 +118,7 @@ You can search from two places:
 
 **Three systems work together:**
 
-### Hooks (automatic — you do nothing)
+### Hooks (automatic - you do nothing)
 Four Python scripts fire at every stage of your Claude Code session. They capture
 data and inject memories without you lifting a finger.
 
@@ -130,28 +130,28 @@ data and inject memories without you lifting a finger.
 | Session ends | Backs up the database | session-end.py |
 
 **You never need to say "save this" or "remember that."** Every exchange is captured
-automatically, in full — not summarized, not filtered, not reduced to tool observations.
+automatically, in full - not summarized, not filtered, not reduced to tool observations.
 Every prompt gets relevant memories injected. It just works.
 
-### MCP Tools (automatic — Claude calls these on its own)
+### MCP Tools (automatic - Claude calls these on its own)
 Eleven read-only tools let Claude query the brain on demand. When you ask a question
-that implies memory lookup, Claude picks the right tool and searches for you — across
+that implies memory lookup, Claude picks the right tool and searches for you - across
 **all** your projects, not just the one you're in. You don't need to know which tool
-to use — just ask in plain English.
+to use - just ask in plain English.
 
-### Slash Commands (manual — you type these when you want direct access)
+### Slash Commands (manual - you type these when you want direct access)
 Eleven slash commands give you direct control over the brain. Use these when you
 want to search, check status, import data, or run diagnostics yourself:
 
 | Command | What It Does |
 |---------|-------------|
-| `/brain-question` | Ask anything — searches keywords, meaning, facts, and decisions all at once |
+| `/brain-question` | Ask anything - searches keywords, meaning, facts, and decisions all at once |
 | `/brain-search` | Raw transcript search with timestamps and excerpts |
-| `/brain-history` | Session timeline — one line per session with date, project, and topic |
+| `/brain-history` | Session timeline - one line per session with date, project, and topic |
 | `/brain-recap` | Progress report for a time range (today, this week, last N days) |
 | `/brain-decide` | Fast decision lookup by number or keyword |
 | `/brain-health` | Full 9-point diagnostic (database, hooks, MCP, backup, performance) |
-| `/brain-status` | Quick stats — sessions, messages, per-project counts |
+| `/brain-status` | Quick stats - sessions, messages, per-project counts |
 | `/brain-import` | Import a claude.ai conversation export |
 | `/brain-questionnaire` | Fill out or update your personal profile |
 | `/brain-setup` | Re-run setup to add projects or fix configuration |
@@ -163,7 +163,7 @@ want to search, check status, import data, or run diagnostics yourself:
 
 Every search works across **all your projects** by default. You can filter to a
 specific project when you want to, but out of the box, the brain finds answers
-wherever they live — whether it was a web app session, a side project, or a
+wherever they live - whether it was a web app session, a side project, or a
 general conversation from weeks ago.
 
 There are three ways to search, from easiest to most specific:
@@ -184,7 +184,7 @@ If Claude answers from its own context instead of checking the brain, be explici
 ```
 "Search the brain for everything about the deployment setup"
 "Use the brain tools to find all sessions about the resume"
-"Check the brain — what project facts do we have for the recipe app?"
+"Check the brain - what project facts do we have for the recipe app?"
 ```
 
 ### Way 2: Slash Commands (direct access)
@@ -193,7 +193,7 @@ Type these yourself for instant, specific results. All 11 brain commands:
 
 | Command | When to Use It | Example |
 |---------|---------------|---------|
-| `/brain-question` | General questions — searches everything at once | "What do we know about the payment flow?" |
+| `/brain-question` | General questions - searches everything at once | "What do we know about the payment flow?" |
 | `/brain-search` | Raw transcript search with full excerpts | "authentication error" |
 | `/brain-history` | See a timeline of your sessions | Shows date, project, topic per session |
 | `/brain-recap` | Summarize what you've done over a time range | "Give me this week's progress" |
@@ -205,7 +205,7 @@ Type these yourself for instant, specific results. All 11 brain commands:
 | `/brain-setup` | Re-run setup to add projects or fix config | Safe to re-run anytime |
 | `/brain-export` | Save brain data to text files | Exports profile, decisions, or search results |
 
-### Way 3: MCP Tools (Claude calls these — you just ask)
+### Way 3: MCP Tools (Claude calls these - you just ask)
 
 Behind the scenes, Claude has 11 read-only tools. You don't need to call them
 directly, but knowing what's available helps you ask better questions:
@@ -216,7 +216,7 @@ directly, but knowing what's available helps you ask better questions:
 | `search_semantic` | Meaning-based search (finds related content even when words differ) |
 | `lookup_fact` | Project-specific facts by category |
 | `lookup_decision` | Locked decisions by keyword |
-| `get_profile` | Your complete profile — facts, preferences, working style |
+| `get_profile` | Your complete profile - facts, preferences, working style |
 | `get_project_state` | Decisions + facts for a project in one call |
 | `get_session` | Full transcript of a specific session |
 | `get_recent_sessions` | List recent sessions with metadata |
@@ -228,10 +228,10 @@ directly, but knowing what's available helps you ask better questions:
 
 Two different search engines working together, both searching across all projects:
 
-**Keyword search** — matches exact words. Fast. Type "payment API" and it finds
+**Keyword search** - matches exact words. Fast. Type "payment API" and it finds
 messages containing those words. Good for specific terms, names, error messages.
 
-**Semantic search** — matches by meaning. Type "how users pay for things" and it
+**Semantic search** - matches by meaning. Type "how users pay for things" and it
 finds payment API discussions even though those exact words never appear. Good for
 concepts, vague memories, and "I know we talked about something like..."
 
@@ -244,12 +244,12 @@ concepts, vague memories, and "I know we talked about something like..."
 
 ## 4. MCP TOOLS REFERENCE
 
-These are the 11 tools Claude Code can call. You don't call them directly —
+These are the 11 tools Claude Code can call. You don't call them directly -
 Claude calls them based on your prompt. But knowing what exists helps you
 ask better questions.
 
 ### get_profile()
-**What:** Returns your complete profile — all brain_facts and brain_preferences.
+**What:** Returns your complete profile - all brain_facts and brain_preferences.
 **When Claude uses it:** Start of session, or when asked about you personally.
 **Example prompt:** "What does the brain know about me?"
 
@@ -265,13 +265,13 @@ ask better questions.
 ---
 
 ### search_transcripts(query, project?, limit?, recency_bias?)
-**What:** Full-text search across ALL conversation transcripts ever captured — every project, every session, every message.
+**What:** Full-text search across ALL conversation transcripts ever captured - every project, every session, every message.
 **When Claude uses it:** Any time you ask about past conversations or topics.
 **Parameters:**
-- `query` — search terms (required)
-- `project` — filter to one project by prefix, e.g. `gen`, `app`, `js` (optional)
-- `limit` — max results, default 20 (optional)
-- `recency_bias` — weight newer results higher, default false (optional)
+- `query` - search terms (required)
+- `project` - filter to one project by prefix, e.g. `gen`, `app`, `js` (optional)
+- `limit` - max results, default 20 (optional)
+- `recency_bias` - weight newer results higher, default false (optional)
 
 **Example prompts:**
 ```
@@ -282,14 +282,14 @@ ask better questions.
 ```
 
 **How the search works:**
-- Uses SQLite FTS5 (full-text search) — fast, works on keywords
+- Uses SQLite FTS5 (full-text search) - fast, works on keywords
 - Matches individual words, not exact phrases (searching "login page" finds
   messages containing both "login" and "page", not necessarily together)
 - To search within a specific project, say so: "search the app transcripts for..."
-- Recency bias makes recent results rank higher — useful for "what did we
+- Recency bias makes recent results rank higher - useful for "what did we
   just discuss" type queries
 
-**Project prefixes** (examples — yours are created during setup):
+**Project prefixes** (examples - yours are created during setup):
 | Prefix | Project |
 |--------|---------|
 | gen | General conversations |
@@ -304,11 +304,11 @@ projects, run `/brain-status` or check `config.yaml`.
 
 ### lookup_fact(project, category?, key?)
 **What:** Finds project-specific facts by category and/or keyword.
-**When Claude uses it:** Questions about project details — characters, locations, status.
+**When Claude uses it:** Questions about project details - characters, locations, status.
 **Parameters:**
-- `project` — project prefix (required)
-- `category` — filter by category like "character", "chapter", "status" (optional)
-- `key` — search by key name or value text (optional)
+- `project` - project prefix (required)
+- `category` - filter by category like "character", "chapter", "status" (optional)
+- `key` - search by key name or value text (optional)
 
 **Example prompts:**
 ```
@@ -333,8 +333,8 @@ projects, run `/brain-status` or check `config.yaml`.
 **What:** Finds locked decisions by keyword search.
 **When Claude uses it:** "What did we decide about X?"
 **Parameters:**
-- `project` — project prefix (required)
-- `topic` — keyword to search in description and rationale (required)
+- `project` - project prefix (required)
+- `topic` - keyword to search in description and rationale (required)
 
 **Example prompts:**
 ```
@@ -365,8 +365,8 @@ Decisions accumulate as you work. Searches both description and rationale fields
 **What:** Lists recent sessions with metadata (date, project, message count, model).
 **When Claude uses it:** "What have I been working on?" / "Show recent sessions."
 **Parameters:**
-- `project` — filter to one project (optional)
-- `count` — how many to show, default 10 (optional)
+- `project` - filter to one project (optional)
+- `count` - how many to show, default 10 (optional)
 
 **Example prompts:**
 ```
@@ -381,8 +381,8 @@ Decisions accumulate as you work. Searches both description and rationale fields
 **What:** Returns session summaries (generated automatically at session end).
 **When Claude uses it:** Loading context at session start, or when you ask for recaps.
 **Parameters:**
-- `project` — filter to one project (optional)
-- `count` — how many summaries, default 5 (optional)
+- `project` - filter to one project (optional)
+- `count` - how many summaries, default 5 (optional)
 
 **Example prompts:**
 ```
@@ -394,7 +394,7 @@ Decisions accumulate as you work. Searches both description and rationale fields
 ---
 
 ### get_project_state(project)
-**What:** Returns recent decisions and key facts for a project — one-stop overview.
+**What:** Returns recent decisions and key facts for a project - one-stop overview.
 **When Claude uses it:** When you ask about a project's current state.
 
 **Example prompts:**
@@ -407,7 +407,7 @@ Decisions accumulate as you work. Searches both description and rationale fields
 ---
 
 ### get_status()
-**What:** Database health — total sessions, messages, per-project breakdown,
+**What:** Database health - total sessions, messages, per-project breakdown,
 backup status, DB size, semantic search status.
 **When Claude uses it:** Health checks, auditing.
 
@@ -421,7 +421,7 @@ backup status, DB size, semantic search status.
 ---
 
 ### get_schema()
-**What:** Returns the full database schema — all tables, columns, types, and row counts.
+**What:** Returns the full database schema - all tables, columns, types, and row counts.
 **When Claude uses it:** When it needs to understand the DB structure or write a query.
 
 **Example prompts:**
@@ -438,9 +438,9 @@ backup status, DB size, semantic search status.
 content that's conceptually similar to your query, even when the exact words don't match.
 **When Claude uses it:** When keyword search misses or when you ask about concepts.
 **Parameters:**
-- `query` — natural language description of what you're looking for (required)
-- `project` — filter to one project (optional)
-- `limit` — max results, default 10 (optional)
+- `query` - natural language description of what you're looking for (required)
+- `project` - filter to one project (optional)
+- `limit` - max results, default 10 (optional)
 
 **Example prompts:**
 ```
@@ -459,10 +459,10 @@ content that's conceptually similar to your query, even when the exact words don
 - Each message in the brain is converted to a 384-dimensional vector (embedding)
   using the all-MiniLM-L6-v2 model from sentence-transformers
 - Your query is converted to the same kind of vector
-- Cosine similarity finds the closest matches — high similarity = related meaning
+- Cosine similarity finds the closest matches - high similarity = related meaning
 - Results include a similarity score (0.0 to 1.0, higher = more relevant)
 - Only messages with 50+ characters are embedded (short messages like "go" are skipped)
-- Everything runs locally — no cloud, no API calls, no cost
+- Everything runs locally - no cloud, no API calls, no cost
 
 **Keyword vs semantic in practice:**
 ```
@@ -484,13 +484,13 @@ Each session has a `quality_score` from **-3** (worst) to **+3** (best):
 
 | Score | Meaning |
 |-------|---------|
-| +3 | Highly productive — completions, decisions, substantial work |
+| +3 | Highly productive - completions, decisions, substantial work |
 | +2 | Productive with some friction |
 | +1 | Mildly productive |
-| 0 | Neutral — short or unremarkable session |
-| -1 | Some friction — corrections or frustration |
-| -2 | Significant friction — rework and corrections |
-| -3 | Worst — heavy rework, corrections, frustration |
+| 0 | Neutral - short or unremarkable session |
+| -1 | Some friction - corrections or frustration |
+| -2 | Significant friction - rework and corrections |
+| -3 | Worst - heavy rework, corrections, frustration |
 
 ### Quality Tags
 
@@ -500,7 +500,7 @@ Sessions are tagged with one or more labels:
 |-----|--------------|
 | `completions` | Steps or milestones were completed |
 | `decisions` | Decisions were made and locked |
-| `substantial` | 100+ messages — a real work session |
+| `substantial` | 100+ messages - a real work session |
 | `debugging` | Bug fixing or troubleshooting happened |
 | `corrections` | User told Claude it was wrong/incorrect |
 | `rework` | User asked to redo or start over |
@@ -528,7 +528,7 @@ rework + corrections" with no completions means a bad session.
 **Build lessons learned:**
 ```
 "Look at my worst-rated sessions and tell me what went wrong"
-"Compare my best and worst sessions — what patterns do you see?"
+"Compare my best and worst sessions - what patterns do you see?"
 "What tags are most common in the app project vs the gen project?"
 ```
 
@@ -675,7 +675,7 @@ The command will:
 3. Import all messages into the database
 4. Move the file to `imports/completed/`
 
-**Alternative** — run directly from the terminal:
+**Alternative** - run directly from the terminal:
 ```bash
 python3 scripts/import_claude_ai.py "imports/filename.json" --project gen
 ```
@@ -745,7 +745,7 @@ Location: `db-backup/claude-brain.db.bak1`
 
 ## 8.5. EMAIL DIGESTS
 
-The brain can email you proactive status reports — daily, weekly, or per-project. No other AI memory tool does this. Schedule via cron and forget.
+The brain can email you proactive status reports - daily, weekly, or per-project. No other AI memory tool does this. Schedule via cron and forget.
 
 ### Setup
 
@@ -780,18 +780,18 @@ email:
 
 **3. Schedule via cron (crontab -e):**
 ```
-# Daily standup — weekdays at 8am
+# Daily standup - weekdays at 8am
 0 8 * * 1-5 /usr/bin/python3 /path/to/scripts/brain_digest.py --daily >> ~/claude-brain-local/digest.log 2>&1
 
-# Weekly digest — Monday at 8am
+# Weekly digest - Monday at 8am
 0 8 * * 1 /usr/bin/python3 /path/to/scripts/brain_digest.py >> ~/claude-brain-local/digest.log 2>&1
 ```
 
-Or run `python3 scripts/brain-setup.py` — it offers to configure email and install cron for you.
+Or run `python3 scripts/brain-setup.py` - it offers to configure email and install cron for you.
 
 ### Three Templates
 
-**Daily Standup** (`--daily`) — 150-250 words, fits one screen:
+**Daily Standup** (`--daily`) - 150-250 words, fits one screen:
 - BLUF summary: "10 sessions across 2 projects yesterday"
 - Per-project blocks: RAG health badge, "Pick Up Here" (from project next steps), blockers (red), in-progress
 - Decisions made (if any)
@@ -799,7 +799,7 @@ Or run `python3 scripts/brain-setup.py` — it offers to configure email and ins
 - Metrics with 7-day rolling average comparison
 - Subject: `[brain] Daily: 10 sessions, 5,419 msgs | Mar 12`
 
-**Weekly Digest** (default, no flag) — 300-500 words, forwardable:
+**Weekly Digest** (default, no flag) - 300-500 words, forwardable:
 - Executive summary BLUF: "This week you logged 47 sessions... All projects on track."
 - Week-over-week trend table (sessions/messages/decisions + delta %)
 - Project portfolio with RAG health, status (Active/Paused), 1-line context, trend arrows
@@ -808,7 +808,7 @@ Or run `python3 scripts/brain-setup.py` — it offers to configure email and ins
 - Decisions, last session notes, roadmap, brain stats, inception-to-date
 - Subject: `[Weekly] Mar 05-Mar 12: 47 sessions across 1 projects`
 
-**Project Deep Dive** (`--project mb`) — 500-800 words, full status report:
+**Project Deep Dive** (`--project mb`) - 500-800 words, full status report:
 - RAG health badge header + project stats (since date, total sessions)
 - Executive summary (from project summary in database)
 - Health metrics: sessions (7d with trend), messages, decisions, summary freshness
@@ -816,14 +816,14 @@ Or run `python3 scripts/brain-setup.py` — it offers to configure email and ins
 - Recent sessions (last 5-7 with topics)
 - Key decisions (last 10)
 - Architecture snapshot
-- Subject: `[mb] Status: ON TRACK — Personal memory system for Claude Code | Mar 12`
+- Subject: `[mb] Status: ON TRACK - Personal memory system for Claude Code | Mar 12`
 
 ### Example Output (Daily Standup)
 
 ```
 Subject: [brain] Daily: 3 sessions, 892 msgs | Mar 12
 
-Daily Standup — Wednesday, Mar 12
+Daily Standup - Wednesday, Mar 12
 
 3 sessions across 2 projects yesterday (myapp, api-service) with 892 messages.
 
@@ -838,7 +838,7 @@ Daily Standup — Wednesday, Mar 12
   Yesterday (1 session): Investigated CI timeout issue
 
 No Activity Yesterday:
-  docs — last session Mar 8
+  docs - last session Mar 8
 ```
 
 ---
@@ -856,7 +856,7 @@ No Activity Yesterday:
 ### What's Stored
 
 > **Note:** The row counts below are from one active brain to show scale. Your
-> numbers will be different — a fresh install starts at zero and grows as you work.
+> numbers will be different - a fresh install starts at zero and grows as you work.
 
 | Table | What | Example rows |
 |-------|------|----------------|
@@ -879,7 +879,7 @@ To add a new project to the brain:
 
 ### The Easy Way (recommended)
 
-Run the setup script again — it's safe to re-run anytime:
+Run the setup script again - it's safe to re-run anytime:
 
 ```bash
 python3 scripts/brain-setup.py
@@ -889,9 +889,9 @@ The script will:
 1. Detect your existing projects (won't duplicate them)
 2. Ask if you want to add a new project
 3. Prompt for three things:
-   - **Folder name** — lowercase with hyphens (e.g., `my-website`)
-   - **Prefix** — 2-3 letter shortcode (e.g., `mw`)
-   - **Label** — human-readable name (e.g., `My Website Project`)
+   - **Folder name** - lowercase with hyphens (e.g., `my-website`)
+   - **Prefix** - 2-3 letter shortcode (e.g., `mw`)
+   - **Label** - human-readable name (e.g., `My Website Project`)
 4. Create the project folder
 5. Create a CLAUDE.md file inside it (tells Claude how to use the brain from that folder)
 6. Update your config.yaml
@@ -912,7 +912,7 @@ After it finishes, open Claude Code in your new project folder and the brain is 
 
 If you prefer to do it yourself:
 
-1. **Edit `config.yaml`** — add entries under `projects:` and `jsonl_project_mapping:`:
+1. **Edit `config.yaml`** - add entries under `projects:` and `jsonl_project_mapping:`:
    ```yaml
    projects:
      - folder_name: "my-website"
@@ -928,7 +928,7 @@ If you prefer to do it yourself:
    mkdir my-website
    ```
 
-3. **Create a CLAUDE.md** inside the new folder — copy from an existing project
+3. **Create a CLAUDE.md** inside the new folder - copy from an existing project
    folder and update the project name, prefix, and label.
 
 4. **Register MCP** so Claude can access the brain from this folder:
@@ -936,7 +936,7 @@ If you prefer to do it yourself:
    claude mcp add brain-server python3 /path/to/claude-brain/mcp/server.py
    ```
 
-5. **Restart Claude Code** — the startup hook will register the new project automatically.
+5. **Restart Claude Code** - the startup hook will register the new project automatically.
 
 ---
 
@@ -955,11 +955,11 @@ If you prefer to do it yourself:
 
 ### "Hooks aren't firing"
 - **Check:** `claude hooks list` or look in `~/.claude/settings.json`
-- **Check:** Log files in `logs/<hostname>/` — each hook has its own log
+- **Check:** Log files in `logs/<hostname>/` - each hook has its own log
 - **Common cause:** Hook path changed after moving files. Paths must be absolute.
 
 ### "Search returns no results"
-- **Check status:** `python3 scripts/status.py` — are there messages in the DB?
+- **Check status:** `python3 scripts/status.py` - are there messages in the DB?
 - **Check FTS5:** The search uses keywords, not exact phrases. Try fewer/different words.
 - **Check project filter:** If you said "search JG for X" but the data is in GEN,
   you won't find it. Try without a project filter.
@@ -969,7 +969,7 @@ If you prefer to do it yourself:
 - **Check:** Did the session end normally? If Claude Code crashed, the session-end
   hook may not have fired. But the stop hook captures data on every exchange,
   so most data is still there.
-- **Check:** `python3 scripts/status.py` — compare message counts before and after.
+- **Check:** `python3 scripts/status.py` - compare message counts before and after.
 
 ### "Import failed for claude.ai file"
 - **Check:** Is it valid JSON? The file must be a claude.ai export, not a raw copy.
@@ -987,14 +987,14 @@ If you prefer to do it yourself:
 | Limitation | Why | When It Gets Fixed |
 |-----------|-----|-------------------|
 | **Python 3.10+** | Tested on 3.13 and 3.14. Older 3.10+ versions should work but are untested. | Expand testing matrix |
-| **Single-user design** | One person, one database. No multi-user support. | Not planned — personal memory tool |
+| **Single-user design** | One person, one database. No multi-user support. | Not planned - personal memory tool |
 | **Semantic search cold-start ~4-5s** | First query loads embedding model into memory | Subsequent queries are fast (<100ms) |
-| ~~**Keyword search is exact-match**~~ | ~~Typos won't match~~ | **DONE** — Fuzzy search auto-corrects typos before the FTS query. "sesion" now finds "session". |
+| ~~**Keyword search is exact-match**~~ | ~~Typos won't match~~ | **DONE** - Fuzzy search auto-corrects typos before the FTS query. "sesion" now finds "session". |
 | **No auto-capture from claude.ai** | Claude.ai has no hook system | Manual export + import required |
 | **No cross-machine real-time sync** | DB is local; Dropbox syncs project files but not the DB | Planned: DB in Dropbox or sync script |
 | **Summaries require normal exit** | session-end hook only fires on clean exit | If Claude Code crashes, summary is lost (but exchanges are saved) |
 | **No web UI** | CLI-only via Claude Code | Post-MVP consideration |
-| **No automatic fact extraction** | Project facts and decisions are populated via setup questionnaire and scripts. The brain captures all conversations (so the data exists), but doesn't yet auto-extract structured facts from them. | Deferred — value thin after session note quality improvements. Search paths cover recall. |
+| **No automatic fact extraction** | Project facts and decisions are populated via setup questionnaire and scripts. The brain captures all conversations (so the data exists), but doesn't yet auto-extract structured facts from them. | Deferred - value thin after session note quality improvements. Search paths cover recall. |
 | **No lessons learned extractor** | Requires pattern mining across sessions | Post-MVP: find "mistake"/"redo"/"should have" patterns |
 
 See `POST_MVP_ROADMAP.md` for the full roadmap and planned fixes.
@@ -1016,7 +1016,7 @@ See `POST_MVP_ROADMAP.md` for the full roadmap and planned fixes.
 
 ### Slash Commands (direct access)
 ```
-/brain-question    Ask anything — runs keyword + semantic + facts + decisions
+/brain-question    Ask anything - runs keyword + semantic + facts + decisions
 /brain-search      Raw transcript search with excerpts
 /brain-history     Session timeline (one line per session)
 /brain-recap       Progress report by project for a time range

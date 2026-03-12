@@ -1,6 +1,6 @@
 # claude-brain
 
-**Introducing claude-brain for Claude Code — Your AI finally has a real memory.** Not just RAG, RAG and beyond. 100% lossless recall across every session and every project, no silos. Local SQLite. Keyword, semantic, and fuzzy search across everything. Emails you a daily briefing, weekly portfolio, and project status reports — no other tool does this. Zero cloud dependencies. Your data never leaves your machine. Zero token burn. Unlimited potential.
+**Introducing claude-brain for Claude Code - Your AI finally has a real memory.** Not just RAG, RAG and beyond. 100% lossless recall across every session and every project, no silos. Local SQLite. Keyword, semantic, and fuzzy search across everything. Emails you a daily briefing, weekly portfolio, and project status reports - no other tool does this. Zero cloud dependencies. Your data never leaves your machine. Zero token burn. Unlimited potential.
 
 ---
 
@@ -11,25 +11,25 @@ Claude Code starts every session from zero. Close the terminal and everything is
 - **Re-explain who you are** every single session
 - **Re-state decisions** you already locked weeks ago
 - **Lose track** of what happened across sessions and projects
-- **MEMORY.md has a 200-line cap** — Claude's built-in memory is a Post-It note
+- **MEMORY.md has a 200-line cap** - Claude's built-in memory is a Post-It note
 - **Context compaction throws away** your earlier conversation mid-session
-- **Projects are siloed** — what you discussed in one project is invisible in another
+- **Projects are siloed** - what you discussed in one project is invisible in another
 
-Other tools exist, but most use lossy approaches — extracting AI-chosen summaries, discarding context, siloing memories per project. When you need to find exactly what was said three weeks ago across two different projects, those tools fail.
+Other tools exist, but most use lossy approaches - extracting AI-chosen summaries, discarding context, siloing memories per project. When you need to find exactly what was said three weeks ago across two different projects, those tools fail.
 
 ---
 
 ## RAG and Beyond
 
-claude-brain is a RAG system — but that's just one layer. Here's what "beyond" means:
+claude-brain is a RAG system - but that's just one layer. Here's what "beyond" means:
 
 | What | How |
 |------|-----|
-| **RAG (context injection)** | Every prompt gets relevant memories injected automatically — hooks search your history before Claude sees your message |
+| **RAG (context injection)** | Every prompt gets relevant memories injected automatically - hooks search your history before Claude sees your message |
 | **Full lossless capture** | Other tools extract "memories" and throw away the raw data. We keep every word. Nothing summarized away, nothing lost. |
-| **Cross-project search** | Ask about a decision from your API project while working on your frontend. No silos — one brain across everything. |
+| **Cross-project search** | Ask about a decision from your API project while working on your frontend. No silos - one brain across everything. |
 | **Three search modes** | Keyword (exact), semantic (meaning-based), and fuzzy (typo-correcting). "sesion" auto-corrects to "session" before the query runs. |
-| **Structured knowledge** | Numbered decisions, project facts, session quality scores, project health tracking — not just unstructured text blobs |
+| **Structured knowledge** | Numbered decisions, project facts, session quality scores, project health tracking - not just unstructured text blobs |
 | **Proactive intelligence** | The brain emails YOU. Daily standups, weekly portfolios, dormant project alerts. RAG waits for you to ask. This doesn't. |
 | **100% local** | SQLite on your machine. No API calls for search. No cloud. No cost. No one sees your data. Zero token burn. |
 
@@ -72,10 +72,10 @@ Subject: [brain] Daily: 3 sessions, 892 msgs | Mar 12
   Yesterday: Investigated CI timeout issue (1 session, 341 msgs)
 
 No Activity Yesterday:
-  docs — quiet for 5 days. Next: Update API reference for v2 endpoints
+  docs - quiet for 5 days. Next: Update API reference for v2 endpoints
 ```
 
-**Three email templates** — daily standup, weekly digest, project deep dive. Dark mode optional. Schedule via cron and forget.
+**Three email templates** - daily standup, weekly digest, project deep dive. Dark mode optional. Schedule via cron and forget.
 
 ---
 
@@ -87,7 +87,7 @@ cd claude-brain
 python3 scripts/brain-setup.py
 ```
 
-The setup walks you through everything — projects, database, hooks, MCP, email, health check. After setup, just use Claude Code normally. The brain works in the background.
+The setup walks you through everything - projects, database, hooks, MCP, email, health check. After setup, just use Claude Code normally. The brain works in the background.
 
 **Requirements:** Python 3.10+, Claude Code 2.0+, pip3.
 
@@ -95,7 +95,7 @@ The setup walks you through everything — projects, database, hooks, MCP, email
 
 ## Three Pillars
 
-### 1. Hooks — Automatic Capture
+### 1. Hooks - Automatic Capture
 
 Four Python scripts fire at every stage of your session. You never need to say "save this."
 
@@ -113,24 +113,24 @@ You close the session
     → session-end hook backs up the database
 ```
 
-### 2. Search — Three Engines, Zero Silos
+### 2. Search - Three Engines, Zero Silos
 
 Every search works across ALL your projects:
 
-- **Keyword:** exact word matching, fast — "payment API" finds messages with those words from any project
-- **Semantic:** meaning-based — "how users pay" finds payment discussions even when those words never appear
-- **Fuzzy:** typo-correcting — "sesion" auto-corrects to "session" before the query runs
+- **Keyword:** exact word matching, fast - "payment API" finds messages with those words from any project
+- **Semantic:** meaning-based - "how users pay" finds payment discussions even when those words never appear
+- **Fuzzy:** typo-correcting - "sesion" auto-corrects to "session" before the query runs
 
 ```
 "What did we discuss about the login page last week?"
 "What was decided about the database schema?"
 "Show me every session where we worked on deployment"
-"Find conversations where things went wrong — what patterns do you see?"
+"Find conversations where things went wrong - what patterns do you see?"
 ```
 
-### 3. Email Digests — The Brain Reaches Out
+### 3. Email Digests - The Brain Reaches Out
 
-No other AI memory tool does this. Schedule and forget — your inbox becomes your dashboard.
+No other AI memory tool does this. Schedule and forget - your inbox becomes your dashboard.
 
 | Template | Command | What You Get |
 |----------|---------|-------------|
@@ -142,15 +142,15 @@ No other AI memory tool does this. Schedule and forget — your inbox becomes yo
 
 | Use Case | What It Does |
 |----------|-------------|
-| **Morning Kickoff** | Daily standup at 8am — know exactly where you left off |
+| **Morning Kickoff** | Daily standup at 8am - know exactly where you left off |
 | **Stakeholder Update** | Forward the weekly digest to a manager or collaborator |
 | **Dormant Project Rescue** | Alerts when a project goes quiet |
 | **Decision Audit Trail** | Weekly record of every decision made |
-| **Sprint Retrospective** | End-of-sprint deep dive — what got done, what's blocked |
-| **Onboarding a Collaborator** | Forward the project deep dive — instant context |
+| **Sprint Retrospective** | End-of-sprint deep dive - what got done, what's blocked |
+| **Onboarding a Collaborator** | Forward the project deep dive - instant context |
 | **Accountability Partner** | Auto-send weekly digest to a friend or mentor |
 | **Personal Changelog** | Monthly digest archived to email |
-| **Context Resume** | After 48+ hours away — here's where everything stands |
+| **Context Resume** | After 48+ hours away - here's where everything stands |
 | **Portfolio View** | One email, all projects at a glance |
 
 ---
@@ -173,10 +173,10 @@ Type these in any Claude Code session:
 | Command | What It Does |
 |---------|-------------|
 | `/brain-health` | Full 9-point diagnostic |
-| `/brain-status` | Quick stats — sessions, messages, projects |
+| `/brain-status` | Quick stats - sessions, messages, projects |
 | `/brain-question` | Natural language question across the brain |
 | `/brain-search` | Raw transcript search with timestamps |
-| `/brain-history` | Session timeline — one line per session |
+| `/brain-history` | Session timeline - one line per session |
 | `/brain-recap` | Progress report for a time range |
 | `/brain-decide` | Decision lookup by number or keyword |
 | `/brain-export` | Export brain data to text files |
@@ -188,11 +188,11 @@ Type these in any Claude Code session:
 
 ## MCP Tools
 
-Eleven read-only tools registered as `brain-server`. Claude calls these automatically — you just ask questions.
+Eleven read-only tools registered as `brain-server`. Claude calls these automatically - you just ask questions.
 
 | Tool | What It Does |
 |------|-------------|
-| `get_profile` | Your complete profile — facts, preferences, working style |
+| `get_profile` | Your complete profile - facts, preferences, working style |
 | `get_project_state` | Recent decisions + key facts for a project |
 | `search_transcripts` | Keyword search across all conversations |
 | `search_semantic` | Meaning-based search using vector embeddings |
@@ -266,10 +266,10 @@ Claude.ai conversations aren't captured by hooks. To import them:
 | pip3 | any | For installing Python packages |
 
 **Python packages** (installed by setup or `pip install -r requirements.txt`):
-- `PyYAML` — config file parsing
-- `mcp` — MCP server SDK
-- `sentence-transformers` — semantic search embeddings (optional, ~80MB model download)
-- `numpy` — cosine similarity for semantic search
+- `PyYAML` - config file parsing
+- `mcp` - MCP server SDK
+- `sentence-transformers` - semantic search embeddings (optional, ~80MB model download)
+- `numpy` - cosine similarity for semantic search
 
 ---
 
@@ -290,15 +290,15 @@ See `POST_MVP_ROADMAP.md` for the full list and planned fixes.
 
 - Database, archives, logs, backups, and personal content are all in `.gitignore`
 - `config.yaml` is generated locally and never committed
-- The MCP server is read-only — no write operations exposed
-- Everything runs locally — no cloud services, no data leaves your machine
+- The MCP server is read-only - no write operations exposed
+- Everything runs locally - no cloud services, no data leaves your machine
 
 ---
 
 ## Troubleshooting
 
 **Claude isn't using the brain tools:**
-Run `claude mcp list` — you should see `brain-server`. If missing: `claude mcp add brain-server python3 /path/to/mcp/server.py`
+Run `claude mcp list` - you should see `brain-server`. If missing: `claude mcp add brain-server python3 /path/to/mcp/server.py`
 
 **Hooks aren't firing:**
 Check `~/.claude/settings.json` for hook entries. Check `logs/` for error output.
