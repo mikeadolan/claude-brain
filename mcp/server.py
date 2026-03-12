@@ -19,6 +19,7 @@ import json
 import os
 import pathlib
 import re
+import signal
 import sqlite3
 import sys
 
@@ -738,4 +739,5 @@ def get_schema() -> str:
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
+    signal.signal(signal.SIGINT, lambda *_: sys.exit(0))
     mcp.run()
