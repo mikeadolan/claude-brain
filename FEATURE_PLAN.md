@@ -180,60 +180,160 @@ Typos that appear in enough transcripts (doc >= 5) AND whose correct spelling ha
 - brain-setup.py may not have email config step
 - README/HOW_TO don't fully cover email setup
 
+### EMAIL DESIGN SPEC (session 36)
+
+**Full design document:** `email-digest-design-spec.md` (root) — 839 lines covering BLUF methodology,
+all 3 template structures, HTML email constraints, subject line formulas, engagement psychology,
+10 use case ideas, and data contract payloads. Created by Chrome Claude from web research.
+
+**Key principles (summary — see full spec for details):**
+1. **BLUF — Bottom Line Up Front.** Most important thing is the FIRST thing. Not buried.
+2. **Actionable, not informational.** Every email answers: "What should I DO next?"
+3. **Subject line IS the BLUF** — must convey core status without opening the email. Always include a variable.
+4. **One screen pane** for daily. 1.5-2 scrolls for weekly. 2-3 for deep dive.
+5. **RAG uses inline background-color on `<td>`, NOT emoji** — emoji rendering unreliable across clients.
+6. **Conditional sections** — blockers only appear when they exist. Absence is also information.
+7. **Postmark frequency rule** — daily = minimal chrome, weekly = moderate, deep dive = full report.
+8. **150-250 words daily, 300-500 weekly, 500-800 deep dive.**
+9. **Send daily 8-9 AM, weekly Monday AM.**
+10. **Quiet day handling** — always send (preserve habit loop), but adapt content.
+
+**Data model adaptation:** Our brain tracks sessions/messages/decisions/notes, NOT git activity
+(files changed, lines). Metrics are: sessions, messages, decisions, projects. Blockers and
+next steps extracted from session notes text (## Blockers, ## Next Step sections).
+
 ### Steps
 
-- [ ] **3.1 — Add Daily Standup template (`--daily`)**
-  - [ ] 3.1a — Design daily standup content: yesterday's sessions (topics, msg counts), decisions made, where things left off (last session notes excerpt), compact quick-scan format
-  - [ ] 3.1b — Build `build_daily_html()` function in brain_digest.py
-  - [ ] 3.1c — Add `--daily` flag to argparse
-  - [ ] 3.1d — Test with `--daily --dry-run`, verify HTML renders clean
-  - [ ] 3.1e — Test with `--daily` live send to Gmail
+#### PHASE A: HTML Foundation (spec sections 5, 6 — do this FIRST, all templates use it)
 
-- [ ] **3.2 — Add Project Deep Dive template (`--project <prefix>`)**
-  - [ ] 3.2a — Design project deep dive content: single project focus, all sessions for period, all decisions for that project, current project summary (from project_registry.summary), architecture snapshot, blockers and next steps
-  - [ ] 3.2b — Build `build_project_html()` function in brain_digest.py
-  - [ ] 3.2c — Add `--project` flag to argparse
-  - [ ] 3.2d — Test with `--project mb --dry-run`, verify HTML
-  - [ ] 3.2e — Test with `--project mb` live send
+- [ ] **3.A1 — Build safe HTML email skeleton as shared base**
+  - [ ] 3.A1a — Replace current `<style>` in `<head>` approach (Gmail web strips it!) with ALL inline styles
+  - [ ] 3.A1b — Add proper DOCTYPE, xmlns, MSO conditional comments per spec section 5
+  - [ ] 3.A1c — Add `<meta color-scheme>` for dark mode support
+  - [ ] 3.A1d — Add hidden preheader div (40-100 chars, shows in inbox preview) per spec section 5.10
+  - [ ] 3.A1e — Use MSO conditional table wrapper for 600px max-width (Outlook ignores max-width on divs)
+  - [ ] 3.A1f — Use table-based layout (not div-based) for Outlook compatibility per spec section 5.7
+  - [ ] 3.A1g — Use #1a1a1a for text not #000000 (dark mode inversion), system font stack per spec section 5.9
+  - [ ] 3.A1h — Create `build_email_wrapper(title, preheader, content)` shared function all templates use
+  - [ ] 3.A1i — Rebuild plain-text fallback to be content-specific per template (not generic "view in HTML client")
+  - [ ] 3.A1j — Test all 3 templates still render after skeleton change
 
-- [ ] **3.3 — Add cron entries for new templates**
-  - [ ] 3.3a — Daily standup: `0 8 * * * python3 .../brain_digest.py --daily` (every morning 8am)
-  - [ ] 3.3b — Weekly digest stays as-is (Monday 8am)
-  - [ ] 3.3c — Document all cron options in the script's docstring
+#### PHASE B: Daily Standup (spec section 2 — already started, needs completion)
 
-- [ ] **3.4 — Update config.yaml.example**
-  - [ ] 3.4a — Verify email section exists with all fields documented
-  - [ ] 3.4b — Add comments explaining Gmail app password setup
-  - [ ] 3.4c — Add example cron lines as comments
+- [ ] **3.B1 — Complete daily standup per spec**
+  - [x] 3.B1a — Research: BLUF, military email, Geekbot/Range/Standuply patterns (design spec created)
+  - [x] 3.B1b — Per-project blocks with RAG badge, Pick Up Here, Blockers, In Progress
+  - [x] 3.B1c — Dynamic subject line: `[brain] Daily: {stat} | {date}` per spec section 6
+  - [ ] 3.B1d — Add preheader text (top accomplishment or status phrase) per spec section 2
+  - [ ] 3.B1e — Add 7-day rolling average comparison in metrics (↑/↓ vs avg) per spec section 2
+  - [ ] 3.B1f — Quiet day handling: always send, show last activity date + quiet streak per spec section 2
+  - [ ] 3.B1g — Verify word count is 150-250 words (spec target). Trim if over.
+  - [ ] 3.B1h — Test in Gmail, verify scannability < 15 seconds per spec
 
-- [ ] **3.5 — Update brain-setup.py**
-  - [ ] 3.5a — Check if email config step exists in setup wizard
-  - [ ] 3.5b — If not, add: "Do you want email digests? (y/n)" → SMTP details → test connection → save to config
-  - [ ] 3.5c — Test setup flow with email enabled and disabled
+#### PHASE C: Weekly Digest Upgrade (spec section 3 — existing needs major updates)
 
-- [ ] **3.6 — Write email use case ideas for docs**
-  - [ ] 3.6a — Write use case list (10 ideas for open source users):
-    1. Morning kickoff — daily standup at 8am, know exactly where you left off
-    2. Weekly retrospective — see what you accomplished, spot productivity patterns
-    3. Stakeholder update — forward the project deep dive to a manager or collaborator
-    4. Dormant project alerts — catch projects you've neglected before they go stale
-    5. Decision audit trail — weekly record of every architectural decision made
-    6. Multi-project portfolio view — one email showing all projects at a glance
-    7. Sprint boundary marker — send at end of sprint, archive for reference
-    8. Onboarding context — forward to a new collaborator joining your project
-    9. Accountability partner — auto-send to a friend/mentor to stay on track
-    10. Personal changelog — monthly digest as a record of everything you built
+- [ ] **3.C1 — Add Executive Summary BLUF to weekly**
+  - [ ] 3.C1a — Build exec summary: "{N} sessions across {P} projects ({delta}% from last week). Most active: {project}. {alert if any}." per spec section 3
+  - [ ] 3.C1b — Move exec summary to position #1 (currently inception table is first)
+  - [ ] 3.C1c — Dynamic subject line: `[Weekly] {date_range}: {headline} across {N} projects` per spec section 6
 
-- [ ] **3.7 — Update documentation**
-  - [ ] 3.7a — README.md: add Email Digests section with overview + use cases
-  - [ ] 3.7b — CLAUDE_BRAIN_HOW_TO.md: add email setup instructions (Gmail app password, cron, all 3 templates with examples)
-  - [ ] 3.7c — Include example email output (text preview or screenshot description)
+- [ ] **3.C2 — Add week-over-week trend comparison table**
+  - [ ] 3.C2a — Build trend table: Sessions/Messages/Decisions this week vs last week + delta % + color per spec section 3
+  - [ ] 3.C2b — Position after exec summary, before portfolio table
 
-- [ ] **3.8 — Audit and commit**
-  - [ ] 3.8a — Run code change checklist on brain_digest.py (grep all symbols, py_compile, test)
-  - [ ] 3.8b — Verify no credentials in any committed file
-  - [ ] 3.8c — Run brain_health.py — must be 9/9 PASS
-  - [ ] 3.8d — Commit and push
+- [ ] **3.C3 — Upgrade portfolio table with RAG indicators**
+  - [ ] 3.C3a — Add RAG column using inline background-color `<td>` (NOT emoji) per spec section 3 + Chrome Claude flag
+  - [ ] 3.C3b — Add trend arrow column per project
+  - [ ] 3.C3c — Forwardability: descriptive column headers, no jargon per spec section 3
+
+- [ ] **3.C4 — Upgrade dormant project alerts**
+  - [ ] 3.C4a — Amber background (#FFF3CD) with left border (#F59E0B) per spec section 3
+  - [ ] 3.C4b — Include last session summary + open items count per alert
+
+- [ ] **3.C5 — Add Top Accomplishments section (3-5 bullets) per spec section 3**
+  - [ ] 3.C5a — Extract accomplishments from session notes "What Was Done" sections
+  - [ ] 3.C5b — Position after portfolio table, before dormant alerts
+
+- [ ] **3.C6 — Add "Forward this report" nudge in footer per spec section 3**
+
+- [ ] **3.C7 — Verify weekly is 300-500 words per spec target**
+
+#### PHASE D: Project Deep Dive (spec section 4 — new template)
+
+- [ ] **3.D1 — Build project deep dive template (`--project <prefix>`)**
+  - [ ] 3.D1a — Add `--project` flag to argparse
+  - [ ] 3.D1b — Build `get_project_deep_dive_data()`: query project_registry.summary, sessions, decisions, facts for one project
+  - [ ] 3.D1c — Build `build_project_html()` with spec section 4 structure:
+    1. Project header + RAG badge (the RAG IS the BLUF) per spec section 4
+    2. Executive summary (2-3 sentences from project_registry.summary ## Summary)
+    3. Health metrics: sessions (7d), messages (7d), decisions, avg session msgs, open blockers
+    4. In Progress (from project_registry.summary ## In Progress)
+    5. Recent sessions (last 5-7 with topics)
+    6. Risks & Blockers (from project_registry.summary ## Risks & Blockers)
+    7. Next Steps (from project_registry.summary ## Next Steps)
+    8. Decisions (recent for this project)
+  - [ ] 3.D1d — Dynamic subject line: `[{project}] Status: {RAG} — {headline} | {date}` per spec section 6
+  - [ ] 3.D1e — Preheader text: one-line project state per spec section 4
+  - [ ] 3.D1f — Verify 500-800 words per spec target
+  - [ ] 3.D1g — Test with `--project mb --dry-run`
+  - [ ] 3.D1h — Test with `--project mb` live send to Gmail
+
+#### PHASE E: Use Cases, Config, Docs
+
+- [ ] **3.E1 — Write email use case ideas for docs (from spec section 8)**
+  - [ ] 3.E1a — Use the 10 AI-memory-specific use cases from design spec section 8:
+    1. Context Resume Digest — "here's where you left off" after 48+ hours
+    2. Decision Log Weekly — all decisions made that week
+    3. Technical Debt Radar — TODOs, repeated workarounds never addressed
+    4. Knowledge Gap Alert — "you've asked about {topic} in 5 sessions"
+    5. Dependency Drift Report — stale dependencies flagged
+    6. Code Review Prep — all sessions related to a branch/PR
+    7. Onboarding Digest — project primer from session context
+    8. Sprint Retrospective — time distribution, blockers, velocity
+    9. Personal Productivity Insights — peak hours, session length, focus areas
+    10. Stale Context Cleanup — old memory entries to review/archive
+
+- [ ] **3.E2 — Update config.yaml.example**
+  - [ ] 3.E2a — Verify email section exists with all fields
+  - [ ] 3.E2b — Add comments for Gmail app password setup
+  - [ ] 3.E2c — Add example cron lines for all 3 templates
+
+- [ ] **3.E3 — Update brain-setup.py**
+  - [ ] 3.E3a — Check if email config step exists in setup wizard
+  - [ ] 3.E3b — If not, add: "Do you want email digests?" → SMTP details → test → save
+  - [ ] 3.E3c — Test setup flow with email enabled and disabled
+
+- [ ] **3.E4 — Add cron entries for new templates**
+  - [ ] 3.E4a — Daily standup: `0 8 * * 1-5 ...brain_digest.py --daily` (weekdays 8am)
+  - [ ] 3.E4b — Weekly digest stays as-is (Monday 8am)
+  - [ ] 3.E4c — Document all cron options in script docstring
+
+- [ ] **3.E5 — Update documentation**
+  - [ ] 3.E5a — README.md: add Email Digests section with all 3 templates + use cases
+  - [ ] 3.E5b — CLAUDE_BRAIN_HOW_TO.md: email setup (Gmail app password, cron, examples)
+  - [ ] 3.E5c — Include example email output per template
+
+#### PHASE F: Quality & Ship
+
+- [ ] **3.F0 — Cross-cutting spec compliance**
+  - [ ] 3.F0a — Subject line length check: all 3 templates ≤ 40 chars for mobile (spec section 6)
+  - [ ] 3.F0b — All subjects contain at least one variable (spec section 6: never same 2 days in a row)
+  - [ ] 3.F0c — Add notification preferences note in all footers: "To change frequency: edit crontab" (spec section 7)
+  - [ ] 3.F0d — Verify conditional sections work: blockers only appear when present (spec section 7)
+  - [ ] 3.F0e — Verify red/amber only used for real issues, not decoration (spec section 7: urgency only when earned)
+
+- [ ] **3.F1 — Email rendering verification**
+  - [ ] 3.F1a — Test daily in Gmail web (must render without `<style>` block)
+  - [ ] 3.F1b — Test weekly in Gmail web
+  - [ ] 3.F1c — Test project deep dive in Gmail web
+  - [ ] 3.F1d — Test plain-text fallback for all 3
+  - [ ] 3.F1e — Check dark mode doesn't break (use #1a1a1a text, no #000000)
+
+- [ ] **3.F2 — Audit and commit**
+  - [ ] 3.F2a — Run code change checklist: grep all symbols, py_compile, test all flags
+  - [ ] 3.F2b — Verify no credentials in committed files
+  - [ ] 3.F2c — Run brain_health.py — must be 9/9 PASS
+  - [ ] 3.F2d — Commit and push
 
 ---
 

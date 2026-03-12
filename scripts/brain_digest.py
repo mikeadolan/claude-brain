@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
-"""brain_digest.py — Weekly email digest from the claude-brain database.
+"""brain_digest.py — Email digests from the claude-brain database.
 
-Queries all brain data (sessions, summaries, decisions, dormant projects)
-and sends a formatted HTML email via Gmail SMTP.
+Three email types:
+  Weekly digest (default) — full portfolio view, inception-to-date, trends, dormant alerts
+  Daily standup (--daily) — compact: yesterday's sessions, decisions, where you left off
+
+Queries brain data and sends formatted HTML email via Gmail SMTP.
 
 Usage:
     python3 scripts/brain_digest.py                # Send weekly digest
+    python3 scripts/brain_digest.py --daily        # Send daily standup
     python3 scripts/brain_digest.py --days 14      # Custom lookback
     python3 scripts/brain_digest.py --dry-run      # Print to stdout, don't send
     python3 scripts/brain_digest.py --test         # Send a short test email
@@ -458,6 +462,246 @@ def build_email_html(days, stats, prev_stats, summaries, decisions,
     return html
 
 
+def extract_section(text, section_name):
+    """Pull a named section (## Section Name) from notes or summary text."""
+    if not text:
+        return None
+    lines = text.split("\n")
+    capture = False
+    result = []
+    for line in lines:
+        stripped = line.strip()
+        if stripped.lower().startswith(f"## {section_name.lower()}") or \
+           stripped.lower() == f"{section_name.lower()}:" or \
+           stripped.lower().startswith(f"{section_name.lower()}:"):
+            capture = True
+            continue
+        if capture:
+            if stripped.startswith("##") or stripped.startswith("# "):
+                break
+            if stripped:
+                result.append(stripped)
+    return "\n".join(result) if result else None
+
+
+def get_project_context(conn, prefix):
+    """Get project summary, health, and status from project_registry."""
+    row = conn.execute(
+        "SELECT summary, health, status FROM project_registry WHERE prefix = ?",
+        (prefix,)
+    ).fetchone()
+    if not row:
+        return None
+    return {"summary": row[0], "health": row[1], "status": row[2]}
+
+
+def get_last_notes_per_project(conn, since):
+    """Get the most recent session notes for each project active in the period."""
+    rows = conn.execute("""
+        SELECT project, notes, started_at, session_id
+        FROM sys_sessions
+        WHERE notes IS NOT NULL AND notes != ''
+          AND started_at >= ?
+        ORDER BY started_at DESC
+    """, (since,)).fetchall()
+    # Keep only the most recent per project
+    by_project = {}
+    for proj, notes, started, sid in rows:
+        if proj not in by_project:
+            by_project[proj] = {"notes": notes, "started_at": started, "session_id": sid}
+    return by_project
+
+
+RAG_COLORS = {
+    "green": ("#22C55E", "#FFFFFF", "ON TRACK"),
+    "yellow": ("#F59E0B", "#FFFFFF", "AT RISK"),
+    "red": ("#EF4444", "#FFFFFF", "BLOCKED"),
+}
+
+
+def rag_badge_html(health):
+    """Inline RAG badge using background-color on td (not emoji — per design spec)."""
+    bg, fg, label = RAG_COLORS.get(health or "green", RAG_COLORS["green"])
+    return (f'<span style="display:inline-block; background-color:{bg}; color:{fg}; '
+            f'font-weight:bold; padding:2px 10px; border-radius:3px; font-size:11px; '
+            f'letter-spacing:0.5px;">{label}</span>')
+
+
+def build_daily_subject(stats, summaries, decisions):
+    """Dynamic subject line — always includes a variable per design spec."""
+    total_sessions = sum(r["sessions"] for r in stats) if stats else 0
+    total_msgs = sum(r["messages"] or 0 for r in stats) if stats else 0
+    num_decisions = len(decisions) if decisions else 0
+    yesterday = datetime.now() - timedelta(days=1)
+    date_str = yesterday.strftime("%b %d")
+
+    if total_sessions == 0:
+        return f"[brain] Daily: Quiet day — no sessions | {date_str}"
+    parts = [f"{total_sessions} sessions"]
+    if total_msgs:
+        parts.append(f"{total_msgs:,} msgs")
+    if num_decisions:
+        parts.append(f"{num_decisions} decisions")
+    return f"[brain] Daily: {', '.join(parts)} | {date_str}"
+
+
+def build_daily_html(conn, stats, summaries, decisions, labels, since):
+    """Build daily standup email — BLUF methodology, per-project structure.
+
+    Design spec: email-digest-design-spec.md
+    Key principle: answer "What should I DO today?" in the first 3 lines.
+
+    Structure:
+    1. BLUF summary sentence
+    2. Per-project blocks (health + next steps + blockers + yesterday's work)
+    3. Decisions (if any)
+    4. Quiet projects (active but no sessions yesterday)
+    5. Metrics (small, bottom)
+    """
+    now = datetime.now()
+    yesterday = now - timedelta(days=1)
+    total_sessions = sum(r["sessions"] for r in stats) if stats else 0
+    total_msgs = sum(r["messages"] or 0 for r in stats) if stats else 0
+    is_quiet = total_sessions == 0
+
+    # Gather per-project context
+    project_notes = get_last_notes_per_project(conn, since)
+    active_projects_in_period = set(r["project"] for r in stats)
+
+    # Get ALL active projects for quiet project detection
+    all_active = conn.execute(
+        "SELECT prefix, label FROM project_registry WHERE status = 'active'"
+    ).fetchall()
+    all_active_prefixes = {r[0]: r[1] for r in all_active}
+
+    html = f"""<!DOCTYPE html><html><head>{STYLE}</head><body><div class="container">
+    <h1>Daily Standup &mdash; {yesterday.strftime('%A, %b %d')}</h1>
+    """
+
+    # ── Section 1: BLUF summary (the ONE thing to know) ──
+    if is_quiet:
+        html += '<p style="font-size:15px; color:#718096; margin:8px 0 20px 0;">'
+        html += 'No AI sessions recorded yesterday. Here\'s where your projects stand:</p>'
+    else:
+        project_list = ", ".join(labels.get(r["project"], r["project"]) for r in stats)
+        html += f'<p style="font-size:15px; margin:8px 0 20px 0;">'
+        html += f'<strong>{total_sessions} session{"s" if total_sessions != 1 else ""}</strong> '
+        html += f'across <strong>{len(stats)} project{"s" if len(stats) != 1 else ""}</strong> yesterday '
+        html += f'({project_list}) with {total_msgs:,} messages exchanged.'
+        if decisions:
+            html += f' {len(decisions)} decision{"s" if len(decisions) != 1 else ""} made.'
+        html += '</p>'
+
+    # ── Section 2: Per-project blocks ──
+    # Active projects first (had sessions), then quiet projects
+    projects_to_show = []
+    for r in stats:
+        projects_to_show.append(r["project"])
+
+    for proj in projects_to_show:
+        proj_label = labels.get(proj, proj)
+        ctx = get_project_context(conn, proj)
+        health = ctx["health"] if ctx else "green"
+        proj_summary = ctx["summary"] if ctx else None
+
+        # Project header with RAG badge
+        html += f'<div style="margin:20px 0 8px 0; padding-bottom:6px; border-bottom:2px solid #e2e8f0;">'
+        html += f'{rag_badge_html(health)} '
+        html += f'<strong style="font-size:15px; color:#2d3748;">{proj_label}</strong>'
+        html += '</div>'
+
+        # Pick Up Here — from session notes "Next Step" or project summary "Next Steps"
+        next_step = None
+        if proj in project_notes:
+            next_step = extract_section(project_notes[proj]["notes"], "next step")
+            if not next_step:
+                next_step = extract_section(project_notes[proj]["notes"], "next steps")
+        if not next_step and proj_summary:
+            next_step = extract_section(proj_summary, "next steps")
+        if next_step:
+            html += '<div style="background:#ebf4ff; border-left:4px solid #4a90d9; padding:10px 14px; margin:6px 0; font-size:13px;">'
+            html += '<strong style="color:#2b6cb0;">Pick Up Here:</strong> '
+            # Show first 2-3 lines only
+            step_lines = [l.strip() for l in next_step.split("\n") if l.strip()][:3]
+            html += "<br>".join(step_lines)
+            html += '</div>'
+
+        # Blockers — from session notes or project summary "Risks & Blockers"
+        blockers = None
+        if proj in project_notes:
+            blockers = extract_section(project_notes[proj]["notes"], "blockers")
+        if not blockers and proj_summary:
+            blockers = extract_section(proj_summary, "risks & blockers")
+        if blockers and blockers.lower() not in ("none", "none.", "no blockers", "no blockers."):
+            html += '<div style="background:#fff5f5; border-left:4px solid #e53e3e; padding:10px 14px; margin:6px 0; font-size:13px;">'
+            html += '<strong style="color:#e53e3e;">Blockers:</strong> '
+            blocker_lines = [l.strip() for l in blockers.split("\n") if l.strip()][:3]
+            html += "<br>".join(blocker_lines)
+            html += '</div>'
+
+        # In Progress — from project summary
+        in_progress = extract_section(proj_summary, "in progress") if proj_summary else None
+        if in_progress:
+            progress_lines = [l.strip() for l in in_progress.split("\n") if l.strip()][:3]
+            html += '<div style="margin:6px 0; font-size:13px; color:#4a5568;">'
+            html += '<strong>In Progress:</strong> '
+            html += "<br>".join(progress_lines)
+            html += '</div>'
+
+        # Yesterday's sessions — brief topic bullets
+        proj_sessions = [s for s in summaries if s["project"] == proj]
+        if proj_sessions:
+            html += '<div style="margin:6px 0; font-size:12px; color:#718096;">'
+            html += f'<strong>Yesterday ({len(proj_sessions)} session{"s" if len(proj_sessions) != 1 else ""}):</strong> '
+            topics = [extract_topic_from_summary(s["summary"]) for s in proj_sessions[:3]]
+            html += " · ".join(topics)
+            html += '</div>'
+
+    # ── Section 3: Decisions (only if any) ──
+    if decisions:
+        html += '<h2 style="font-size:14px; margin-top:24px;">Decisions Made</h2>'
+        for d in decisions:
+            proj = d["project"] or "?"
+            html += f'<div style="margin:4px 0; padding:4px 0; border-bottom:1px solid #f0f0f0; font-size:13px;">'
+            html += f'<strong style="color:#4a90d9;">#{d["decision_number"]}</strong> '
+            html += f'<span style="display:inline-block; background:#4a90d9; color:#fff; padding:1px 5px; border-radius:3px; font-size:10px;">{proj}</span> '
+            html += f'{d["description"][:180]}</div>'
+
+    # ── Section 4: Quiet projects (active but no sessions yesterday) ──
+    quiet_projects = [p for p in all_active_prefixes if p not in active_projects_in_period]
+    # Only show quiet projects that have actual sessions (not empty placeholders)
+    if quiet_projects:
+        real_quiet = []
+        for qp in quiet_projects:
+            row = conn.execute(
+                "SELECT MAX(started_at) FROM sys_sessions WHERE project = ?", (qp,)
+            ).fetchone()
+            if row and row[0]:
+                last_dt = row[0][:10]
+                real_quiet.append((qp, all_active_prefixes[qp], last_dt))
+        if real_quiet:
+            html += '<h2 style="font-size:14px; margin-top:24px;">No Activity Yesterday</h2>'
+            for qp, qlabel, qlast in real_quiet:
+                html += f'<div style="margin:4px 0; font-size:12px; color:#a0aec0;">'
+                html += f'<strong>{qlabel}</strong> — last session {qlast}</div>'
+
+    # ── Section 5: Metrics (small, bottom — least important) ──
+    if not is_quiet:
+        html += '<div style="text-align:center; margin:24px 0 8px 0;">'
+        for val, lbl in [(total_sessions, "Sessions"), (f"{total_msgs:,}", "Messages"), (len(stats), "Projects")]:
+            html += f'<div style="display:inline-block; background:#f7fafc; border-radius:6px; padding:6px 12px; margin:3px; text-align:center;">'
+            html += f'<div style="font-size:16px; font-weight:700; color:#2b6cb0;">{val}</div>'
+            html += f'<div style="font-size:10px; color:#718096; text-transform:uppercase;">{lbl}</div></div>'
+        html += '</div>'
+
+    # ── Footer (minimal per Postmark frequency rule) ──
+    html += f'<div style="margin-top:20px; padding-top:12px; border-top:1px solid #e2e8f0; color:#a0aec0; font-size:11px; text-align:center;">'
+    html += f'claude-brain &middot; {now.strftime("%Y-%m-%d %H:%M")} &middot; Local data only</div>'
+    html += '</div></body></html>'
+
+    return html
+
+
 def build_test_html():
     """Minimal test email to verify SMTP works."""
     now = datetime.now()
@@ -529,11 +773,15 @@ def send_email(config, subject, html_body, dry_run=False):
 # ---------------------------------------------------------------------------
 
 def main():
-    parser = argparse.ArgumentParser(description="Brain weekly email digest")
+    parser = argparse.ArgumentParser(description="Brain email digest")
     parser.add_argument("--days", type=int, default=7, help="Lookback period in days (default: 7)")
+    parser.add_argument("--daily", action="store_true", help="Send compact daily standup (overrides --days to 1)")
     parser.add_argument("--dry-run", action="store_true", help="Print email to stdout, don't send")
     parser.add_argument("--test", action="store_true", help="Send a short test email")
     args = parser.parse_args()
+
+    if args.daily:
+        args.days = 1
 
     config = load_config()
 
@@ -547,27 +795,33 @@ def main():
     try:
         now = datetime.now(timezone.utc)
         since = (now - timedelta(days=args.days)).isoformat()
-        prev_since = (now - timedelta(days=args.days * 2)).isoformat()
-        prev_before = since
 
         labels = get_project_labels(conn)
         stats = get_weekly_stats(conn, since)
-        prev_stats = get_previous_week_stats(conn, prev_since, prev_before)
         summaries = get_session_summaries(conn, since)
         decisions = get_recent_decisions(conn, since)
-        dormant = get_dormant_projects(conn, labels, dormant_days=7)
-        totals = get_brain_totals(conn)
         last_notes = get_last_session_notes(conn)
-        inception = get_inception_stats(conn, labels)
-        roadmap = get_project_roadmap(conn)
 
-        period_start = now - timedelta(days=args.days)
-        subject = f"Brain Digest — {period_start.strftime('%b %d')} to {now.strftime('%b %d')}"
+        if args.daily:
+            # -- Daily standup: BLUF first, per-project, actionable
+            subject = build_daily_subject(stats, summaries, decisions)
+            html = build_daily_html(conn, stats, summaries, decisions, labels, since)
+        else:
+            # -- Weekly digest: full portfolio view
+            prev_since = (now - timedelta(days=args.days * 2)).isoformat()
+            prev_before = since
+            prev_stats = get_previous_week_stats(conn, prev_since, prev_before)
+            dormant = get_dormant_projects(conn, labels, dormant_days=7)
+            totals = get_brain_totals(conn)
+            inception = get_inception_stats(conn, labels)
+            roadmap = get_project_roadmap(conn)
 
-        html = build_email_html(
-            args.days, stats, prev_stats, summaries, decisions,
-            dormant, totals, labels, last_notes, inception, roadmap,
-        )
+            period_start = now - timedelta(days=args.days)
+            subject = f"Brain Digest — {period_start.strftime('%b %d')} to {now.strftime('%b %d')}"
+            html = build_email_html(
+                args.days, stats, prev_stats, summaries, decisions,
+                dormant, totals, labels, last_notes, inception, roadmap,
+            )
 
         ok = send_email(config, subject, html, dry_run=args.dry_run)
         sys.exit(0 if ok else 1)
