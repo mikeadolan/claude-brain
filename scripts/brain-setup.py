@@ -12,7 +12,6 @@ Usage:
 
 import json
 import os
-import platform
 import re
 import shutil
 import sqlite3

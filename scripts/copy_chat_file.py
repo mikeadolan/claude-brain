@@ -15,7 +15,6 @@ import datetime
 import os
 import pathlib
 import shutil
-import sqlite3
 import sys
 
 import yaml

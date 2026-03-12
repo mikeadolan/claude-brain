@@ -20,7 +20,6 @@ import pathlib
 import shutil
 import socket
 import sqlite3
-import subprocess
 import sys
 import time
 

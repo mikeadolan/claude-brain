@@ -12,7 +12,6 @@ Exit codes: 0 = all PASS, 1 = any WARN, 2 = any FAIL
 """
 
 import argparse
-import datetime
 import json
 import os
 import pathlib

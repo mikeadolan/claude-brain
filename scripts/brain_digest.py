@@ -26,7 +26,6 @@ Cron setup (add via: crontab -e):
 """
 
 import argparse
-import json
 import os
 import smtplib
 import sqlite3

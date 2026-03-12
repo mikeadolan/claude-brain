@@ -12,15 +12,12 @@ Triggered by: hooks/session-start.py
 Exit codes: 0 = success, 1 = warnings, 2 = fatal error
 """
 
-import datetime
-import glob
 import logging
 import os
 import pathlib
 import shutil
 import socket
 import sqlite3
-import subprocess
 import sys
 import time
 

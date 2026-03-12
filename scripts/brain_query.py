@@ -15,7 +15,6 @@ Exit codes: 0 success, 1 error
 """
 
 import argparse
-import json
 import os
 import pathlib
 import re
