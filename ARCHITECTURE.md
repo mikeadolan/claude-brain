@@ -62,8 +62,8 @@ config.yaml
 
 | What | Path |
 |------|------|
-| ROOT | /home/mikedolan/Dropbox/Documents/AI/Claude/claude-brain |
-| DB | /home/mikedolan/claude-brain-local/claude-brain.db |
+| ROOT | ~/Dropbox/claude-brain (or wherever you cloned the repo) |
+| DB | ~/claude-brain-local/claude-brain.db (local disk, not synced) |
 | Config | {ROOT}/config.yaml |
 | Scripts | {ROOT}/scripts/ (15 scripts) |
 | Hooks | {ROOT}/hooks/ (4 hooks) |
