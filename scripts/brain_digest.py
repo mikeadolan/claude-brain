@@ -273,127 +273,158 @@ def extract_topic_from_summary(summary):
 # Email formatting
 # ---------------------------------------------------------------------------
 
-STYLE = """
-<style>
-    body { font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-           color: #1a1a1a; max-width: 700px; margin: 0 auto; padding: 20px;
-           background-color: #f5f5f5; }
-    .container { background: #fff; border-radius: 8px; padding: 30px;
-                 box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    h1 { color: #2d3748; border-bottom: 3px solid #4a90d9; padding-bottom: 12px;
-         font-size: 22px; margin-top: 0; }
-    h2 { color: #2d3748; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;
-         font-size: 16px; margin-top: 28px; }
-    table { border-collapse: collapse; width: 100%; margin: 12px 0; }
-    th { background: #4a90d9; color: #fff; padding: 8px 12px; text-align: left;
-         font-size: 13px; }
-    td { padding: 7px 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
-    tr:nth-child(even) { background: #f7fafc; }
-    .alert { background: #fff5f5; border-left: 4px solid #e53e3e; padding: 12px 16px;
-             margin: 12px 0; border-radius: 0 4px 4px 0; font-size: 13px; }
-    .alert-title { color: #e53e3e; font-weight: 600; margin-bottom: 4px; }
-    .metric { display: inline-block; background: #ebf4ff; border-radius: 6px;
-              padding: 10px 16px; margin: 4px; text-align: center; min-width: 80px; }
-    .metric-value { font-size: 22px; font-weight: 700; color: #2b6cb0; }
-    .metric-label { font-size: 11px; color: #718096; text-transform: uppercase; }
-    .summary-item { margin: 8px 0; padding: 8px 12px; background: #f7fafc;
-                    border-radius: 4px; font-size: 13px; }
-    .summary-date { color: #718096; font-size: 11px; }
-    .summary-project { display: inline-block; background: #4a90d9; color: #fff;
-                       padding: 1px 6px; border-radius: 3px; font-size: 11px;
-                       font-weight: 600; }
-    .decision { margin: 6px 0; padding: 6px 0; border-bottom: 1px solid #f0f0f0;
-                font-size: 13px; }
-    .decision-num { font-weight: 700; color: #4a90d9; }
-    .footer { margin-top: 30px; padding-top: 16px; border-top: 1px solid #e2e8f0;
-              color: #a0aec0; font-size: 11px; text-align: center; }
-    .trend-up { color: #38a169; }
-    .trend-down { color: #e53e3e; }
-    .trend-flat { color: #718096; }
-</style>
-"""
+# ---------------------------------------------------------------------------
+# HTML email foundation — all inline styles (Gmail web strips <style> blocks)
+# Per email-digest-design-spec.md section 5
+# ---------------------------------------------------------------------------
+
+FONT = "Arial,Helvetica,sans-serif"
+
+# Inline style constants — used directly on elements, NOT in a <style> block
+S_BODY = f"margin:0; padding:0; background-color:#f5f5f5; font-family:{FONT}; color:#1a1a1a;"
+S_CONTAINER = f"max-width:600px; margin:0 auto; background-color:#ffffff; padding:30px; font-family:{FONT};"
+S_H1 = f"color:#2d3748; border-bottom:3px solid #4a90d9; padding-bottom:12px; font-size:22px; margin-top:0; font-family:{FONT};"
+S_H2 = f"color:#2d3748; border-bottom:1px solid #e2e8f0; padding-bottom:8px; font-size:16px; margin-top:28px; font-family:{FONT};"
+S_TABLE = "border-collapse:collapse; width:100%; margin:12px 0;"
+S_TH = f"background:#4a90d9; color:#fff; padding:8px 12px; text-align:left; font-size:13px; font-family:{FONT};"
+S_TD = f"padding:7px 12px; border-bottom:1px solid #e2e8f0; font-size:13px; font-family:{FONT};"
+S_TD_EVEN = f"padding:7px 12px; border-bottom:1px solid #e2e8f0; font-size:13px; background:#f7fafc; font-family:{FONT};"
+S_ALERT = "background:#fff5f5; border-left:4px solid #e53e3e; padding:12px 16px; margin:12px 0; font-size:13px;"
+S_ALERT_TITLE = "color:#e53e3e; font-weight:600; margin-bottom:4px;"
+S_METRIC = "display:inline-block; background:#ebf4ff; border-radius:6px; padding:10px 16px; margin:4px; text-align:center; min-width:80px;"
+S_METRIC_VAL = "font-size:22px; font-weight:700; color:#2b6cb0;"
+S_METRIC_LBL = "font-size:11px; color:#718096; text-transform:uppercase;"
+S_SUMMARY_ITEM = "margin:8px 0; padding:8px 12px; background:#f7fafc; border-radius:4px; font-size:13px;"
+S_SUMMARY_DATE = "color:#718096; font-size:11px;"
+S_PROJ_BADGE = "display:inline-block; background:#4a90d9; color:#fff; padding:1px 6px; border-radius:3px; font-size:11px; font-weight:600;"
+S_DECISION = "margin:6px 0; padding:6px 0; border-bottom:1px solid #f0f0f0; font-size:13px;"
+S_DECISION_NUM = "font-weight:700; color:#4a90d9;"
+S_FOOTER = "margin-top:30px; padding-top:16px; border-top:1px solid #e2e8f0; color:#a0aec0; font-size:11px; text-align:center;"
+S_TREND_UP = "color:#38a169;"
+S_TREND_DOWN = "color:#e53e3e;"
+S_TREND_FLAT = "color:#718096;"
+
+
+def build_email_wrapper(title, preheader, content):
+    """Wrap email content in a safe HTML skeleton per design spec section 5.
+
+    - Proper DOCTYPE with xmlns for Outlook
+    - MSO conditional table wrapper for 600px max-width
+    - color-scheme meta for dark mode
+    - Hidden preheader div for inbox preview
+    - ALL styles inline — no <style> block (Gmail web strips it)
+    """
+    return f"""<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark">
+<title>{title}</title>
+<!--[if mso]>
+<noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript>
+<![endif]-->
+</head>
+<body style="{S_BODY}">
+<div style="display:none; max-height:0; overflow:hidden; mso-hide:all;">{preheader}</div>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#f5f5f5;">
+<tr><td align="center" style="padding:20px 10px;">
+<!--[if mso]><table cellpadding="0" cellspacing="0" border="0" width="600"><tr><td><![endif]-->
+<div style="{S_CONTAINER}">
+{content}
+</div>
+<!--[if mso]></td></tr></table><![endif]-->
+</td></tr></table>
+</body></html>"""
 
 
 def format_trend(current, previous):
-    """Format a comparison arrow."""
+    """Format a comparison arrow with inline styles (no CSS classes)."""
     if previous is None or previous == 0:
         return ""
     diff = current - previous
     pct = (diff / previous) * 100 if previous else 0
     if diff > 0:
-        return f' <span class="trend-up">+{diff} ({pct:+.0f}%)</span>'
+        return f' <span style="{S_TREND_UP}">+{diff} ({pct:+.0f}%)</span>'
     elif diff < 0:
-        return f' <span class="trend-down">{diff} ({pct:+.0f}%)</span>'
-    return ' <span class="trend-flat">(unchanged)</span>'
+        return f' <span style="{S_TREND_DOWN}">{diff} ({pct:+.0f}%)</span>'
+    return f' <span style="{S_TREND_FLAT}">(unchanged)</span>'
 
 
 def build_email_html(days, stats, prev_stats, summaries, decisions,
                      dormant, totals, labels, last_notes, inception, roadmap):
-    """Build the full HTML email body."""
+    """Build the weekly digest HTML — all inline styles, wrapped in safe skeleton."""
     now = datetime.now()
     period_start = now - timedelta(days=days)
+    title = f"Brain Digest — {period_start.strftime('%b %d')} to {now.strftime('%b %d, %Y')}"
 
-    # -- Header
-    html = f"""<!DOCTYPE html><html><head>{STYLE}</head><body><div class="container">
-    <h1>Brain Digest &mdash; {period_start.strftime('%b %d')} to {now.strftime('%b %d, %Y')}</h1>
-    """
+    total_sessions = sum(r["sessions"] for r in stats) if stats else 0
+    total_msgs = sum(r["messages"] or 0 for r in stats) if stats else 0
+    active_projects = len(stats)
+    preheader = f"{total_sessions} sessions across {active_projects} projects this week"
 
-    # -- Inception-to-Date Portfolio (top of email)
+    content = f'<h1 style="{S_H1}">{title}</h1>'
+
+    # -- Inception-to-Date Portfolio
     if inception:
-        html += '<h2>Portfolio — Inception to Date</h2>'
-        html += '<table><tr><th>Project</th><th>Sessions</th><th>Messages</th>'
-        html += '<th>Decisions</th><th>Active Since</th><th>Span</th></tr>'
+        content += f'<h2 style="{S_H2}">Portfolio — Inception to Date</h2>'
+        content += f'<table style="{S_TABLE}"><tr>'
+        for hdr in ["Project", "Sessions", "Messages", "Decisions", "Active Since", "Span"]:
+            content += f'<th style="{S_TH}">{hdr}</th>'
+        content += '</tr>'
         total_itd_sessions = 0
         total_itd_msgs = 0
         total_itd_decisions = 0
-        for p in inception:
+        for i, p in enumerate(inception):
             total_itd_sessions += p["sessions"]
             total_itd_msgs += p["messages"]
             total_itd_decisions += p["decisions"]
             span = f'{p["span_days"]}d' if p["span_days"] else "—"
-            html += f'<tr><td><strong>{p["label"]}</strong> ({p["prefix"]})</td>'
-            html += f'<td>{p["sessions"]}</td>'
-            html += f'<td>{p["messages"]:,}</td>'
-            html += f'<td>{p["decisions"]}</td>'
-            html += f'<td>{p["first_session"]}</td>'
-            html += f'<td>{span}</td></tr>'
-        html += f'<tr style="font-weight:700; background:#ebf4ff;">'
-        html += f'<td>TOTAL</td><td>{total_itd_sessions}</td><td>{total_itd_msgs:,}</td>'
-        html += f'<td>{total_itd_decisions}</td><td colspan="2"></td></tr>'
-        html += '</table>'
+            td = S_TD_EVEN if i % 2 == 1 else S_TD
+            content += f'<tr><td style="{td}"><strong>{p["label"]}</strong> ({p["prefix"]})</td>'
+            content += f'<td style="{td}">{p["sessions"]}</td>'
+            content += f'<td style="{td}">{p["messages"]:,}</td>'
+            content += f'<td style="{td}">{p["decisions"]}</td>'
+            content += f'<td style="{td}">{p["first_session"]}</td>'
+            content += f'<td style="{td}">{span}</td></tr>'
+        content += f'<tr style="font-weight:700; background:#ebf4ff;">'
+        content += f'<td style="{S_TD}">TOTAL</td><td style="{S_TD}">{total_itd_sessions}</td><td style="{S_TD}">{total_itd_msgs:,}</td>'
+        content += f'<td style="{S_TD}">{total_itd_decisions}</td><td style="{S_TD}" colspan="2"></td></tr>'
+        content += '</table>'
 
     # -- Metrics bar (this week)
-    total_sessions = sum(r["sessions"] for r in stats) if stats else 0
-    total_msgs = sum(r["messages"] or 0 for r in stats) if stats else 0
-    active_projects = len(stats)
-
     prev_sessions = prev_stats["sessions"] if prev_stats else None
     prev_msgs = prev_stats["messages"] if prev_stats else None
 
-    html += f'<h2>This Week ({days} days)</h2>'
-    html += '<div style="text-align:center; margin: 16px 0;">'
-    html += f'<div class="metric"><div class="metric-value">{total_sessions}{format_trend(total_sessions, prev_sessions)}</div><div class="metric-label">Sessions</div></div>'
-    html += f'<div class="metric"><div class="metric-value">{total_msgs:,}{format_trend(total_msgs, prev_msgs or 0)}</div><div class="metric-label">Messages</div></div>'
-    html += f'<div class="metric"><div class="metric-value">{active_projects}</div><div class="metric-label">Active Projects</div></div>'
-    html += '</div>'
+    content += f'<h2 style="{S_H2}">This Week ({days} days)</h2>'
+    content += '<div style="text-align:center; margin:16px 0;">'
+    content += f'<div style="{S_METRIC}"><div style="{S_METRIC_VAL}">{total_sessions}{format_trend(total_sessions, prev_sessions)}</div><div style="{S_METRIC_LBL}">Sessions</div></div>'
+    content += f'<div style="{S_METRIC}"><div style="{S_METRIC_VAL}">{total_msgs:,}{format_trend(total_msgs, prev_msgs or 0)}</div><div style="{S_METRIC_LBL}">Messages</div></div>'
+    content += f'<div style="{S_METRIC}"><div style="{S_METRIC_VAL}">{active_projects}</div><div style="{S_METRIC_LBL}">Active Projects</div></div>'
+    content += '</div>'
 
-    # -- Project Activity Table (this week)
+    # -- Project Activity Table
     if stats:
-        html += '<table><tr><th>Project</th><th>Sessions</th><th>Messages</th><th>Avg/Session</th></tr>'
-        for r in stats:
+        content += f'<table style="{S_TABLE}"><tr>'
+        for hdr in ["Project", "Sessions", "Messages", "Avg/Session"]:
+            content += f'<th style="{S_TH}">{hdr}</th>'
+        content += '</tr>'
+        for i, r in enumerate(stats):
             label = labels.get(r["project"], r["project"])
-            html += f'<tr><td><strong>{label}</strong> ({r["project"]})</td>'
-            html += f'<td>{r["sessions"]}</td>'
-            html += f'<td>{r["messages"] or 0:,}</td>'
-            html += f'<td>{r["avg_msgs"] or 0}</td></tr>'
-        html += '</table>'
+            td = S_TD_EVEN if i % 2 == 1 else S_TD
+            content += f'<tr><td style="{td}"><strong>{label}</strong> ({r["project"]})</td>'
+            content += f'<td style="{td}">{r["sessions"]}</td>'
+            content += f'<td style="{td}">{r["messages"] or 0:,}</td>'
+            content += f'<td style="{td}">{r["avg_msgs"] or 0}</td></tr>'
+        content += '</table>'
     else:
-        html += '<p style="color:#718096;">No sessions this period.</p>'
+        content += '<p style="color:#718096;">No sessions this period.</p>'
 
-    # -- Session Highlights (topics from summaries)
+    # -- Session Highlights
     if summaries:
-        html += '<h2>Session Highlights</h2>'
-        # Group by project, show up to 5 per project
+        content += f'<h2 style="{S_H2}">Session Highlights</h2>'
         by_project = {}
         for s in summaries:
             proj = s["project"] or "oth"
@@ -404,62 +435,60 @@ def build_email_html(days, stats, prev_stats, summaries, decisions,
 
         for proj, entries in by_project.items():
             proj_label = labels.get(proj, proj)
-            html += f'<div style="margin-top:12px;"><span class="summary-project">{proj}</span> <strong>{proj_label}</strong></div>'
+            content += f'<div style="margin-top:12px;"><span style="{S_PROJ_BADGE}">{proj}</span> <strong>{proj_label}</strong></div>'
             for s in entries:
                 topic = extract_topic_from_summary(s["summary"])
                 date_str = (s["started_at"] or s["created_at"] or "")[:10]
                 msgs = s["message_count"] or "?"
-                html += f'<div class="summary-item"><span class="summary-date">{date_str}</span> &middot; {msgs} msgs &mdash; {topic}</div>'
+                content += f'<div style="{S_SUMMARY_ITEM}"><span style="{S_SUMMARY_DATE}">{date_str}</span> &middot; {msgs} msgs &mdash; {topic}</div>'
 
     # -- Decisions
     if decisions:
-        html += '<h2>Decisions Made</h2>'
+        content += f'<h2 style="{S_H2}">Decisions Made</h2>'
         for d in decisions:
             proj = d["project"] or "?"
-            html += f'<div class="decision"><span class="decision-num">#{d["decision_number"]}</span> '
-            html += f'<span class="summary-project">{proj}</span> '
-            html += f'{d["description"][:200]}</div>'
+            content += f'<div style="{S_DECISION}"><span style="{S_DECISION_NUM}">#{d["decision_number"]}</span> '
+            content += f'<span style="{S_PROJ_BADGE}">{proj}</span> '
+            content += f'{d["description"][:200]}</div>'
 
     # -- Dormant Project Alerts
     if dormant:
-        html += '<h2>Dormant Projects</h2>'
+        content += f'<h2 style="{S_H2}">Dormant Projects</h2>'
         for d in dormant:
-            html += f'<div class="alert"><div class="alert-title">{d["label"]} ({d["prefix"]})</div>'
-            html += f'No activity in <strong>{d["days_idle"]} days</strong>. '
-            html += f'Last active: {d["last_active"]}. Total sessions: {d["total_sessions"]}.</div>'
+            content += f'<div style="{S_ALERT}"><div style="{S_ALERT_TITLE}">{d["label"]} ({d["prefix"]})</div>'
+            content += f'No activity in <strong>{d["days_idle"]} days</strong>. '
+            content += f'Last active: {d["last_active"]}. Total sessions: {d["total_sessions"]}.</div>'
 
-    # -- Last Session Notes (next steps)
+    # -- Last Session Notes
     if last_notes and last_notes["notes"]:
-        html += '<h2>Last Session Notes</h2>'
+        content += f'<h2 style="{S_H2}">Last Session Notes</h2>'
         date_str = (last_notes["started_at"] or "")[:10]
         proj = last_notes["project"] or "?"
         notes_html = last_notes["notes"].replace("\n", "<br>")
-        html += f'<div class="summary-item"><span class="summary-date">{date_str}</span> '
-        html += f'<span class="summary-project">{proj}</span><br>{notes_html}</div>'
+        content += f'<div style="{S_SUMMARY_ITEM}"><span style="{S_SUMMARY_DATE}">{date_str}</span> '
+        content += f'<span style="{S_PROJ_BADGE}">{proj}</span><br>{notes_html}</div>'
 
     # -- Roadmap / On Deck
     if roadmap:
-        html += '<h2>On Deck — Planned Next</h2>'
+        content += f'<h2 style="{S_H2}">On Deck — Planned Next</h2>'
         for proj, items in roadmap.items():
             proj_label = labels.get(proj, proj)
-            html += f'<div style="margin-top:10px;"><span class="summary-project">{proj}</span> <strong>{proj_label}</strong></div>'
+            content += f'<div style="margin-top:10px;"><span style="{S_PROJ_BADGE}">{proj}</span> <strong>{proj_label}</strong></div>'
             for item in items:
-                html += f'<div class="summary-item">{item["value"]}</div>'
+                content += f'<div style="{S_SUMMARY_ITEM}">{item["value"]}</div>'
 
-    # -- Brain Totals (footer stats)
-    html += '<h2>Brain Stats</h2>'
-    html += '<div style="text-align:center;">'
-    html += f'<div class="metric"><div class="metric-value">{totals["sessions"]}</div><div class="metric-label">Total Sessions</div></div>'
-    html += f'<div class="metric"><div class="metric-value">{totals["transcripts"]:,}</div><div class="metric-label">Transcripts</div></div>'
-    html += f'<div class="metric"><div class="metric-value">{totals["decisions"]}</div><div class="metric-label">Decisions</div></div>'
-    html += f'<div class="metric"><div class="metric-value">{totals["embeddings"]:,}</div><div class="metric-label">Embeddings</div></div>'
-    html += '</div>'
+    # -- Brain Totals
+    content += f'<h2 style="{S_H2}">Brain Stats</h2>'
+    content += '<div style="text-align:center;">'
+    for val, lbl in [(totals["sessions"], "Total Sessions"), (f'{totals["transcripts"]:,}', "Transcripts"),
+                     (totals["decisions"], "Decisions"), (f'{totals["embeddings"]:,}', "Embeddings")]:
+        content += f'<div style="{S_METRIC}"><div style="{S_METRIC_VAL}">{val}</div><div style="{S_METRIC_LBL}">{lbl}</div></div>'
+    content += '</div>'
 
     # -- Footer
-    html += f'<div class="footer">Generated by claude-brain v0.1 &middot; {now.strftime("%Y-%m-%d %H:%M")} &middot; Local data only, zero tokens used</div>'
-    html += '</div></body></html>'
+    content += f'<div style="{S_FOOTER}">Generated by claude-brain v0.1 &middot; {now.strftime("%Y-%m-%d %H:%M")} &middot; Local data only, zero tokens used</div>'
 
-    return html
+    return build_email_wrapper(title, preheader, content)
 
 
 def extract_section(text, section_name):
@@ -574,9 +603,14 @@ def build_daily_html(conn, stats, summaries, decisions, labels, since):
     ).fetchall()
     all_active_prefixes = {r[0]: r[1] for r in all_active}
 
-    html = f"""<!DOCTYPE html><html><head>{STYLE}</head><body><div class="container">
-    <h1>Daily Standup &mdash; {yesterday.strftime('%A, %b %d')}</h1>
-    """
+    title = f"Daily Standup — {yesterday.strftime('%A, %b %d')}"
+    preheader_parts = []
+    if not is_quiet:
+        preheader_parts.append(f"{total_sessions} sessions, {total_msgs:,} msgs")
+    else:
+        preheader_parts.append("Quiet day — no sessions")
+
+    html = f'<h1 style="{S_H1}">{title}</h1>'
 
     # ── Section 1: BLUF summary (the ONE thing to know) ──
     if is_quiet:
@@ -695,26 +729,24 @@ def build_daily_html(conn, stats, summaries, decisions, labels, since):
         html += '</div>'
 
     # ── Footer (minimal per Postmark frequency rule) ──
-    html += f'<div style="margin-top:20px; padding-top:12px; border-top:1px solid #e2e8f0; color:#a0aec0; font-size:11px; text-align:center;">'
+    html += f'<div style="{S_FOOTER}">'
     html += f'claude-brain &middot; {now.strftime("%Y-%m-%d %H:%M")} &middot; Local data only</div>'
-    html += '</div></body></html>'
 
-    return html
+    preheader = ". ".join(preheader_parts)
+    return build_email_wrapper(title, preheader, html)
 
 
 def build_test_html():
     """Minimal test email to verify SMTP works."""
     now = datetime.now()
-    return f"""<!DOCTYPE html><html><head>{STYLE}</head><body><div class="container">
-    <h1>Brain Digest &mdash; Test Email</h1>
-    <p>If you're reading this, email delivery is working.</p>
-    <div style="text-align:center; margin: 16px 0;">
-    <div class="metric"><div class="metric-value">OK</div><div class="metric-label">SMTP</div></div>
-    <div class="metric"><div class="metric-value">OK</div><div class="metric-label">Auth</div></div>
-    <div class="metric"><div class="metric-value">OK</div><div class="metric-label">Delivery</div></div>
-    </div>
-    <div class="footer">Generated by claude-brain v0.1 &middot; {now.strftime("%Y-%m-%d %H:%M")}</div>
-    </div></body></html>"""
+    content = f'<h1 style="{S_H1}">Brain Digest &mdash; Test Email</h1>'
+    content += '<p>If you\'re reading this, email delivery is working.</p>'
+    content += '<div style="text-align:center; margin:16px 0;">'
+    for lbl in ["SMTP", "Auth", "Delivery"]:
+        content += f'<div style="{S_METRIC}"><div style="{S_METRIC_VAL}">OK</div><div style="{S_METRIC_LBL}">{lbl}</div></div>'
+    content += '</div>'
+    content += f'<div style="{S_FOOTER}">Generated by claude-brain v0.1 &middot; {now.strftime("%Y-%m-%d %H:%M")}</div>'
+    return build_email_wrapper("Brain Digest — Test", "Testing email delivery", content)
 
 
 # ---------------------------------------------------------------------------

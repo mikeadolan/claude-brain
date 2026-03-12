@@ -198,85 +198,168 @@ all 3 template structures, HTML email constraints, subject line formulas, engage
 9. **Send daily 8-9 AM, weekly Monday AM.**
 10. **Quiet day handling** — always send (preserve habit loop), but adapt content.
 
-**Data model adaptation:** Our brain tracks sessions/messages/decisions/notes, NOT git activity
-(files changed, lines). Metrics are: sessions, messages, decisions, projects. Blockers and
-next steps extracted from session notes text (## Blockers, ## Next Step sections).
+### DATA → EMAIL MAPPING (what we have and where each piece goes)
+
+**project_registry fields:**
+| Field | What it contains | Used in Daily | Used in Weekly | Used in Deep Dive |
+|---|---|---|---|---|
+| `health` | green/yellow/red | RAG badge per project ✓ | Portfolio table RAG column (NOT DONE) | RAG header (NOT BUILT) |
+| `status` | active/paused | Filter: skip paused | Filter: show paused separately (NOT DONE) | Show in header (NOT BUILT) |
+| `summary` | Rich text, 300-7000 chars | Extracts: Next Steps, Blockers, In Progress ✓ | NOT USED AT ALL — should power exec summary + portfolio context | Full summary shown (NOT BUILT) |
+| `summary_updated_at` | Last update timestamp | Not needed | Freshness indicator (NOT DONE) | Show last update (NOT BUILT) |
+| `label` | Human-readable project name | ✓ | ✓ | ✓ |
+
+**project_registry.summary sections (available for extraction):**
+| Section | Available in mb/jg | Used in Daily | Used in Weekly | Used in Deep Dive |
+|---|---|---|---|---|
+| `## Summary` | ✓ | Not needed (too long) | Portfolio table hover/excerpt (NOT DONE) | Full display (NOT BUILT) |
+| `## Accomplishments` | ✓ | Not needed | Top Accomplishments section (NOT DONE) | Full display (NOT BUILT) |
+| `## In Progress` | ✓ | ✓ | Portfolio table context (NOT DONE) | Full display (NOT BUILT) |
+| `## Risks & Blockers` | ✓ | ✓ (as Blockers) | Feeds dormant alerts + risk summary (NOT DONE) | Structured table (NOT BUILT) |
+| `## Next Steps` | ✓ | ✓ (as Pick Up Here) | Upcoming section (NOT DONE) | Full display (NOT BUILT) |
+| `## Decisions` | ✓ | Not needed | Key decisions listed | Project decisions (NOT BUILT) |
+| `## Architecture` | ✓ | Not needed | Not needed | Architecture snapshot (NOT BUILT) |
+| `## Recent Sessions` | ✓ | Not needed | Session highlights | Session feed (NOT BUILT) |
+
+**Other DB tables used:**
+| Table | Data | Daily | Weekly | Deep Dive |
+|---|---|---|---|---|
+| `sys_sessions` | Session counts, messages, notes, timestamps | ✓ | ✓ | ✓ |
+| `decisions` | Numbered decisions with descriptions | ✓ (if any) | ✓ | ✓ (filtered to project) |
+| `facts` | Structured facts per project (roadmap items) | Not needed | Roadmap section ✓ | Relevant facts (NOT BUILT) |
+| `brain_facts` | Personal brain facts | Not needed | Not needed | Not needed |
+| `transcript_embeddings` | Embedding count | Not needed | Brain stats ✓ | Not needed |
 
 ### Steps
 
 #### PHASE A: HTML Foundation (spec sections 5, 6 — do this FIRST, all templates use it)
 
-- [ ] **3.A1 — Build safe HTML email skeleton as shared base**
-  - [ ] 3.A1a — Replace current `<style>` in `<head>` approach (Gmail web strips it!) with ALL inline styles
-  - [ ] 3.A1b — Add proper DOCTYPE, xmlns, MSO conditional comments per spec section 5
-  - [ ] 3.A1c — Add `<meta color-scheme>` for dark mode support
-  - [ ] 3.A1d — Add hidden preheader div (40-100 chars, shows in inbox preview) per spec section 5.10
-  - [ ] 3.A1e — Use MSO conditional table wrapper for 600px max-width (Outlook ignores max-width on divs)
-  - [ ] 3.A1f — Use table-based layout (not div-based) for Outlook compatibility per spec section 5.7
-  - [ ] 3.A1g — Use #1a1a1a for text not #000000 (dark mode inversion), system font stack per spec section 5.9
-  - [ ] 3.A1h — Create `build_email_wrapper(title, preheader, content)` shared function all templates use
-  - [ ] 3.A1i — Rebuild plain-text fallback to be content-specific per template (not generic "view in HTML client")
-  - [ ] 3.A1j — Test all 3 templates still render after skeleton change
+- [x] **3.A1 — Build safe HTML email skeleton as shared base** (DONE session 36)
+  - [x] 3.A1a — Replaced `<style>` in `<head>` with ALL inline style constants (S_H1, S_TD, S_METRIC, etc.)
+  - [x] 3.A1b — DOCTYPE, xmlns, xmlns:o, MSO conditional comments
+  - [x] 3.A1c — `<meta color-scheme>` + `<meta supported-color-schemes>` for dark mode
+  - [x] 3.A1d — Hidden preheader div with dynamic content per template
+  - [x] 3.A1e — MSO conditional `<table width="600">` wrapper for Outlook
+  - [x] 3.A1f — Table-based outer wrapper (role=presentation) for Outlook
+  - [x] 3.A1g — #1a1a1a text color, Arial/Helvetica/sans-serif font stack
+  - [x] 3.A1h — `build_email_wrapper(title, preheader, content)` shared function — all 3 templates use it
+  - [ ] 3.A1i — Plain-text fallback still generic — defer to Phase F (low priority)
+  - [x] 3.A1j — All 3 templates tested: daily (4,825 chars), weekly (33,007 chars), test (2,645 chars)
+  - [x] 3.A1k — Zero CSS classes remain, zero `<style>` blocks, 10/10 spec checks pass
+  - [x] 3.A1l — Live send to Gmail: daily + weekly both delivered
 
 #### PHASE B: Daily Standup (spec section 2 — already started, needs completion)
 
 - [ ] **3.B1 — Complete daily standup per spec**
   - [x] 3.B1a — Research: BLUF, military email, Geekbot/Range/Standuply patterns (design spec created)
-  - [x] 3.B1b — Per-project blocks with RAG badge, Pick Up Here, Blockers, In Progress
+  - [x] 3.B1b — Per-project blocks with RAG badge from `project_registry.health`, Pick Up Here from `## Next Steps`, Blockers from `## Risks & Blockers`, In Progress from `## In Progress`
   - [x] 3.B1c — Dynamic subject line: `[brain] Daily: {stat} | {date}` per spec section 6
-  - [ ] 3.B1d — Add preheader text (top accomplishment or status phrase) per spec section 2
-  - [ ] 3.B1e — Add 7-day rolling average comparison in metrics (↑/↓ vs avg) per spec section 2
-  - [ ] 3.B1f — Quiet day handling: always send, show last activity date + quiet streak per spec section 2
-  - [ ] 3.B1g — Verify word count is 150-250 words (spec target). Trim if over.
-  - [ ] 3.B1h — Test in Gmail, verify scannability < 15 seconds per spec
+  - [x] 3.B1d — Preheader text in wrapper (stats summary)
+  - [ ] 3.B1e — Improve preheader: use first Pick Up Here item text instead of just stats
+  - [ ] 3.B1f — Add 7-day rolling average comparison in metrics: query prior 7 days, show ↑/↓ vs avg
+  - [ ] 3.B1g — Quiet day: always send, show last activity date per project + quiet streak count + "N open items from last session" per spec section 2
+  - [ ] 3.B1h — Verify word count is 150-250 words (spec target). Trim if over.
+  - [ ] 3.B1i — Test in Gmail, verify scannability < 15 seconds per spec
 
-#### PHASE C: Weekly Digest Upgrade (spec section 3 — existing needs major updates)
+#### PHASE C: Weekly Digest Overhaul (spec section 3 — nearly every section needs work)
 
-- [ ] **3.C1 — Add Executive Summary BLUF to weekly**
-  - [ ] 3.C1a — Build exec summary: "{N} sessions across {P} projects ({delta}% from last week). Most active: {project}. {alert if any}." per spec section 3
-  - [ ] 3.C1b — Move exec summary to position #1 (currently inception table is first)
-  - [ ] 3.C1c — Dynamic subject line: `[Weekly] {date_range}: {headline} across {N} projects` per spec section 6
+The weekly is the "forwardable portfolio view" — designed to be sent to a manager/stakeholder.
+Currently it's a raw data dump with zero project context. Needs major overhaul.
+
+**New section order for weekly (per spec section 3):**
+1. Executive Summary BLUF (NEW — 2-3 sentences answering: activity level? most active? alerts?)
+2. Week-over-Week Trend Table (NEW — sessions/msgs/decisions this vs last, with delta %)
+3. Project Portfolio Table (OVERHAUL — add RAG from `health`, status from `status`, 1-line from `## Summary`)
+4. Top Accomplishments (NEW — 3-5 bullets from session notes "What Was Done" sections)
+5. Dormant Alerts (RESTYLE — amber not red, include last session context)
+6. Decisions Made (KEEP — already works)
+7. Last Session Notes (KEEP — already works)
+8. On Deck / Roadmap (KEEP — already works)
+9. Brain Stats (KEEP — move to bottom)
+10. Footer (UPDATE — add "Forward this report" nudge)
+
+Inception-to-date table MOVES DOWN — it's reference data, not the BLUF. Goes after brain stats.
+
+- [ ] **3.C1 — Add Executive Summary BLUF (the "forwardable paragraph")**
+  - [ ] 3.C1a — Query: total sessions this week, total last week, delta %. Most active project (by sessions). Count of dormant projects (0 sessions). Count of projects with health != green.
+  - [ ] 3.C1b — Formula: "This week you logged {N} sessions across {P} projects ({delta}% from last week). Most active: {project} ({sessions} sessions). {alert_sentence}."
+  - [ ] 3.C1c — Alert sentence logic: if dormant > 0: "Alert: {names} dormant for {days}+ days." If health != green: "{name} is at risk." If all clear: "All projects on track."
+  - [ ] 3.C1d — Position as FIRST section (above everything else)
+  - [ ] 3.C1e — Dynamic subject line: `[Weekly] {range}: {sessions} sessions across {N} projects` per spec section 6
+  - [ ] 3.C1f — Preheader text: use the exec summary sentence
 
 - [ ] **3.C2 — Add week-over-week trend comparison table**
-  - [ ] 3.C2a — Build trend table: Sessions/Messages/Decisions this week vs last week + delta % + color per spec section 3
-  - [ ] 3.C2b — Position after exec summary, before portfolio table
+  - [ ] 3.C2a — Query: sessions, messages, decisions for this week AND prior week
+  - [ ] 3.C2b — Build 4-column table: Metric | This Week | Last Week | Δ (with green/red color on delta)
+  - [ ] 3.C2c — Position after exec summary, before portfolio table
 
-- [ ] **3.C3 — Upgrade portfolio table with RAG indicators**
-  - [ ] 3.C3a — Add RAG column using inline background-color `<td>` (NOT emoji) per spec section 3 + Chrome Claude flag
-  - [ ] 3.C3b — Add trend arrow column per project
-  - [ ] 3.C3c — Forwardability: descriptive column headers, no jargon per spec section 3
+- [ ] **3.C3 — Overhaul portfolio table with project context**
+  - [ ] 3.C3a — Add RAG column: query `project_registry.health` per project → inline background-color `<td>` (NOT emoji)
+  - [ ] 3.C3b — Add Status column: query `project_registry.status` → show "active" / "paused" (paused in amber)
+  - [ ] 3.C3c — Add 1-line context: extract first sentence of `## Summary` from `project_registry.summary`
+  - [ ] 3.C3d — Add trend arrow: sessions this week vs last week per project
+  - [ ] 3.C3e — Forwardable headers: "Project", "Health", "Status", "Sessions", "Messages", "Trend"
+  - [ ] 3.C3f — Sort: active projects first (by sessions desc), then paused projects
 
-- [ ] **3.C4 — Upgrade dormant project alerts**
-  - [ ] 3.C4a — Amber background (#FFF3CD) with left border (#F59E0B) per spec section 3
-  - [ ] 3.C4b — Include last session summary + open items count per alert
+- [ ] **3.C4 — Add Top Accomplishments section (3-5 bullets)**
+  - [ ] 3.C4a — Extract from session notes: scan "What Was Done" or "## What Was Done" sections from this week's sessions
+  - [ ] 3.C4b — Pick top 3-5 most significant (longest/most detailed bullets)
+  - [ ] 3.C4c — Position after portfolio table
 
-- [ ] **3.C5 — Add Top Accomplishments section (3-5 bullets) per spec section 3**
-  - [ ] 3.C5a — Extract accomplishments from session notes "What Was Done" sections
-  - [ ] 3.C5b — Position after portfolio table, before dormant alerts
+- [ ] **3.C5 — Restyle dormant project alerts**
+  - [ ] 3.C5a — Amber background (#FFF3CD) with left border (#F59E0B, 4px) — NOT red (red = blocked, amber = dormant)
+  - [ ] 3.C5b — Include last session topic + "Next Steps" from that project's summary
+  - [ ] 3.C5c — Trigger: 3+ business days with 0 sessions (not 7 days like current)
 
-- [ ] **3.C6 — Add "Forward this report" nudge in footer per spec section 3**
+- [ ] **3.C6 — Reorder sections: move inception-to-date below brain stats**
+  - [ ] 3.C6a — Inception table becomes reference data at bottom, not the opening section
 
-- [ ] **3.C7 — Verify weekly is 300-500 words per spec target**
+- [ ] **3.C7 — Add "Forward this report" nudge in footer**
+  - [ ] 3.C7a — Text: "This report is designed to be forwarded to stakeholders."
 
-#### PHASE D: Project Deep Dive (spec section 4 — new template)
+- [ ] **3.C8 — Verify weekly is 300-500 words per spec target**
+
+- [ ] **3.C9 — Test weekly overhaul**
+  - [ ] 3.C9a — `--dry-run` verify new section order, RAG indicators, exec summary
+  - [ ] 3.C9b — Live send to Gmail, check rendering
+
+#### PHASE D: Project Deep Dive (spec section 4 — new template, richest use of project data)
+
+This is where `project_registry.summary` shines — the full 5-7K character summary gets unpacked
+into a structured project status report. This email is the "forward to your manager" format.
+
+**Section order (per spec section 4 + our data model):**
+1. Project header + RAG badge → `project_registry.health` + `label`
+2. Executive summary → `project_registry.summary` ## Summary section (verbatim, it's already 2-3 sentences)
+3. Health metrics (4 KPIs) → `sys_sessions` counts + `decisions` count + derived blockers
+4. In Progress → `project_registry.summary` ## In Progress section
+5. Recent sessions (5-7) → `sys_sessions` with notes topics
+6. Risks & Blockers → `project_registry.summary` ## Risks & Blockers section
+7. Next Steps → `project_registry.summary` ## Next Steps section
+8. Key Decisions → `decisions` table filtered to this project
+9. Architecture → `project_registry.summary` ## Architecture section
+10. Footer with notification prefs
 
 - [ ] **3.D1 — Build project deep dive template (`--project <prefix>`)**
-  - [ ] 3.D1a — Add `--project` flag to argparse
-  - [ ] 3.D1b — Build `get_project_deep_dive_data()`: query project_registry.summary, sessions, decisions, facts for one project
-  - [ ] 3.D1c — Build `build_project_html()` with spec section 4 structure:
-    1. Project header + RAG badge (the RAG IS the BLUF) per spec section 4
-    2. Executive summary (2-3 sentences from project_registry.summary ## Summary)
-    3. Health metrics: sessions (7d), messages (7d), decisions, avg session msgs, open blockers
-    4. In Progress (from project_registry.summary ## In Progress)
-    5. Recent sessions (last 5-7 with topics)
-    6. Risks & Blockers (from project_registry.summary ## Risks & Blockers)
-    7. Next Steps (from project_registry.summary ## Next Steps)
-    8. Decisions (recent for this project)
-  - [ ] 3.D1d — Dynamic subject line: `[{project}] Status: {RAG} — {headline} | {date}` per spec section 6
-  - [ ] 3.D1e — Preheader text: one-line project state per spec section 4
-  - [ ] 3.D1f — Verify 500-800 words per spec target
-  - [ ] 3.D1g — Test with `--project mb --dry-run`
-  - [ ] 3.D1h — Test with `--project mb` live send to Gmail
+  - [ ] 3.D1a — Add `--project` flag to argparse (mutually exclusive with `--daily`)
+  - [ ] 3.D1b — Build `get_project_deep_dive_data(conn, prefix, days)`: query project_registry (summary, health, status, label, summary_updated_at), sessions for period, decisions for project, facts for project
+  - [ ] 3.D1c — Build `build_project_html()`:
+    1. Header: RAG badge (inline bg-color) + project label + status (active/paused) + "Since {first_session}" + "{total_sessions} sessions"
+    2. Exec summary: extract ## Summary from project_registry.summary — display verbatim
+    3. Health metrics (2x2 grid): Sessions (7d) with trend vs prior 7d | Messages (7d) | Decisions (total) | Summary freshness (days since summary_updated_at)
+    4. In Progress: extract ## In Progress — display as bullet list
+    5. Recent sessions: last 5-7 from sys_sessions with topic + msg count + date
+    6. Risks & Blockers: extract ## Risks & Blockers — display with red/amber styling per severity
+    7. Next Steps: extract ## Next Steps — numbered list
+    8. Key Decisions: last 10 from decisions table for this project
+    9. Architecture: extract ## Architecture — display as compact reference
+  - [ ] 3.D1d — Subject: `[{prefix}] Status: {RAG_word} — {first_sentence_of_summary} | {date}`
+  - [ ] 3.D1e — Preheader: first sentence of ## Summary
+  - [ ] 3.D1f — Handle projects with minimal summaries (jga, lt, oth — short/placeholder summaries)
+  - [ ] 3.D1g — Verify 500-800 words per spec target
+  - [ ] 3.D1h — Test `--project mb --dry-run`
+  - [ ] 3.D1i — Test `--project jg --dry-run` (different project, different sections)
+  - [ ] 3.D1j — Test `--project mb` live send to Gmail
 
 #### PHASE E: Use Cases, Config, Docs
 
@@ -315,12 +398,20 @@ next steps extracted from session notes text (## Blockers, ## Next Step sections
 
 #### PHASE F: Quality & Ship
 
-- [ ] **3.F0 — Cross-cutting spec compliance**
-  - [ ] 3.F0a — Subject line length check: all 3 templates ≤ 40 chars for mobile (spec section 6)
-  - [ ] 3.F0b — All subjects contain at least one variable (spec section 6: never same 2 days in a row)
-  - [ ] 3.F0c — Add notification preferences note in all footers: "To change frequency: edit crontab" (spec section 7)
-  - [ ] 3.F0d — Verify conditional sections work: blockers only appear when present (spec section 7)
-  - [ ] 3.F0e — Verify red/amber only used for real issues, not decoration (spec section 7: urgency only when earned)
+- [ ] **3.F0 — Dark mode support (optional `--dark` flag)**
+  - [ ] 3.F0a — Best practice: light default, dark optional. Light emails degrade gracefully in dark mode clients. Dark-first risks double-inversion.
+  - [ ] 3.F0b — Add `--dark` flag to argparse
+  - [ ] 3.F0c — Create alternate palette constants (S_BODY_DARK, S_CONTAINER_DARK, etc.): dark background (#1a1a1a), light text (#e0e0e0), muted borders
+  - [ ] 3.F0d — Select palette based on flag: `palette = DARK_STYLES if args.dark else LIGHT_STYLES`
+  - [ ] 3.F0e — Test: `--daily --dark --dry-run` renders dark, default renders light
+  - [ ] 3.F0f — Config option: `email.dark_mode: false` so users can set it once and forget
+
+- [ ] **3.F1 — Cross-cutting spec compliance**
+  - [ ] 3.F1a — Subject line length check: all 3 templates ≤ 40 chars for mobile (spec section 6)
+  - [ ] 3.F1b — All subjects contain at least one variable (spec section 6: never same 2 days in a row)
+  - [ ] 3.F1c — Add notification preferences note in all footers: "To change frequency: edit crontab" (spec section 7)
+  - [ ] 3.F1d — Verify conditional sections work: blockers only appear when present (spec section 7)
+  - [ ] 3.F1e — Verify red/amber only used for real issues, not decoration (spec section 7: urgency only when earned)
 
 - [ ] **3.F1 — Email rendering verification**
   - [ ] 3.F1a — Test daily in Gmail web (must render without `<style>` block)
