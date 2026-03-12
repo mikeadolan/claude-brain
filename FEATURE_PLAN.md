@@ -392,13 +392,13 @@ into a structured project status report. This email is the "forward to your mana
 
 #### PHASE F: Quality & Ship
 
-- [ ] **3.F0 — Dark mode support (optional `--dark` flag)**
-  - [ ] 3.F0a — Best practice: light default, dark optional. Light emails degrade gracefully in dark mode clients. Dark-first risks double-inversion.
-  - [ ] 3.F0b — Add `--dark` flag to argparse
-  - [ ] 3.F0c — Create alternate palette constants (S_BODY_DARK, S_CONTAINER_DARK, etc.): dark background (#1a1a1a), light text (#e0e0e0), muted borders
-  - [ ] 3.F0d — Select palette based on flag: `palette = DARK_STYLES if args.dark else LIGHT_STYLES`
-  - [ ] 3.F0e — Test: `--daily --dark --dry-run` renders dark, default renders light
-  - [ ] 3.F0f — Config option: `email.dark_mode: false` so users can set it once and forget
+- [x] **3.F0 — Dark mode support (optional `--dark` flag)** (DONE session 36)
+  - [x] 3.F0a — Light default, dark optional per best practice
+  - [x] 3.F0b — `--dark` flag added to argparse
+  - [x] 3.F0c — `apply_dark_mode()` function overrides 20+ style globals: dark bg (#1a1a1a/#2d2d2d), light text (#e0e0e0), muted borders (#444), blue accent (#6caceb), dark highlight (#1e3a5f), dark danger (#3d2020)
+  - [x] 3.F0d — Called in main() if `--dark` OR `config.email.dark_mode: true`
+  - [x] 3.F0e — 8/8 dark checks pass, light mode unaffected, all 3 templates work in both modes
+  - [x] 3.F0f — Config option: `email.dark_mode` supported (reads from config.yaml)
 
 - [ ] **3.F1 — Cross-cutting spec compliance**
   - [ ] 3.F1a — Subject line length check: all 3 templates ≤ 40 chars for mobile (spec section 6)

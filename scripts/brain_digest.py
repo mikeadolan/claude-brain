@@ -321,6 +321,7 @@ def extract_topic_from_summary(summary):
 FONT = "Arial,Helvetica,sans-serif"
 
 # Inline style constants — used directly on elements, NOT in a <style> block
+# Light mode (default) — dark mode overrides these via apply_dark_mode()
 S_BODY = f"margin:0; padding:0; background-color:#f5f5f5; font-family:{FONT}; color:#1a1a1a;"
 S_CONTAINER = f"max-width:600px; margin:0 auto; background-color:#ffffff; padding:30px; font-family:{FONT};"
 S_H1 = f"color:#2d3748; border-bottom:3px solid #4a90d9; padding-bottom:12px; font-size:22px; margin-top:0; font-family:{FONT};"
@@ -343,6 +344,62 @@ S_FOOTER = "margin-top:30px; padding-top:16px; border-top:1px solid #e2e8f0; col
 S_TREND_UP = "color:#38a169;"
 S_TREND_DOWN = "color:#e53e3e;"
 S_TREND_FLAT = "color:#718096;"
+
+# Colors used inline in templates — must be overridden for dark mode
+C_TEXT = "#1a1a1a"
+C_TEXT_MUTED = "#718096"
+C_TEXT_SECONDARY = "#4a5568"
+C_HEADING = "#2d3748"
+C_ACCENT = "#4a90d9"
+C_ACCENT_TEXT = "#2b6cb0"
+C_BG_LIGHT = "#f7fafc"
+C_BG_HIGHLIGHT = "#ebf4ff"
+C_BG_DANGER = "#fff5f5"
+C_BORDER = "#e2e8f0"
+C_TOTAL_ROW = "#ebf4ff"
+
+
+def apply_dark_mode():
+    """Override style constants with dark palette. Called once in main() if --dark."""
+    global S_BODY, S_CONTAINER, S_H1, S_H2, S_TH, S_TD, S_TD_EVEN
+    global S_ALERT, S_ALERT_TITLE, S_METRIC, S_METRIC_VAL, S_METRIC_LBL
+    global S_SUMMARY_ITEM, S_SUMMARY_DATE, S_DECISION, S_DECISION_NUM, S_FOOTER
+    global S_TREND_UP, S_TREND_DOWN, S_TREND_FLAT
+    global C_TEXT, C_TEXT_MUTED, C_TEXT_SECONDARY, C_HEADING, C_ACCENT, C_ACCENT_TEXT
+    global C_BG_LIGHT, C_BG_HIGHLIGHT, C_BG_DANGER, C_BORDER, C_TOTAL_ROW
+
+    S_BODY = f"margin:0; padding:0; background-color:#1a1a1a; font-family:{FONT}; color:#e0e0e0;"
+    S_CONTAINER = f"max-width:600px; margin:0 auto; background-color:#2d2d2d; padding:30px; font-family:{FONT}; color:#e0e0e0;"
+    S_H1 = f"color:#e8e8e8; border-bottom:3px solid #6caceb; padding-bottom:12px; font-size:22px; margin-top:0; font-family:{FONT};"
+    S_H2 = f"color:#e8e8e8; border-bottom:1px solid #444444; padding-bottom:8px; font-size:16px; margin-top:28px; font-family:{FONT};"
+    S_TH = f"background:#3a6fb0; color:#fff; padding:8px 12px; text-align:left; font-size:13px; font-family:{FONT};"
+    S_TD = f"padding:7px 12px; border-bottom:1px solid #444444; font-size:13px; color:#e0e0e0; font-family:{FONT};"
+    S_TD_EVEN = f"padding:7px 12px; border-bottom:1px solid #444444; font-size:13px; background:#333333; color:#e0e0e0; font-family:{FONT};"
+    S_ALERT = "background:#3d2020; border-left:4px solid #e53e3e; padding:12px 16px; margin:12px 0; font-size:13px; color:#e0e0e0;"
+    S_ALERT_TITLE = "color:#f87171; font-weight:600; margin-bottom:4px;"
+    S_METRIC = "display:inline-block; background:#333333; border-radius:6px; padding:10px 16px; margin:4px; text-align:center; min-width:80px;"
+    S_METRIC_VAL = "font-size:22px; font-weight:700; color:#6caceb;"
+    S_METRIC_LBL = "font-size:11px; color:#888888; text-transform:uppercase;"
+    S_SUMMARY_ITEM = "margin:8px 0; padding:8px 12px; background:#333333; border-radius:4px; font-size:13px; color:#e0e0e0;"
+    S_SUMMARY_DATE = "color:#888888; font-size:11px;"
+    S_DECISION = "margin:6px 0; padding:6px 0; border-bottom:1px solid #444444; font-size:13px; color:#e0e0e0;"
+    S_DECISION_NUM = "font-weight:700; color:#6caceb;"
+    S_FOOTER = "margin-top:30px; padding-top:16px; border-top:1px solid #444444; color:#888888; font-size:11px; text-align:center;"
+    S_TREND_UP = "color:#4ade80;"
+    S_TREND_DOWN = "color:#f87171;"
+    S_TREND_FLAT = "color:#888888;"
+
+    C_TEXT = "#e0e0e0"
+    C_TEXT_MUTED = "#888888"
+    C_TEXT_SECONDARY = "#b0b0b0"
+    C_HEADING = "#e8e8e8"
+    C_ACCENT = "#6caceb"
+    C_ACCENT_TEXT = "#6caceb"
+    C_BG_LIGHT = "#333333"
+    C_BG_HIGHLIGHT = "#1e3a5f"
+    C_BG_DANGER = "#3d2020"
+    C_BORDER = "#444444"
+    C_TOTAL_ROW = "#1e3a5f"
 
 
 def build_email_wrapper(title, preheader, content):
@@ -512,7 +569,7 @@ def build_email_html(conn, days, stats, prev_stats, summaries, decisions,
                 summary_section = extract_section(summary_text, "summary")
                 if summary_section:
                     first_sentence = summary_section.split(".")[0] + "." if "." in summary_section else summary_section[:80]
-                    context_line = f'<br><span style="color:#718096; font-size:11px;">{first_sentence[:100]}</span>'
+                    context_line = f'<br><span style="color:{C_TEXT_MUTED}; font-size:11px;">{first_sentence[:100]}</span>'
 
             # Trend arrow vs last week
             prev_proj_sessions = prev_project_stats.get(proj, 0)
@@ -541,7 +598,7 @@ def build_email_html(conn, days, stats, prev_stats, summaries, decisions,
             content += f'<td style="{td}">{trend_html}</td></tr>'
         content += '</table>'
     else:
-        content += '<p style="color:#718096;">No sessions this period.</p>'
+        content += f'<p style="color:{C_TEXT_MUTED};">No sessions this period.</p>'
 
     # ── 4. Top Accomplishments (from session notes "What Was Done") ──
     accomplishments = []
@@ -648,7 +705,7 @@ def build_email_html(conn, days, stats, prev_stats, summaries, decisions,
             content += f'<td style="{td}">{p["decisions"]}</td>'
             content += f'<td style="{td}">{p["first_session"]}</td>'
             content += f'<td style="{td}">{span}</td></tr>'
-        content += f'<tr style="font-weight:700; background:#ebf4ff;">'
+        content += f'<tr style="font-weight:700; background:{C_TOTAL_ROW};">'
         content += f'<td style="{S_TD}"></td><td style="{S_TD}">TOTAL</td><td style="{S_TD}"></td>'
         content += f'<td style="{S_TD}">{total_itd_sessions}</td><td style="{S_TD}">{total_itd_msgs:,}</td>'
         content += f'<td style="{S_TD}">{total_itd_decisions}</td><td style="{S_TD}" colspan="2"></td></tr>'
@@ -810,7 +867,7 @@ def build_daily_html(conn, stats, summaries, decisions, labels, since):
     # ── Section 1: BLUF summary (the ONE thing to know) ──
     if is_quiet:
         # Quiet day handling (B1g): show per-project last activity + streak
-        html += '<p style="font-size:15px; color:#718096; margin:8px 0 12px 0;">'
+        html += f'<p style="font-size:15px; color:{C_TEXT_MUTED}; margin:8px 0 12px 0;">'
         html += 'No AI sessions recorded yesterday.</p>'
         # Show each active project's last activity and quiet streak
         for prefix, plabel in all_active_prefixes.items():
@@ -832,7 +889,7 @@ def build_daily_html(conn, stats, summaries, decisions, labels, since):
                         if ns:
                             first_line = ns.split("\n")[0].strip().lstrip("- ").lstrip("1. ")
                             next_steps = f' Next: {first_line[:100]}'
-                    html += f'<div style="margin:4px 0; font-size:13px; color:#4a5568;">'
+                    html += f'<div style="margin:4px 0; font-size:13px; color:{C_TEXT_SECONDARY};">'
                     html += f'{rag_badge_html(ctx["health"] if ctx else "green")} '
                     html += f'<strong>{plabel}</strong> — quiet for {quiet_days} day{"s" if quiet_days != 1 else ""}.{next_steps}</div>'
     else:
@@ -860,7 +917,7 @@ def build_daily_html(conn, stats, summaries, decisions, labels, since):
         # Project header with RAG badge
         html += f'<div style="margin:20px 0 8px 0; padding-bottom:6px; border-bottom:2px solid #e2e8f0;">'
         html += f'{rag_badge_html(health)} '
-        html += f'<strong style="font-size:15px; color:#2d3748;">{proj_label}</strong>'
+        html += f'<strong style="font-size:15px; color:{C_HEADING};">{proj_label}</strong>'
         html += '</div>'
 
         # Pick Up Here — from session notes "Next Step" or project summary "Next Steps"
@@ -872,8 +929,8 @@ def build_daily_html(conn, stats, summaries, decisions, labels, since):
         if not next_step and proj_summary:
             next_step = extract_section(proj_summary, "next steps")
         if next_step:
-            html += '<div style="background:#ebf4ff; border-left:4px solid #4a90d9; padding:10px 14px; margin:6px 0; font-size:13px;">'
-            html += '<strong style="color:#2b6cb0;">Pick Up Here:</strong> '
+            html += f'<div style="background:{C_BG_HIGHLIGHT}; border-left:4px solid {C_ACCENT}; padding:10px 14px; margin:6px 0; font-size:13px;">'
+            html += f'<strong style="color:{C_ACCENT_TEXT};">Pick Up Here:</strong> '
             # Show first 2-3 lines only
             step_lines = [l.strip() for l in next_step.split("\n") if l.strip()][:3]
             html += "<br>".join(step_lines)
@@ -886,7 +943,7 @@ def build_daily_html(conn, stats, summaries, decisions, labels, since):
         if not blockers and proj_summary:
             blockers = extract_section(proj_summary, "risks & blockers")
         if blockers and blockers.lower() not in ("none", "none.", "no blockers", "no blockers."):
-            html += '<div style="background:#fff5f5; border-left:4px solid #e53e3e; padding:10px 14px; margin:6px 0; font-size:13px;">'
+            html += f'<div style="background:{C_BG_DANGER}; border-left:4px solid #e53e3e; padding:10px 14px; margin:6px 0; font-size:13px;">'
             html += '<strong style="color:#e53e3e;">Blockers:</strong> '
             blocker_lines = [l.strip() for l in blockers.split("\n") if l.strip()][:3]
             html += "<br>".join(blocker_lines)
@@ -896,7 +953,7 @@ def build_daily_html(conn, stats, summaries, decisions, labels, since):
         in_progress = extract_section(proj_summary, "in progress") if proj_summary else None
         if in_progress:
             progress_lines = [l.strip() for l in in_progress.split("\n") if l.strip()][:3]
-            html += '<div style="margin:6px 0; font-size:13px; color:#4a5568;">'
+            html += f'<div style="margin:6px 0; font-size:13px; color:{C_TEXT_SECONDARY};">'
             html += '<strong>In Progress:</strong> '
             html += "<br>".join(progress_lines)
             html += '</div>'
@@ -947,8 +1004,8 @@ def build_daily_html(conn, stats, summaries, decisions, labels, since):
             (len(stats), "Projects", None),
         ]
         for val, lbl, avg in metrics:
-            html += f'<div style="display:inline-block; background:#f7fafc; border-radius:6px; padding:6px 12px; margin:3px; text-align:center;">'
-            html += f'<div style="font-size:16px; font-weight:700; color:#2b6cb0;">{val}</div>'
+            html += f'<div style="display:inline-block; background:{C_BG_LIGHT}; border-radius:6px; padding:6px 12px; margin:3px; text-align:center;">'
+            html += f'<div style="font-size:16px; font-weight:700; color:{C_ACCENT_TEXT};">{val}</div>'
             html += f'<div style="font-size:10px; color:#718096; text-transform:uppercase;">{lbl}</div>'
             if avg is not None and avg > 0:
                 num_val = int(str(val).replace(",", "")) if isinstance(val, str) else val
@@ -1258,6 +1315,7 @@ def main():
     parser.add_argument("--days", type=int, default=7, help="Lookback period in days (default: 7)")
     parser.add_argument("--daily", action="store_true", help="Send compact daily standup (overrides --days to 1)")
     parser.add_argument("--project", type=str, help="Send project deep dive for one project (prefix, e.g., mb)")
+    parser.add_argument("--dark", action="store_true", help="Use dark color scheme")
     parser.add_argument("--dry-run", action="store_true", help="Print email to stdout, don't send")
     parser.add_argument("--test", action="store_true", help="Send a short test email")
     args = parser.parse_args()
@@ -1269,6 +1327,10 @@ def main():
         sys.exit(1)
 
     config = load_config()
+
+    # Dark mode: --dark flag OR config.yaml email.dark_mode
+    if args.dark or config.get("email", {}).get("dark_mode", False):
+        apply_dark_mode()
 
     if args.test:
         html = build_test_html()
