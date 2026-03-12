@@ -800,14 +800,21 @@ def phase_config(cfg):
             PROJECT: {p['folder_name']}
             PREFIX: {p['prefix']}
 
+            ## RULE #1 — USE THE BRAIN FIRST. ALWAYS.
+            **You have a brain with persistent memory across sessions. USE IT before doing anything substantive.**
+            - Before proposing a plan, starting a task, debugging, answering questions, or suggesting changes: **search the brain.**
+            - Use `search_transcripts`, `search_semantic`, `get_recent_summaries`, `lookup_decision`, `lookup_fact`.
+            - Files tell you WHAT exists. The brain tells you WHY — strategic context, prior decisions, rejected approaches.
+            - Not using the brain is the same as not having it.
+
             ## BRAIN CONNECTION
             MCP server "brain-server" provides persistent memory.
             Database: {cfg['db_path']}
 
             ## SESSION START
-            Hooks handle startup check and context injection automatically.
-            Call get_profile() and get_project_state('{p['prefix']}') at the start
-            of every session to load your working context.
+            1. **Search the brain** — query search_transcripts + get_recent_summaries for this project. This is step ONE.
+            2. Call get_profile() and get_project_state('{p['prefix']}') to load working context.
+            3. Hooks handle startup check and context injection automatically.
 
             ## TOOL ROUTING
             When you need information, use the right MCP tool:

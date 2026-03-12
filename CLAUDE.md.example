@@ -1,0 +1,39 @@
+# claude-brain
+
+Personal memory system for Claude Code. Local SQLite + MCP + hooks.
+
+## RULE #1 — USE THE BRAIN FIRST. ALWAYS.
+**You have a brain with persistent memory across every session. USE IT before doing anything substantive.**
+- Before proposing a plan, starting a task, debugging, answering questions, or suggesting changes: **search the brain.**
+- Use `search_transcripts`, `search_semantic`, `get_recent_summaries`, `lookup_decision`, `lookup_fact`.
+- Files tell you WHAT exists. The brain tells you WHY — strategic context, prior decisions, rejected approaches.
+- Not using the brain is the same as not having it.
+
+## RULE #2 — NO CODING WITHOUT EXPLICIT GO
+**NEVER write, edit, or modify code unless the user says "GO" with a specific step or fix.**
+- Before coding: PRESENT the plan, STOP, WAIT for "GO."
+- Remove this rule if you prefer a different workflow.
+
+## CODE CHANGE CHECKLIST — MANDATORY FOR EVERY CHANGE
+**Every code change MUST follow this checklist. No exceptions.**
+1. Make the change
+2. `grep -r` the ENTIRE codebase for every symbol/string touched or deleted — ALL file types
+3. Fix EVERY stale reference found (code, config, AND documentation)
+4. `python3 -m py_compile` every modified .py file
+5. Run the relevant hook/script to verify it works
+6. Only THEN commit
+
+## RULES
+- Read PROJECT_TRACKER.md before starting ANY work (if you use one).
+- Detailed project context is in auto-loaded memory (MEMORY.md in Claude Code memory directory).
+- Full architecture: ARCHITECTURE.md.
+- When starting a session: follow SESSION START PROTOCOL — search the brain FIRST.
+- Update governance files after every completed step.
+
+## END-SESSION PROTOCOL
+When ending a session:
+1. Write session notes to DB: `python3 scripts/write_session_notes.py --session-id <ID> --notes "<text>"`
+   Include: date, what was done, decisions, files modified, current state, next step.
+2. Update MEMORY.md LAST SESSION section as backup.
+3. Update any governance files as needed.
+4. Confirm: "Session logged. Governance updated."
