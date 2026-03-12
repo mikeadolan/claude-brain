@@ -421,7 +421,11 @@ DDL_STATEMENTS = [
         folder_name      TEXT PRIMARY KEY,
         prefix           TEXT UNIQUE,
         label            TEXT,
-        registered_at    TEXT
+        registered_at    TEXT,
+        summary          TEXT,
+        summary_updated_at TEXT,
+        status           TEXT DEFAULT 'active',
+        health           TEXT DEFAULT 'green'
     )""",
 
     # --- Transcript tables ---

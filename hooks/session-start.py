@@ -105,6 +105,47 @@ def main():
                     lines.append(f"- {f}")
                 lines.append("")
 
+        # Gap detection: find recent sessions missing notes
+        try:
+            gaps = conn.execute("""
+                SELECT session_id, project, started_at
+                FROM sys_sessions
+                WHERE (notes IS NULL OR notes = '')
+                ORDER BY started_at DESC
+                LIMIT 20
+            """).fetchall()
+            if gaps:
+                lines.append("## Sessions Missing Notes")
+                lines.append(f"{len(gaps)} session(s) have no notes. Consider writing notes for these:")
+                for sid, proj, started in gaps:
+                    date = started[:10] if started else "unknown"
+                    short_id = sid[:12] if sid else "?"
+                    lines.append(f"- {date} | {proj} | {short_id}...")
+                lines.append("")
+        except Exception:
+            pass
+
+        # Project summary injection: show current project context
+        try:
+            cwd = os.environ.get("CWD", os.getcwd())
+            mapping = config.get("jsonl_project_mapping", {})
+            cwd_project = None
+            for folder, prefix in mapping.items():
+                if folder in cwd:
+                    cwd_project = prefix
+                    break
+            if cwd_project:
+                proj_row = conn.execute("""
+                    SELECT summary FROM project_registry
+                    WHERE prefix = ? AND summary IS NOT NULL AND summary != ''
+                """, (cwd_project,)).fetchone()
+                if proj_row:
+                    lines.append("## Current Project Summary")
+                    lines.append(proj_row[0])
+                    lines.append("")
+        except Exception:
+            pass
+
         # Get last 10 sessions with notes, grouped by project
         rows = conn.execute("""
             SELECT project, notes, started_at
