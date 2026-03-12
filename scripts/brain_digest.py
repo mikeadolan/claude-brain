@@ -765,18 +765,66 @@ def build_daily_html(conn, stats, summaries, decisions, labels, since):
     all_active_prefixes = {r[0]: r[1] for r in all_active}
 
     title = f"Daily Standup — {yesterday.strftime('%A, %b %d')}"
-    preheader_parts = []
+
+    # 7-day rolling average for metric comparison (B1f)
+    avg_since = (now - timedelta(days=8)).isoformat()
+    avg_before = (now - timedelta(days=1)).isoformat()
+    avg_row = conn.execute("""
+        SELECT COUNT(*) as sessions, SUM(message_count) as messages
+        FROM sys_sessions WHERE started_at >= ? AND started_at < ?
+    """, (avg_since, avg_before)).fetchone()
+    avg_sessions_7d = round(avg_row[0] / 7, 1) if avg_row and avg_row[0] else 0
+    avg_msgs_7d = round((avg_row[1] or 0) / 7) if avg_row else 0
+
+    # Build preheader — use first Pick Up Here text if available (B1e)
+    preheader = ""
     if not is_quiet:
-        preheader_parts.append(f"{total_sessions} sessions, {total_msgs:,} msgs")
+        # Find first project's next step for preheader
+        for r in stats:
+            proj = r["project"]
+            if proj in project_notes:
+                ns = extract_section(project_notes[proj]["notes"], "next step")
+                if not ns:
+                    ns = extract_section(project_notes[proj]["notes"], "next steps")
+                if ns:
+                    first_line = ns.split("\n")[0].strip().lstrip("- ").lstrip("1. ")
+                    preheader = f"Pick up: {first_line[:80]}"
+                    break
+        if not preheader:
+            preheader = f"{total_sessions} sessions, {total_msgs:,} msgs yesterday"
     else:
-        preheader_parts.append("Quiet day — no sessions")
+        preheader = "Quiet day — no sessions recorded yesterday"
 
     html = f'<h1 style="{S_H1}">{title}</h1>'
 
     # ── Section 1: BLUF summary (the ONE thing to know) ──
     if is_quiet:
-        html += '<p style="font-size:15px; color:#718096; margin:8px 0 20px 0;">'
-        html += 'No AI sessions recorded yesterday. Here\'s where your projects stand:</p>'
+        # Quiet day handling (B1g): show per-project last activity + streak
+        html += '<p style="font-size:15px; color:#718096; margin:8px 0 12px 0;">'
+        html += 'No AI sessions recorded yesterday.</p>'
+        # Show each active project's last activity and quiet streak
+        for prefix, plabel in all_active_prefixes.items():
+            row = conn.execute(
+                "SELECT MAX(started_at) FROM sys_sessions WHERE project = ?", (prefix,)
+            ).fetchone()
+            if row and row[0]:
+                last_date = row[0][:10]
+                try:
+                    last_dt = datetime.strptime(last_date, "%Y-%m-%d")
+                    quiet_days = (yesterday - last_dt).days
+                except ValueError:
+                    quiet_days = 0
+                if quiet_days > 0:
+                    ctx = get_project_context(conn, prefix)
+                    next_steps = ""
+                    if ctx and ctx["summary"]:
+                        ns = extract_section(ctx["summary"], "next steps")
+                        if ns:
+                            first_line = ns.split("\n")[0].strip().lstrip("- ").lstrip("1. ")
+                            next_steps = f' Next: {first_line[:100]}'
+                    html += f'<div style="margin:4px 0; font-size:13px; color:#4a5568;">'
+                    html += f'{rag_badge_html(ctx["health"] if ctx else "green")} '
+                    html += f'<strong>{plabel}</strong> — quiet for {quiet_days} day{"s" if quiet_days != 1 else ""}.{next_steps}</div>'
     else:
         project_list = ", ".join(labels.get(r["project"], r["project"]) for r in stats)
         html += f'<p style="font-size:15px; margin:8px 0 20px 0;">'
@@ -880,20 +928,33 @@ def build_daily_html(conn, stats, summaries, decisions, labels, since):
                 html += f'<div style="margin:4px 0; font-size:12px; color:#a0aec0;">'
                 html += f'<strong>{qlabel}</strong> — last session {qlast}</div>'
 
-    # ── Section 5: Metrics (small, bottom — least important) ──
+    # ── Section 5: Metrics with 7-day average comparison (B1f) ──
     if not is_quiet:
         html += '<div style="text-align:center; margin:24px 0 8px 0;">'
-        for val, lbl in [(total_sessions, "Sessions"), (f"{total_msgs:,}", "Messages"), (len(stats), "Projects")]:
+        metrics = [
+            (total_sessions, "Sessions", avg_sessions_7d),
+            (f"{total_msgs:,}", "Messages", avg_msgs_7d),
+            (len(stats), "Projects", None),
+        ]
+        for val, lbl, avg in metrics:
             html += f'<div style="display:inline-block; background:#f7fafc; border-radius:6px; padding:6px 12px; margin:3px; text-align:center;">'
             html += f'<div style="font-size:16px; font-weight:700; color:#2b6cb0;">{val}</div>'
-            html += f'<div style="font-size:10px; color:#718096; text-transform:uppercase;">{lbl}</div></div>'
+            html += f'<div style="font-size:10px; color:#718096; text-transform:uppercase;">{lbl}</div>'
+            if avg is not None and avg > 0:
+                num_val = int(str(val).replace(",", "")) if isinstance(val, str) else val
+                if num_val > avg * 1.1:
+                    html += f'<div style="font-size:10px; {S_TREND_UP}">↑ vs {avg}/day avg</div>'
+                elif num_val < avg * 0.9:
+                    html += f'<div style="font-size:10px; {S_TREND_DOWN}">↓ vs {avg}/day avg</div>'
+                else:
+                    html += f'<div style="font-size:10px; {S_TREND_FLAT}">≈ {avg}/day avg</div>'
+            html += '</div>'
         html += '</div>'
 
     # ── Footer (minimal per Postmark frequency rule) ──
     html += f'<div style="{S_FOOTER}">'
     html += f'claude-brain &middot; {now.strftime("%Y-%m-%d %H:%M")} &middot; Local data only</div>'
 
-    preheader = ". ".join(preheader_parts)
     return build_email_wrapper(title, preheader, html)
 
 
