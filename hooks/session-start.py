@@ -54,9 +54,9 @@ def main():
 
         # Verification checklist — always first, non-negotiable
         lines.append("## Session Start Checklist")
+        lines.append("- **MANDATORY: Search the brain (search_transcripts, search_semantic, get_recent_summaries) BEFORE your first substantive response.** This is Rule #1. The brain has 24,000+ transcripts — use them.")
         lines.append("- Before acting on inherited work: verify the premise independently")
         lines.append("- Before debugging: identify WHICH component is actually failing")
-        lines.append("- Use brain MCP tools (search_transcripts, get_recent_summaries) for full context")
         lines.append("- Do NOT trust prior session notes blindly — they may contain wrong assumptions")
         lines.append("")
 

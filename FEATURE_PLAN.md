@@ -15,7 +15,10 @@
 | 3 | Email Digests | 1 script | 2 | none (smtplib is stdlib) |
 
 **Build order:** 1 → Phase 8 (architecture merge) → 2 → 3
-Phase 8 eliminated sys_session_summaries and generate_summary.py. Steps 8.2-8.3 done in session 22 (generate_summary.py deleted, session-end.py rewritten). Steps 8.5-8.7 done in sessions 23-25 (consumer scripts migrated, table dropped). Remaining: 8.0-8.1, 8.4, 8.8-8.10. See ARCHITECTURE_MERGE_PLAN.md.
+- Feature 1 (Fuzzy Search): COMPLETE (session 17)
+- Phase 8 (Architecture Merge): COMPLETE (session 36, tag: post-architecture-merge)
+- Feature 2 (Auto Fact Extraction): DEFERRED (session 35, value thin after session note rewrites)
+- Feature 3 (Email Digests): IN PROGRESS — revised plan below (8 steps, 24 sub-steps)
 
 ---
 
@@ -153,83 +156,84 @@ Typos that appear in enough transcripts (doc >= 5) AND whose correct spelling ha
 
 ---
 
-## FEATURE 3: EMAIL DIGESTS
+## FEATURE 3: EMAIL DIGESTS (Revised 2026-03-12, Session 36)
 
-**Goal:** Scheduled email summaries of brain activity — daily recaps, weekly progress, dormant project alerts, pattern detection.
+**Goal:** Premade email templates that show the brain reaching OUT to the user — weekly digests, daily standups, project deep dives. This is a competitive differentiator: no other AI memory tool does proactive outreach. Key selling point for open source launch.
+
+**Strategic context (from BRAIN_BRAINSTORMING_IDEAS.md, session 9):**
+- "Proactive outreach" is 1 of 6 things we have that nobody else does
+- Email was positioned as a force multiplier and competitive differentiator
+- Monday Morning Briefing (#1) and Dormant Project Alerts (#2) both APPROVED in session 9
+- Mike's inception-to-date idea: "so someone can see all the work they did" — the forwardable email
+
+**What already exists (built in session 9, updated through session 28):**
+- `scripts/brain_digest.py` (580 lines) — weekly digest with 12 query functions
+- Sections: inception-to-date portfolio, this-week stats with trends, session highlights, decisions, dormant alerts, roadmap, brain stats, last session notes
+- Gmail SMTP delivery working, `--dry-run`, `--test`, `--days` flags
+- Cron: Monday 8am weekly digest
+- Email config in config.yaml (gitignored)
+
+**What's missing (the actual work):**
+- Only 1 email type (weekly). Need 2-3 premade templates with `--daily` and `--project` flags.
+- No use case ideas in docs for open source users
+- config.yaml.example may not have email section
+- brain-setup.py may not have email config step
+- README/HOW_TO don't fully cover email setup
 
 ### Steps
 
-- [ ] **3.1 — Read existing query infrastructure**
-  Read MCP server queries (get_recent_sessions, get_recent_summaries, get_status) to understand what data we can pull. Read config.yaml.example for current config structure.
+- [ ] **3.1 — Add Daily Standup template (`--daily`)**
+  - [ ] 3.1a — Design daily standup content: yesterday's sessions (topics, msg counts), decisions made, where things left off (last session notes excerpt), compact quick-scan format
+  - [ ] 3.1b — Build `build_daily_html()` function in brain_digest.py
+  - [ ] 3.1c — Add `--daily` flag to argparse
+  - [ ] 3.1d — Test with `--daily --dry-run`, verify HTML renders clean
+  - [ ] 3.1e — Test with `--daily` live send to Gmail
 
-- [ ] **3.2 — Design email config schema**
-  Add to config.yaml.example:
-  ```yaml
-  email:
-    enabled: false
-    smtp_host: "smtp.gmail.com"
-    smtp_port: 587
-    sender: "your-email@gmail.com"
-    recipient: "your-email@gmail.com"
-    password: ""  # App password for Gmail, or SMTP password
-    daily_digest: true
-    weekly_digest: true
-    dormant_alert_days: 14
-  ```
+- [ ] **3.2 — Add Project Deep Dive template (`--project <prefix>`)**
+  - [ ] 3.2a — Design project deep dive content: single project focus, all sessions for period, all decisions for that project, current project summary (from project_registry.summary), architecture snapshot, blockers and next steps
+  - [ ] 3.2b — Build `build_project_html()` function in brain_digest.py
+  - [ ] 3.2c — Add `--project` flag to argparse
+  - [ ] 3.2d — Test with `--project mb --dry-run`, verify HTML
+  - [ ] 3.2e — Test with `--project mb` live send
 
-- [ ] **3.3 — Build email query functions**
-  Functions that query the brain for email content:
-  - `get_daily_recap(db_path, date)` — sessions, projects, decisions, quality for one day
-  - `get_weekly_progress(db_path, start_date)` — aggregate stats for the week
-  - `get_dormant_projects(db_path, threshold_days)` — projects with no activity
-  - `get_pattern_report(db_path, start_date)` — quality trends, frustrated sessions, rework
+- [ ] **3.3 — Add cron entries for new templates**
+  - [ ] 3.3a — Daily standup: `0 8 * * * python3 .../brain_digest.py --daily` (every morning 8am)
+  - [ ] 3.3b — Weekly digest stays as-is (Monday 8am)
+  - [ ] 3.3c — Document all cron options in the script's docstring
 
-- [ ] **3.4 — Build HTML email templates**
-  Clean, readable HTML email templates for each digest type.
-  - Must work in Gmail, Outlook, Apple Mail (inline CSS, no fancy layout)
-  - Header with brain logo/name
-  - Sections with headers, tables, bullet points
-  - Footer with "Generated by claude-brain" and unsubscribe note
+- [ ] **3.4 — Update config.yaml.example**
+  - [ ] 3.4a — Verify email section exists with all fields documented
+  - [ ] 3.4b — Add comments explaining Gmail app password setup
+  - [ ] 3.4c — Add example cron lines as comments
 
-- [ ] **3.5 — Build scripts/email_digest.py**
-  Main script:
-  - Read config.yaml for email settings and DB path
-  - Accept arguments: `--daily`, `--weekly`, `--dormant`, `--pattern`, `--all`
-  - Query brain, format email, send via SMTP
-  - Logging: log what was sent and when
-  - Error handling: clear message if SMTP fails (wrong password, network, etc.)
+- [ ] **3.5 — Update brain-setup.py**
+  - [ ] 3.5a — Check if email config step exists in setup wizard
+  - [ ] 3.5b — If not, add: "Do you want email digests? (y/n)" → SMTP details → test connection → save to config
+  - [ ] 3.5c — Test setup flow with email enabled and disabled
 
-- [ ] **3.6 — Test email delivery**
-  - Send a test daily digest to a real email address
-  - Verify HTML renders correctly in Gmail
-  - Test with no sessions in time range (should send "quiet day" message, not error)
-  - Test with SMTP misconfigured (should fail with clear error)
-  - Test each digest type independently
+- [ ] **3.6 — Write email use case ideas for docs**
+  - [ ] 3.6a — Write use case list (10 ideas for open source users):
+    1. Morning kickoff — daily standup at 8am, know exactly where you left off
+    2. Weekly retrospective — see what you accomplished, spot productivity patterns
+    3. Stakeholder update — forward the project deep dive to a manager or collaborator
+    4. Dormant project alerts — catch projects you've neglected before they go stale
+    5. Decision audit trail — weekly record of every architectural decision made
+    6. Multi-project portfolio view — one email showing all projects at a glance
+    7. Sprint boundary marker — send at end of sprint, archive for reference
+    8. Onboarding context — forward to a new collaborator joining your project
+    9. Accountability partner — auto-send to a friend/mentor to stay on track
+    10. Personal changelog — monthly digest as a record of everything you built
 
-- [ ] **3.7 — Document cron setup**
-  Write clear instructions for scheduling:
-  - Daily: `0 8 * * * python3 /path/to/scripts/email_digest.py --daily`
-  - Weekly: `0 8 * * 1 python3 /path/to/scripts/email_digest.py --weekly`
-  - Include in README and HOW_TO
-  - Optional: script can self-install cron entries (`--install-cron`)
+- [ ] **3.7 — Update documentation**
+  - [ ] 3.7a — README.md: add Email Digests section with overview + use cases
+  - [ ] 3.7b — CLAUDE_BRAIN_HOW_TO.md: add email setup instructions (Gmail app password, cron, all 3 templates with examples)
+  - [ ] 3.7c — Include example email output (text preview or screenshot description)
 
-- [ ] **3.8 — Update config.yaml.example**
-  Add email section with comments explaining each field.
-
-- [ ] **3.9 — Update brain-setup.py (optional)**
-  Add email configuration step to the setup wizard:
-  - "Do you want email digests? (y/n)"
-  - If yes: ask for SMTP details, test connection, save to config
-  - If no: skip, can enable later
-
-- [ ] **3.10 — Update documentation**
-  Add email digest section to README.md and CLAUDE_BRAIN_HOW_TO.md.
-  - Setup instructions
-  - Example email screenshots or text previews
-  - 5 high-impact prompt examples for email content
-
-- [ ] **3.11 — Audit and commit**
-  Review all changes. Verify no credentials in committed files. Commit.
+- [ ] **3.8 — Audit and commit**
+  - [ ] 3.8a — Run code change checklist on brain_digest.py (grep all symbols, py_compile, test)
+  - [ ] 3.8b — Verify no credentials in any committed file
+  - [ ] 3.8c — Run brain_health.py — must be 9/9 PASS
+  - [ ] 3.8d — Commit and push
 
 ---
 
