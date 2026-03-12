@@ -739,5 +739,5 @@ def get_schema() -> str:
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    signal.signal(signal.SIGINT, lambda *_: sys.exit(0))
+    signal.signal(signal.SIGINT, lambda *_: os._exit(0))
     mcp.run()
