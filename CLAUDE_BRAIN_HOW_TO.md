@@ -991,12 +991,12 @@ If you prefer to do it yourself:
 | **Python 3.10+** | Tested on 3.13 and 3.14. Older 3.10+ versions should work but are untested. | Expand testing matrix |
 | **Single-user design** | One person, one database. No multi-user support. | Not planned — personal memory tool |
 | **Semantic search cold-start ~4-5s** | First query loads embedding model into memory | Subsequent queries are fast (<100ms) |
-| **Keyword search is exact-match** | Typos in keyword search won't match (e.g., "sesion" vs "session"). Semantic search can still find what you mean by concept, not spelling. | Planned: fuzzy matching for keyword search |
+| ~~**Keyword search is exact-match**~~ | ~~Typos won't match~~ | **DONE** — Fuzzy search auto-corrects typos before the FTS query. "sesion" now finds "session". |
 | **No auto-capture from claude.ai** | Claude.ai has no hook system | Manual export + import required |
 | **No cross-machine real-time sync** | DB is local; Dropbox syncs project files but not the DB | Planned: DB in Dropbox or sync script |
 | **Summaries require normal exit** | session-end hook only fires on clean exit | If Claude Code crashes, summary is lost (but exchanges are saved) |
 | **No web UI** | CLI-only via Claude Code | Post-MVP consideration |
-| **No automatic fact extraction** | Project facts and decisions are populated via setup questionnaire and scripts. The brain captures all conversations (so the data exists), but doesn't yet auto-extract structured facts from them. | Planned: auto-extract facts from conversations |
+| **No automatic fact extraction** | Project facts and decisions are populated via setup questionnaire and scripts. The brain captures all conversations (so the data exists), but doesn't yet auto-extract structured facts from them. | Deferred — value thin after session note quality improvements. Search paths cover recall. |
 | **No lessons learned extractor** | Requires pattern mining across sessions | Post-MVP: find "mistake"/"redo"/"should have" patterns |
 
 See `POST_MVP_ROADMAP.md` for the full roadmap and planned fixes.
