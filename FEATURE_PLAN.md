@@ -434,6 +434,16 @@ After all 3 features are built:
 
 ---
 
+## FUTURE FEATURES (captured, not scheduled)
+
+- **DOCX Report Generation** — use `docxtpl` (Jinja2 template engine for Word) to generate
+  professional DOCX project status reports from brain data. Design a template once in
+  LibreOffice (fonts, headers, margins, page numbers), then Python injects data.
+  Could add `--format docx` flag to brain_digest.py. Install: `pip install docxtpl`.
+  Captured session 36.
+
+---
+
 ## DECISION LOG
 
 | # | Decision | Rationale |

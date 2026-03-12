@@ -2,12 +2,13 @@
 
 Personal memory system for Claude Code. Local SQLite + MCP + hooks.
 
-## RULE #1 — USE THE BRAIN FIRST. ALWAYS.
-**You have a brain with persistent memory across every session. USE IT before doing anything substantive.**
-- Before proposing a plan, starting a task, debugging, answering questions, or suggesting changes: **search the brain.**
-- Use `search_transcripts`, `search_semantic`, `get_recent_summaries`, `lookup_decision`, `lookup_fact`.
-- Files tell you WHAT exists. The brain tells you WHY — strategic context, prior decisions, rejected approaches.
-- Not using the brain is the same as not having it.
+## RULE #1 — USE THE BRAIN AND WEB FIRST. ALWAYS.
+**You have a brain with persistent memory AND web search (Exa). USE BOTH before doing anything substantive.**
+- Before proposing a plan: **search the brain** + **search the web** for best practices.
+- Before debugging: **search the brain** + **search the web** for error messages.
+- Use `search_transcripts`, `search_semantic`, `get_recent_summaries`, `lookup_decision`, `lookup_fact` for brain.
+- Use Exa search MCP tools for web research. NEVER guess.
+- Not using available tools is the same as not having them.
 
 ## RULE #2 — NO CODING WITHOUT EXPLICIT GO
 **NEVER write, edit, or modify code unless the user says "GO" with a specific step or fix.**
