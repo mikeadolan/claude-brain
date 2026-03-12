@@ -146,11 +146,32 @@ Type these in any Claude Code session:
 "Compare my best and worst sessions — what patterns do you see?"
 ```
 
-**Proactive email digests** — scheduled summaries delivered to your inbox:
-- Daily recaps of what you worked on across all projects
-- Weekly progress reports with decisions made and next steps
-- Dormant project alerts when a project hasn't been touched in weeks
-- Pattern detection — "you've had 4 frustrated sessions this week, all during late-night coding"
+**Proactive email digests** — the brain reaches out to YOU. No other AI memory tool does this.
+
+Three premade templates, all via `scripts/brain_digest.py`:
+
+| Template | Command | What You Get |
+|----------|---------|-------------|
+| **Daily Standup** | `--daily` | Per-project "Pick Up Here" with next steps, blockers, accomplishments, 7-day trend |
+| **Weekly Digest** | (default) | Executive summary, week-over-week trends, RAG portfolio, top accomplishments, dormant alerts |
+| **Project Deep Dive** | `--project mb` | Full project status: health metrics, in-progress, risks, decisions, architecture |
+
+Schedule via cron (daily at 8am, weekly Mondays) and forget — your inbox becomes your project dashboard.
+
+**10 use cases beyond basic status updates:**
+
+| # | Use Case | What It Does |
+|---|----------|-------------|
+| 1 | **Morning Kickoff** | Daily standup at 8am — know exactly where you left off and what to work on first |
+| 2 | **Stakeholder Update** | Forward the weekly digest or project deep dive to a manager or collaborator |
+| 3 | **Dormant Project Rescue** | Automatic alerts when a project goes quiet — catch drift before it becomes abandonment |
+| 4 | **Decision Audit Trail** | Weekly record of every architectural decision made across all AI sessions |
+| 5 | **Sprint Retrospective** | End-of-sprint deep dive — what got done, what's blocked, velocity trends |
+| 6 | **Onboarding a Collaborator** | Forward the project deep dive — architecture, decisions, current state, next steps — instant context |
+| 7 | **Accountability Partner** | Auto-send weekly digest to a friend or mentor — external motivation to stay on track |
+| 8 | **Personal Changelog** | Monthly digest archived to email — a permanent record of everything you built |
+| 9 | **Context Resume After a Break** | Daily standup after 48+ hours away — "here's where every project stands" |
+| 10 | **Multi-Project Portfolio View** | One weekly email showing all projects at a glance — the email you read with your Monday coffee |
 
 ---
 

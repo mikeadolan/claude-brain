@@ -357,8 +357,8 @@ into a structured project status report. This email is the "forward to your mana
 
 #### PHASE E: Use Cases, Config, Docs
 
-- [ ] **3.E1 — Write email use case ideas for docs (from spec section 8)**
-  - [ ] 3.E1a — Use the 10 AI-memory-specific use cases from design spec section 8:
+- [x] **3.E1 — Write email use case ideas for docs (from spec section 8)** (DONE session 36)
+  - [x] 3.E1a — 10 use cases written to README.md: Morning Kickoff, Stakeholder Update, Dormant Rescue, Decision Audit, Sprint Retro, Onboarding, Accountability, Personal Changelog, Context Resume, Portfolio View. Plus 3 template summary table.
     1. Context Resume Digest — "here's where you left off" after 48+ hours
     2. Decision Log Weekly — all decisions made that week
     3. Technical Debt Radar — TODOs, repeated workarounds never addressed
