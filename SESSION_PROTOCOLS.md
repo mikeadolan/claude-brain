@@ -39,20 +39,39 @@ Do this EVERY session:
 
 When Mike says "end session" (or similar: "wrap up", "done for today", "close it out"), do ALL of these:
 
-1. Write session notes to the brain database via write_session_notes.py:
-   - Date, provider (Max or OpenRouter), approximate duration
-   - What was done — detailed and thorough, as many bullets as needed
-   - Decisions made (with numbers from tracker if applicable)
-   - Files created (every new file)
-   - Files modified (every changed file)
-   - Current state (exact phase/step)
-   - Blockers or issues discovered
-   - Exact next step
-2. Update PROJECT_TRACKER.md if any steps changed status
-3. Update FOLDER_SCHEMA.md if any folders or files were created
-4. Update DEPENDENCIES.md if any packages or tools changed
-5. New decisions go in PROJECT_TRACKER.md → BUILD-PHASE DECISIONS section
-6. Confirm to Mike: "Session logged. Governance updated."
+1. Write session notes to DB:
+   `python3 scripts/write_session_notes.py --notes "<text>"`
+   Include: date, provider, what was done, decisions, files modified, current state, next step.
+2. Update project summary in DB:
+   `python3 scripts/write_project_summary.py --prefix <prefix> --summary "<text>"`
+   Rewrite the FULL summary reflecting current state — not a patch, a complete rewrite.
+3. Update MEMORY.md LAST SESSION section as backup.
+4. Update governance files: PROJECT_TRACKER.md, FEATURE_PLAN.md, NEXT_SESSION_START_PROMPT.txt.
+5. Git commit + push all changes.
+6. Output verified checklist table. EVERY row must show ✓ DONE:
+
+```
+┌─────────────────────────────┬──────────┐
+│ End-Session Checklist       │ Status   │
+├─────────────────────────────┼──────────┤
+│ Session notes written to DB │ ✓ DONE   │
+├─────────────────────────────┼──────────┤
+│ Project summary updated     │ ✓ DONE   │
+├─────────────────────────────┼──────────┤
+│ MEMORY.md updated           │ ✓ DONE   │
+├─────────────────────────────┼──────────┤
+│ Governance files updated    │ ✓ DONE   │
+├─────────────────────────────┼──────────┤
+│ Git committed + pushed      │ ✓ DONE   │
+└─────────────────────────────┴──────────┘
+```
+
+If ANY row shows ✗ MISSING, STOP and fix it before closing.
+
+**Why this matters:** Project summaries power the daily and weekly email digests.
+If the summary isn't updated, tomorrow's emails show stale data. This was missed
+in sessions 29-35 (project summary only updated when explicitly asked, not at
+end-of-session). The checklist table makes it impossible to skip.
 
 ---
 

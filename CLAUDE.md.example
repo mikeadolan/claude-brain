@@ -31,9 +31,25 @@ Personal memory system for Claude Code. Local SQLite + MCP + hooks.
 - Update governance files after every completed step.
 
 ## END-SESSION PROTOCOL
-When ending a session:
-1. Write session notes to DB: `python3 scripts/write_session_notes.py --session-id <ID> --notes "<text>"`
-   Include: date, what was done, decisions, files modified, current state, next step.
-2. Update MEMORY.md LAST SESSION section as backup.
-3. Update any governance files as needed.
-4. Confirm: "Session logged. Governance updated."
+When ending a session, complete ALL steps and output the checklist table:
+1. Write session notes: `python3 scripts/write_session_notes.py --notes "<text>"`
+2. Update project summary: `python3 scripts/write_project_summary.py --prefix <prefix> --summary "<text>"`
+3. Update MEMORY.md LAST SESSION section as backup.
+4. Update any governance/tracking files as needed.
+5. Output this verified checklist (EVERY item must show DONE):
+```
+┌─────────────────────────────┬──────────┐
+│ End-Session Checklist       │ Status   │
+├─────────────────────────────┼──────────┤
+│ Session notes written to DB │ ✓ DONE   │
+├─────────────────────────────┼──────────┤
+│ Project summary updated     │ ✓ DONE   │
+├─────────────────────────────┼──────────┤
+│ MEMORY.md updated           │ ✓ DONE   │
+├─────────────────────────────┼──────────┤
+│ Governance files updated    │ ✓ DONE   │
+├─────────────────────────────┼──────────┤
+│ Git committed + pushed      │ ✓ DONE   │
+└─────────────────────────────┴──────────┘
+```
+If ANY row shows ✗ MISSING, STOP and fix it before closing the session.
