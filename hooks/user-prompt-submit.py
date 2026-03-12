@@ -173,6 +173,59 @@ def handle_frustration(prompt_text, root):
     return "\n".join(context_lines)
 
 
+# ---------------------------------------------------------------------------
+# GO check — Rule #2 enforcement
+# Detects "discussion" messages that do NOT contain explicit GO trigger.
+# Prevents Claude from coding when Mike is asking for thoughts/opinions.
+# ---------------------------------------------------------------------------
+
+DISCUSSION_PATTERNS = [
+    r"\bthoughts\b",
+    r"\bwhat do you think\b",
+    r"\bwhat would you\b",
+    r"\bhow would you\b",
+    r"\bideas\b",
+    r"\bpropose\b",
+    r"\boptions\b",
+    r"\bapproach\b",
+    r"\bwhat.{0,20}best practice\b",
+    r"\bshould we\b",
+    r"\bcould we\b",
+    r"\bother ideas\b",
+    r"\bwhich.{0,15}easier\b",
+    r"\bwhich.{0,15}better\b",
+]
+
+GO_PATTERNS = [
+    r"\bgo\b",
+    r"\bgo,",
+    r"\bbuild it\b",
+    r"\bdo it\b",
+    r"\bexecute\b",
+    r"\bstart\b",
+    r"\bship it\b",
+    r"\bmake it\b",
+    r"\bimplement\b",
+    r"\bcreate it\b",
+    r"\bwrite it\b",
+]
+
+
+def detect_discussion_not_go(text):
+    """Return True if message looks like a discussion request WITHOUT a GO trigger."""
+    text_lower = text.lower()
+
+    has_discussion = any(re.search(p, text_lower) for p in DISCUSSION_PATTERNS)
+    if not has_discussion:
+        return False
+
+    has_go = any(re.search(p, text_lower) for p in GO_PATTERNS)
+    if has_go:
+        return False
+
+    return True
+
+
 def main():
     # Read stdin (hook protocol sends prompt data)
     raw_input = sys.stdin.read()
@@ -195,6 +248,18 @@ def main():
         # Frustration circuit breaker — check BEFORE length filter
         if prompt_text and detect_frustration(prompt_text):
             context = handle_frustration(prompt_text, root)
+            print(json.dumps({"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": context}}))
+            return
+
+        # GO check — prevent coding without explicit GO (Rule #2 enforcement)
+        if prompt_text and detect_discussion_not_go(prompt_text):
+            context = (
+                "## RULE #2 REMINDER — DO NOT CODE\n"
+                "Mike is asking for your THOUGHTS, not code.\n"
+                "PRESENT the plan. Do NOT write, edit, or create any files.\n"
+                "Wait for Mike to say 'GO' + name the specific step.\n"
+                "Violated in sessions 17, 19, 21, 25, 36. ZERO TOLERANCE."
+            )
             print(json.dumps({"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": context}}))
             return
 
