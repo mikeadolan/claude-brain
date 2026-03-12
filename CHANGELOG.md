@@ -4,6 +4,50 @@ All notable changes to claude-brain.
 
 ---
 
+## [0.2.0] — 2026-03-12
+
+### Added — Feature 3: Email Digests (the brain reaches OUT to you)
+- **3 email templates** via `scripts/brain_digest.py`:
+  - **Daily standup** (`--daily`) — BLUF "Pick Up Here" per project, RAG health badges, blockers, in-progress, 7-day rolling average, quiet day handling. 150-250 words.
+  - **Weekly digest** (default) — executive summary, week-over-week trend table, RAG portfolio with project context, top accomplishments, amber dormant alerts, forward nudge. 300-500 words.
+  - **Project deep dive** (`--project mb`) — RAG header, executive summary, health metrics, in-progress, recent sessions, risks & blockers, next steps, decisions, architecture. 500-800 words.
+- **Dark mode** (`--dark` flag or `email.dark_mode: true` in config) — full dark palette.
+- **Email setup wizard** — Phase 7 in `brain-setup.py`: Gmail App Password, SMTP test, auto cron install.
+- **`scripts/write_project_summary.py`** — update project summaries from CLI (end-session protocol).
+- **10 email use cases** in README.md — Morning Kickoff, Stakeholder Update, Sprint Retro, etc.
+- **Email design spec** — `email-digest-design-spec.md` (839 lines, BLUF methodology, HTML constraints).
+
+### Added — Feature 1: Fuzzy Search (completed earlier, not in prior changelog)
+- **`scripts/fuzzy_search.py`** — typo correction before FTS query using frequency-ratio approach.
+- **`scripts/clean_transcripts.py`** — recurring maintenance tool, fixes typos at the source.
+- Integrated into MCP server, brain_search.py, brain_query.py.
+
+### Added — Infrastructure
+- **Rule #2 GO check hook** — `user-prompt-submit.py` detects "thoughts?" without GO, injects STOP reminder.
+- **Rule #1 expanded** — brain search + Exa web search before all work.
+- **End-session verified checklist** — table with solid lines, every row must show DONE.
+- **`CLAUDE.md.example`** — generic version for new users (brain-first rule included).
+- **Token monitor** — `cc-updated.sh` with terminal title bar usage + desktop popups at 70/80/90%.
+- **Office skills** — docx, xlsx, pdf, pptx skills installed from tfriedel/claude-office-skills.
+- **Exa MCP** — web search registered for Claude Code.
+
+### Changed — Phase 8: Architecture Merge (CLOSED)
+- `sys_session_summaries` table eliminated. Single source: `sys_sessions.notes`.
+- `project_registry` gained 4 columns: `summary`, `summary_updated_at`, `status`, `health`.
+- All 113 session notes rewritten by Opus. All 7 project summaries regenerated.
+- Tag: `post-architecture-merge` (15/15 tests pass).
+
+### Changed — HTML Email Foundation
+- All email styles inline (Gmail web strips `<style>` blocks).
+- Safe HTML skeleton: DOCTYPE, xmlns, MSO conditional comments, color-scheme meta.
+- Preheader text for inbox preview. #1a1a1a text (not #000000) for dark mode safety.
+
+### Fixed
+- **All 9 bugs closed** — B1-B7 FIXED, B8-B9 WONTFIX (upstream CC bug #5506).
+- **Project summary staleness** — end-session protocol now requires summary update with verified checklist.
+
+---
+
 ## [0.1.1] — 2026-03-10
 
 ### Fixed

@@ -58,7 +58,7 @@ Do NOT build in v0.1. Added to PROJECT_TRACKER.md.
 | Limitation | Detail | Post-MVP Fix |
 |-----------|--------|-------------|
 | **Semantic search cold-start ~4-5s** | First query loads the all-MiniLM-L6-v2 model into memory (~80MB). Subsequent queries are fast (<100ms). | Accept as tradeoff. Model stays loaded for session duration. |
-| **FTS5 search only (no fuzzy match)** | Keyword search uses SQLite FTS5 — exact token matching with OR logic. Typos like "sesion" won't match "session". No did-you-mean. | Post-MVP: add fuzzy matching layer or Levenshtein distance fallback. |
+| ~~**FTS5 search only (no fuzzy match)**~~ | ~~Keyword search uses SQLite FTS5 — exact token matching.~~ | **DONE** — Feature 1 (Fuzzy Search) complete. `scripts/fuzzy_search.py` + `clean_transcripts.py`. Frequency-ratio correction before FTS query. |
 | **No cross-machine real-time sync** | DB is local. Dropbox syncs project files but not the database. | Move DB to Dropbox, or build a sync script. |
 
 ### Data Capture
@@ -67,15 +67,15 @@ Do NOT build in v0.1. Added to PROJECT_TRACKER.md.
 |-----------|--------|-------------|
 | **No auto-capture from claude.ai** | Claude.ai has no hook system. Manual export via Chrome extension + `/brain-import`. | Blocked on claude.ai adding hook/API support. |
 | **Summaries require normal exit** | session-end hook only fires on clean exit (`/exit` or terminal close). If Claude Code crashes, summary is lost (but exchanges are saved by stop hook). | Accept as tradeoff — exchanges capture the important data. |
-| **No automatic fact extraction** | brain_facts populated manually from questionnaire. | Auto-extract facts from conversations. |
+| **No automatic fact extraction** | brain_facts populated manually from questionnaire. | DEFERRED — value thin after session note rewrites. Search paths cover recall needs. |
 
 ### Feature Gaps
 
 | Limitation | Detail | Post-MVP Fix |
 |-----------|--------|-------------|
-| **No web UI** | CLI-only via Claude Code. | Post-MVP consideration. |
+| **No web UI** | CLI-only via Claude Code. | Post-MVP consideration. DOCX report generation (docxtpl) captured as future feature. |
 | **No lessons learned extractor** | No tool to aggregate patterns across sessions. | Build tool that finds "mistake"/"redo"/"should have" patterns. |
-| **No session narrative generation** | LLM summaries are structured (topic, counts, decisions). No story-like narrative of what happened. | Post-MVP: richer narrative summaries. |
+| ~~**No session narrative generation**~~ | ~~LLM summaries are structured.~~ | **DONE** — All 113 session notes rewritten by Opus 4.6. Rich narratives, not mechanical summaries. |
 
 ---
 
@@ -85,7 +85,7 @@ Already on GitHub (PRIVATE, Decision 96). Some packaging items remain:
 
 | Item | Purpose | Status |
 |------|---------|--------|
-| `requirements.txt` | `pip install -r requirements.txt` for users | Not created |
+| ~~`requirements.txt`~~ | ~~`pip install -r requirements.txt`~~ | **DONE** — ships with repo |
 | `requirements-semantic.txt` | Optional semantic search deps | Not created |
 | `setup.py` or `pyproject.toml` | Package metadata for distribution | Not created |
 | ~~README.md~~ | ~~GitHub landing page~~ | **DONE** (Step 7.5) |
