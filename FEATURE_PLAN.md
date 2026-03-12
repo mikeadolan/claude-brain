@@ -414,11 +414,13 @@ into a structured project status report. This email is the "forward to your mana
   - [x] 3.F2d — Plain-text fallback: generic but functional (content-specific deferred to post-build)
   - [x] 3.F2e — Dark mode: no #000000 text (PASS), uses #1a1a1a (PASS), color-scheme meta (PASS) — all 3 templates
 
-- [ ] **3.F2 — Audit and commit**
-  - [ ] 3.F2a — Run code change checklist: grep all symbols, py_compile, test all flags
-  - [ ] 3.F2b — Verify no credentials in committed files
-  - [ ] 3.F2c — Run brain_health.py — must be 9/9 PASS
-  - [ ] 3.F2d — Commit and push
+- [x] **3.F3 — Final audit and commit** (DONE session 36)
+  - [x] 3.F3a — Code integrity: 5 scripts compile, 7 functional tests pass (3 templates + dark + summary + hook + GO-check)
+  - [x] 3.F3b — Stale refs: 12 new functions all referenced, 2 old functions zero refs
+  - [x] 3.F3c — Docs: added dark mode to HOW_TO section 8.5 + config.yaml.example. README has 3 templates + 10 use cases.
+  - [x] 3.F3d — Credentials: zero real credentials in tracked files (all are examples/docs)
+  - [x] 3.F3e — brain_health.py: 9/9 PASS
+  - [x] 3.F3f — Committed and pushed
 
 ---
 

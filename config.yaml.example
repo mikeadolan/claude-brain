@@ -248,6 +248,7 @@ email:
   from_address: "your-email@gmail.com"           # Gmail address
   to_address: "your-email@gmail.com"             # Where to send (can be different)
   gmail_app_password: ""                         # 16-char app password (NOT your login password)
+  dark_mode: false                               # Set to true for dark-themed emails
 
 # ==============================================================================
 # META

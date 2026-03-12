@@ -771,6 +771,13 @@ email:
 python3 scripts/brain_digest.py --test          # Test SMTP connection
 python3 scripts/brain_digest.py --daily --dry-run   # Preview daily (no send)
 python3 scripts/brain_digest.py --dry-run       # Preview weekly (no send)
+python3 scripts/brain_digest.py --daily --dark  # Dark mode (any template)
+```
+
+**Dark mode:** Add `--dark` to any command for dark-themed emails. Or set it permanently in config.yaml:
+```yaml
+email:
+  dark_mode: true
 ```
 
 **3. Schedule via cron (crontab -e):**
