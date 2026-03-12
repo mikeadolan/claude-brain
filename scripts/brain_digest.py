@@ -4,12 +4,14 @@
 Three email types:
   Weekly digest (default) — full portfolio view, inception-to-date, trends, dormant alerts
   Daily standup (--daily) — compact: yesterday's sessions, decisions, where you left off
+  Project deep dive (--project mb) — single project status report with full summary
 
 Queries brain data and sends formatted HTML email via Gmail SMTP.
 
 Usage:
     python3 scripts/brain_digest.py                # Send weekly digest
     python3 scripts/brain_digest.py --daily        # Send daily standup
+    python3 scripts/brain_digest.py --project mb   # Send project deep dive for mb
     python3 scripts/brain_digest.py --days 14      # Custom lookback
     python3 scripts/brain_digest.py --dry-run      # Print to stdout, don't send
     python3 scripts/brain_digest.py --test         # Send a short test email
@@ -958,6 +960,223 @@ def build_daily_html(conn, stats, summaries, decisions, labels, since):
     return build_email_wrapper(title, preheader, html)
 
 
+def get_project_deep_dive_data(conn, prefix, days=7):
+    """Gather all data for a single-project deep dive report."""
+    now = datetime.now(timezone.utc)
+    since = (now - timedelta(days=days)).isoformat()
+    prev_since = (now - timedelta(days=days * 2)).isoformat()
+
+    # Project registry
+    reg = conn.execute(
+        "SELECT label, summary, health, status, summary_updated_at FROM project_registry WHERE prefix = ?",
+        (prefix,)
+    ).fetchone()
+    if not reg:
+        return None
+
+    # Session stats (this period + prior period for trend)
+    stats_row = conn.execute(
+        "SELECT COUNT(*) as sessions, SUM(message_count) as messages FROM sys_sessions WHERE project = ? AND started_at >= ?",
+        (prefix, since)
+    ).fetchone()
+    prev_row = conn.execute(
+        "SELECT COUNT(*) as sessions, SUM(message_count) as messages FROM sys_sessions WHERE project = ? AND started_at >= ? AND started_at < ?",
+        (prefix, prev_since, since)
+    ).fetchone()
+
+    # Total sessions + first session date
+    totals_row = conn.execute(
+        "SELECT COUNT(*), MIN(started_at) FROM sys_sessions WHERE project = ?",
+        (prefix,)
+    ).fetchone()
+
+    # Decisions for this project
+    all_decisions = conn.execute(
+        "SELECT decision_number, description, created_at FROM decisions WHERE project = ? ORDER BY decision_number DESC LIMIT 10",
+        (prefix,)
+    ).fetchall()
+
+    # Recent sessions with notes
+    recent = conn.execute(
+        "SELECT started_at, message_count, notes FROM sys_sessions WHERE project = ? AND notes IS NOT NULL AND notes != '' ORDER BY started_at DESC LIMIT 7",
+        (prefix,)
+    ).fetchall()
+
+    return {
+        "prefix": prefix,
+        "label": reg[0],
+        "summary": reg[1],
+        "health": reg[2] or "green",
+        "status": reg[3] or "active",
+        "summary_updated_at": reg[4],
+        "sessions_period": stats_row[0] if stats_row else 0,
+        "messages_period": stats_row[1] or 0 if stats_row else 0,
+        "sessions_prev": prev_row[0] if prev_row else 0,
+        "messages_prev": prev_row[1] or 0 if prev_row else 0,
+        "total_sessions": totals_row[0] if totals_row else 0,
+        "first_session": (totals_row[1] or "")[:10] if totals_row else "",
+        "decisions": all_decisions,
+        "recent_sessions": recent,
+    }
+
+
+def build_project_subject(data):
+    """Dynamic subject per spec section 6: [{prefix}] Status: {RAG} — {headline} | {date}"""
+    bg, fg, rag_word = RAG_COLORS.get(data["health"], RAG_COLORS["green"])
+    summary_text = extract_section(data["summary"], "summary") if data["summary"] else None
+    headline = ""
+    if summary_text:
+        headline = summary_text.split(".")[0][:60] if "." in summary_text else summary_text[:60]
+    else:
+        headline = data["label"][:60]
+    date_str = datetime.now().strftime("%b %d")
+    return f"[{data['prefix']}] Status: {rag_word} — {headline} | {date_str}"
+
+
+def build_project_html(data, days):
+    """Build project deep dive email — richest use of project_registry.summary.
+
+    Section order per design spec section 4:
+    1. Header + RAG badge
+    2. Executive summary (## Summary verbatim)
+    3. Health metrics (2x2 grid)
+    4. In Progress (## In Progress)
+    5. Recent sessions (5-7)
+    6. Risks & Blockers (## Risks & Blockers)
+    7. Next Steps (## Next Steps)
+    8. Key Decisions (last 10)
+    9. Architecture (## Architecture)
+    10. Footer
+    """
+    now = datetime.now()
+    summary = data["summary"] or ""
+
+    # Preheader — first sentence of ## Summary
+    summary_text = extract_section(summary, "summary") or ""
+    first_sentence = summary_text.split(".")[0] + "." if "." in summary_text else summary_text[:100]
+    preheader = first_sentence[:100]
+
+    title = f"{data['label']} — Project Status"
+
+    # ── 1. Header + RAG badge ──
+    content = f'<div style="margin-bottom:16px;">'
+    content += f'{rag_badge_html(data["health"])} '
+    content += f'<strong style="font-size:20px; color:#2d3748;">{data["label"]}</strong>'
+    if data["status"] == "paused":
+        content += f' <span style="background:#F59E0B; color:#fff; padding:2px 8px; border-radius:3px; font-size:11px;">PAUSED</span>'
+    content += f'<div style="font-size:12px; color:#718096; margin-top:4px;">'
+    content += f'Since {data["first_session"]} &middot; {data["total_sessions"]} total sessions'
+    if data["summary_updated_at"]:
+        updated_date = data["summary_updated_at"][:10]
+        content += f' &middot; Summary updated {updated_date}'
+    content += '</div></div>'
+
+    # ── 2. Executive summary (## Summary verbatim) ──
+    if summary_text:
+        content += f'<p style="font-size:14px; line-height:1.6; margin:12px 0 20px 0;">{summary_text}</p>'
+
+    # ── 3. Health metrics (2x2 grid) ──
+    sessions_7d = data["sessions_period"]
+    msgs_7d = data["messages_period"]
+    prev_sessions = data["sessions_prev"]
+    num_decisions = len(data["decisions"])
+
+    # Trend vs prior period
+    if prev_sessions > 0:
+        trend_pct = round((sessions_7d - prev_sessions) / prev_sessions * 100)
+        if trend_pct > 0:
+            trend_html = f'<span style="{S_TREND_UP}">+{trend_pct}%</span>'
+        elif trend_pct < 0:
+            trend_html = f'<span style="{S_TREND_DOWN}">{trend_pct}%</span>'
+        else:
+            trend_html = f'<span style="{S_TREND_FLAT}">—</span>'
+    else:
+        trend_html = f'<span style="{S_TREND_FLAT}">—</span>'
+
+    # Freshness
+    freshness = "—"
+    if data["summary_updated_at"]:
+        try:
+            updated_dt = datetime.strptime(data["summary_updated_at"][:10], "%Y-%m-%d")
+            days_old = (now - updated_dt).days
+            freshness = f"{days_old}d ago" if days_old > 0 else "today"
+        except ValueError:
+            pass
+
+    content += f'<h2 style="{S_H2}">Health Metrics ({days}d)</h2>'
+    content += '<div style="text-align:center; margin:12px 0;">'
+    metrics = [
+        (sessions_7d, f"Sessions {trend_html}"),
+        (f"{msgs_7d:,}", "Messages"),
+        (num_decisions, "Decisions"),
+        (freshness, "Summary Age"),
+    ]
+    for val, lbl in metrics:
+        content += f'<div style="{S_METRIC}"><div style="{S_METRIC_VAL}">{val}</div><div style="{S_METRIC_LBL}">{lbl}</div></div>'
+    content += '</div>'
+
+    # ── 4. In Progress ──
+    in_progress = extract_section(summary, "in progress")
+    if in_progress:
+        content += f'<h2 style="{S_H2}">In Progress</h2>'
+        for line in in_progress.split("\n"):
+            line = line.strip()
+            if line:
+                content += f'<div style="margin:4px 0; padding:4px 10px; font-size:13px;">{line}</div>'
+
+    # ── 5. Recent sessions (5-7) ──
+    if data["recent_sessions"]:
+        content += f'<h2 style="{S_H2}">Recent Sessions</h2>'
+        for started, msg_count, notes in data["recent_sessions"]:
+            date_str = (started or "")[:10]
+            topic = extract_topic_from_summary(notes) if notes else "No notes"
+            msgs = msg_count or "?"
+            content += f'<div style="{S_SUMMARY_ITEM}">'
+            content += f'<span style="{S_SUMMARY_DATE}">{date_str}</span> &middot; {msgs} msgs &mdash; {topic}</div>'
+
+    # ── 6. Risks & Blockers ──
+    risks = extract_section(summary, "risks & blockers")
+    if risks:
+        content += f'<h2 style="{S_H2}">Risks & Blockers</h2>'
+        for line in risks.split("\n"):
+            line = line.strip()
+            if line:
+                content += f'<div style="{S_ALERT}">{line}</div>'
+
+    # ── 7. Next Steps ──
+    next_steps = extract_section(summary, "next steps")
+    if next_steps:
+        content += f'<h2 style="{S_H2}">Next Steps</h2>'
+        for line in next_steps.split("\n"):
+            line = line.strip()
+            if line:
+                content += f'<div style="margin:4px 0; padding:4px 10px; font-size:13px; background:#ebf4ff; border-left:3px solid #4a90d9;">{line}</div>'
+
+    # ── 8. Key Decisions ──
+    if data["decisions"]:
+        content += f'<h2 style="{S_H2}">Key Decisions</h2>'
+        for num, desc, created in data["decisions"]:
+            date_str = (created or "")[:10]
+            content += f'<div style="{S_DECISION}"><span style="{S_DECISION_NUM}">#{num}</span> '
+            content += f'<span style="{S_SUMMARY_DATE}">{date_str}</span> '
+            content += f'{(desc or "")[:200]}</div>'
+
+    # ── 9. Architecture ──
+    arch = extract_section(summary, "architecture")
+    if arch:
+        content += f'<h2 style="{S_H2}">Architecture</h2>'
+        content += f'<div style="font-size:12px; color:#4a5568; background:#f7fafc; padding:12px; border-radius:4px;">'
+        content += arch.replace("\n", "<br>")
+        content += '</div>'
+
+    # ── 10. Footer ──
+    content += f'<div style="{S_FOOTER}">'
+    content += f'claude-brain v0.1 &middot; {now.strftime("%Y-%m-%d %H:%M")} &middot; Local data only<br>'
+    content += 'This report is designed to be forwarded to stakeholders.</div>'
+
+    return build_email_wrapper(title, preheader, content)
+
+
 def build_test_html():
     """Minimal test email to verify SMTP works."""
     now = datetime.now()
@@ -1030,12 +1249,16 @@ def main():
     parser = argparse.ArgumentParser(description="Brain email digest")
     parser.add_argument("--days", type=int, default=7, help="Lookback period in days (default: 7)")
     parser.add_argument("--daily", action="store_true", help="Send compact daily standup (overrides --days to 1)")
+    parser.add_argument("--project", type=str, help="Send project deep dive for one project (prefix, e.g., mb)")
     parser.add_argument("--dry-run", action="store_true", help="Print email to stdout, don't send")
     parser.add_argument("--test", action="store_true", help="Send a short test email")
     args = parser.parse_args()
 
     if args.daily:
         args.days = 1
+    if args.daily and args.project:
+        print("ERROR: --daily and --project are mutually exclusive", file=sys.stderr)
+        sys.exit(1)
 
     config = load_config()
 
@@ -1056,7 +1279,15 @@ def main():
         decisions = get_recent_decisions(conn, since)
         last_notes = get_last_session_notes(conn)
 
-        if args.daily:
+        if args.project:
+            # -- Project deep dive: single project, richest template
+            data = get_project_deep_dive_data(conn, args.project, args.days)
+            if not data:
+                print(f"ERROR: Project '{args.project}' not found in project_registry", file=sys.stderr)
+                sys.exit(1)
+            subject = build_project_subject(data)
+            html = build_project_html(data, args.days)
+        elif args.daily:
             # -- Daily standup: BLUF first, per-project, actionable
             subject = build_daily_subject(stats, summaries, decisions)
             html = build_daily_html(conn, stats, summaries, decisions, labels, since)

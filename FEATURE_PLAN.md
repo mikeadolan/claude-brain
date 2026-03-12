@@ -343,26 +343,17 @@ into a structured project status report. This email is the "forward to your mana
 9. Architecture → `project_registry.summary` ## Architecture section
 10. Footer with notification prefs
 
-- [ ] **3.D1 — Build project deep dive template (`--project <prefix>`)**
-  - [ ] 3.D1a — Add `--project` flag to argparse (mutually exclusive with `--daily`)
-  - [ ] 3.D1b — Build `get_project_deep_dive_data(conn, prefix, days)`: query project_registry (summary, health, status, label, summary_updated_at), sessions for period, decisions for project, facts for project
-  - [ ] 3.D1c — Build `build_project_html()`:
-    1. Header: RAG badge (inline bg-color) + project label + status (active/paused) + "Since {first_session}" + "{total_sessions} sessions"
-    2. Exec summary: extract ## Summary from project_registry.summary — display verbatim
-    3. Health metrics (2x2 grid): Sessions (7d) with trend vs prior 7d | Messages (7d) | Decisions (total) | Summary freshness (days since summary_updated_at)
-    4. In Progress: extract ## In Progress — display as bullet list
-    5. Recent sessions: last 5-7 from sys_sessions with topic + msg count + date
-    6. Risks & Blockers: extract ## Risks & Blockers — display with red/amber styling per severity
-    7. Next Steps: extract ## Next Steps — numbered list
-    8. Key Decisions: last 10 from decisions table for this project
-    9. Architecture: extract ## Architecture — display as compact reference
-  - [ ] 3.D1d — Subject: `[{prefix}] Status: {RAG_word} — {first_sentence_of_summary} | {date}`
-  - [ ] 3.D1e — Preheader: first sentence of ## Summary
-  - [ ] 3.D1f — Handle projects with minimal summaries (jga, lt, oth — short/placeholder summaries)
-  - [ ] 3.D1g — Verify 500-800 words per spec target
-  - [ ] 3.D1h — Test `--project mb --dry-run`
-  - [ ] 3.D1i — Test `--project jg --dry-run` (different project, different sections)
-  - [ ] 3.D1j — Test `--project mb` live send to Gmail
+- [x] **3.D1 — Build project deep dive template (`--project <prefix>`)** (DONE session 36)
+  - [x] 3.D1a — `--project` flag added, mutually exclusive with `--daily`
+  - [x] 3.D1b — `get_project_deep_dive_data()`: queries project_registry + sessions + decisions + trends
+  - [x] 3.D1c — `build_project_html()` with 9 sections: RAG header, exec summary, health metrics (4 KPIs with trend), In Progress, Recent Sessions (5-7), Risks & Blockers (red styling), Next Steps (blue styling), Key Decisions (last 10), Architecture
+  - [x] 3.D1d — Subject: `[mb] Status: ON TRACK — Personal memory system for Claude Code... | Mar 12`
+  - [x] 3.D1e — Preheader: first sentence of ## Summary
+  - [x] 3.D1f — Tested lt (298 char summary) — renders cleanly with fewer sections (3.6K chars)
+  - [x] 3.D1g — Word count: mb=562 (within 500-800 target)
+  - [x] 3.D1h — `--project mb --dry-run`: 13/13 checks pass, 7 sections, 12,462 chars
+  - [x] 3.D1i — `--project jg --dry-run`: works, 11,244 chars, different data
+  - [x] 3.D1j — Live send mb to Gmail: delivered
 
 #### PHASE E: Use Cases, Config, Docs
 
