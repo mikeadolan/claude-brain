@@ -15,6 +15,14 @@ Usage:
     python3 scripts/brain_digest.py --days 14      # Custom lookback
     python3 scripts/brain_digest.py --dry-run      # Print to stdout, don't send
     python3 scripts/brain_digest.py --test         # Send a short test email
+
+Cron setup (add via: crontab -e):
+    Daily standup (weekdays 8am):
+      0 8 * * 1-5 /usr/bin/python3 /path/to/scripts/brain_digest.py --daily >> ~/claude-brain-local/digest.log 2>&1
+    Weekly digest (Monday 8am):
+      0 8 * * 1 /usr/bin/python3 /path/to/scripts/brain_digest.py >> ~/claude-brain-local/digest.log 2>&1
+    Project deep dive (on demand or schedule as needed):
+      python3 scripts/brain_digest.py --project mb
 """
 
 import argparse

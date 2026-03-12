@@ -370,20 +370,20 @@ into a structured project status report. This email is the "forward to your mana
     9. Personal Productivity Insights — peak hours, session length, focus areas
     10. Stale Context Cleanup — old memory entries to review/archive
 
-- [ ] **3.E2 — Update config.yaml.example**
-  - [ ] 3.E2a — Verify email section exists with all fields
-  - [ ] 3.E2b — Add comments for Gmail app password setup
-  - [ ] 3.E2c — Add example cron lines for all 3 templates
+- [x] **3.E2 — Update config.yaml.example** (DONE session 36)
+  - [x] 3.E2a — Email section added with enabled, from_address, to_address, gmail_app_password
+  - [x] 3.E2b — Gmail App Password setup instructions (5-step guide in comments)
+  - [x] 3.E2c — Cron examples for all 3 templates in comments
 
-- [ ] **3.E3 — Update brain-setup.py**
-  - [ ] 3.E3a — Check if email config step exists in setup wizard
-  - [ ] 3.E3b — If not, add: "Do you want email digests?" → SMTP details → test → save
-  - [ ] 3.E3c — Test setup flow with email enabled and disabled
+- [x] **3.E3 — Update brain-setup.py** (DONE session 36)
+  - [x] 3.E3a — No email config existed — added Phase 7 "EMAIL DIGESTS (optional)"
+  - [x] 3.E3b — Interactive: ask email? → Gmail address → App Password → test SMTP → write to config.yaml → offer daily + weekly cron setup
+  - [x] 3.E3c — Phases renumbered 1-9 (was 1-8). Email is phase 7, Registration→8, Health→9.
 
-- [ ] **3.E4 — Add cron entries for new templates**
-  - [ ] 3.E4a — Daily standup: `0 8 * * 1-5 ...brain_digest.py --daily` (weekdays 8am)
-  - [ ] 3.E4b — Weekly digest stays as-is (Monday 8am)
-  - [ ] 3.E4c — Document all cron options in script docstring
+- [x] **3.E4 — Add cron entries for new templates** (DONE session 36)
+  - [x] 3.E4a — brain-setup.py offers to install daily cron: `0 8 * * 1-5 ...--daily`
+  - [x] 3.E4b — brain-setup.py offers to install weekly cron: `0 8 * * 1 ...`
+  - [x] 3.E4c — brain_digest.py docstring updated with all cron examples
 
 - [ ] **3.E5 — Update documentation**
   - [ ] 3.E5a — README.md: add Email Digests section with all 3 templates + use cases

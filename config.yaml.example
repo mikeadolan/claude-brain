@@ -222,6 +222,34 @@ scripts:
     brain-status:   "status.py"
 
 # ==============================================================================
+# EMAIL DIGESTS
+# ==============================================================================
+# Proactive email summaries — the brain reaches out to YOU.
+# Three templates: daily standup, weekly digest, project deep dive.
+# Uses Gmail SMTP (App Password required — NOT your regular password).
+#
+# GMAIL APP PASSWORD SETUP:
+#   1. Go to myaccount.google.com → Security → 2-Step Verification (must be ON)
+#   2. At bottom of 2-Step page, click "App passwords"
+#   3. Create one for "Mail" on "Other (custom name)" → enter "claude-brain"
+#   4. Copy the 16-character password (spaces don't matter)
+#   5. Paste it below as gmail_app_password
+#
+# CRON EXAMPLES (add via: crontab -e):
+#   Daily standup (weekdays 8am):
+#     0 8 * * 1-5 /usr/bin/python3 /path/to/scripts/brain_digest.py --daily >> ~/claude-brain-local/digest.log 2>&1
+#   Weekly digest (Monday 8am):
+#     0 8 * * 1 /usr/bin/python3 /path/to/scripts/brain_digest.py >> ~/claude-brain-local/digest.log 2>&1
+#   Project deep dive (on demand):
+#     python3 scripts/brain_digest.py --project mb
+
+email:
+  enabled: false                                 # Set to true after configuring SMTP
+  from_address: "your-email@gmail.com"           # Gmail address
+  to_address: "your-email@gmail.com"             # Where to send (can be different)
+  gmail_app_password: ""                         # 16-char app password (NOT your login password)
+
+# ==============================================================================
 # META
 # ==============================================================================
 

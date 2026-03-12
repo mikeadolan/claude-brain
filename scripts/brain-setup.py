@@ -109,7 +109,7 @@ def generate_prefix(name, existing_prefixes):
 # ---------------------------------------------------------------------------
 
 def phase_preflight():
-    phase_header(1, 8, "PRE-FLIGHT CHECKS")
+    phase_header(1, 9, "PRE-FLIGHT CHECKS")
     errors = []
 
     # Python version
@@ -160,7 +160,7 @@ def phase_preflight():
 # ---------------------------------------------------------------------------
 
 def phase_dependencies(pip_cmd):
-    phase_header(2, 8, "DEPENDENCIES")
+    phase_header(2, 9, "DEPENDENCIES")
     failed = []
 
     for pkg in PIP_PACKAGES:
@@ -195,7 +195,7 @@ def phase_dependencies(pip_cmd):
 # ---------------------------------------------------------------------------
 
 def phase_projects():
-    phase_header(3, 8, "PROJECT SETUP")
+    phase_header(3, 9, "PROJECT SETUP")
 
     # --- Storage mode ---
     print("\n  Storage mode:")
@@ -351,7 +351,7 @@ def phase_projects():
 # ---------------------------------------------------------------------------
 
 def phase_directories(cfg):
-    phase_header(4, 8, "DIRECTORIES")
+    phase_header(4, 9, "DIRECTORIES")
     root = Path(cfg["root_path"])
     db_dir = Path(cfg["db_path"]).parent
 
@@ -539,7 +539,7 @@ DDL_TRIGGERS = [
 
 
 def phase_database(cfg):
-    phase_header(5, 8, "DATABASE")
+    phase_header(5, 9, "DATABASE")
     db_path = cfg["db_path"]
     now = datetime.now(timezone.utc).isoformat()
 
@@ -632,7 +632,7 @@ def phase_database(cfg):
 # ---------------------------------------------------------------------------
 
 def phase_config(cfg):
-    phase_header(6, 8, "CONFIG & CLAUDE.MD FILES")
+    phase_header(6, 9, "CONFIG & CLAUDE.MD FILES")
     root = Path(cfg["root_path"])
 
     # --- Generate config.yaml ---
@@ -858,11 +858,136 @@ def phase_config(cfg):
             ok(f"CLAUDE.md skipped for {p['folder_name']} (kept existing)")
 
 # ---------------------------------------------------------------------------
-# Phase 7: Registration + Ingestion
+# ---------------------------------------------------------------------------
+# Phase 7: Email Digests (optional)
+# ---------------------------------------------------------------------------
+
+def phase_email(cfg):
+    phase_header(7, 9, "EMAIL DIGESTS (optional)")
+
+    print("""
+  The brain can email you proactive status reports:
+    - Daily standup at 8am (what to work on today)
+    - Weekly portfolio digest (Monday mornings)
+    - Project deep dives (on demand)
+
+  Requires a Gmail account with an App Password.
+  (Not your regular password — a 16-character App Password from Google.)
+""")
+
+    if not ask_yn("Do you want to set up email digests?", "n"):
+        info("Skipped. You can set this up later in config.yaml.")
+        cfg["email_enabled"] = False
+        return
+
+    # Get email address
+    from_addr = ""
+    while not from_addr:
+        from_addr = input("  Gmail address: ").strip()
+        if "@" not in from_addr:
+            warn("That doesn't look like an email address.")
+            from_addr = ""
+
+    to_addr = from_addr
+    if ask_yn(f"  Send digests to the same address ({from_addr})?"):
+        pass
+    else:
+        to_addr = input("  Recipient email address: ").strip() or from_addr
+
+    # Get app password
+    print(f"""
+  You need a Gmail App Password (NOT your regular password).
+  To create one:
+    1. Go to myaccount.google.com -> Security -> 2-Step Verification
+    2. At the bottom, click "App passwords"
+    3. Create one for "Mail" / "Other" -> name it "claude-brain"
+    4. Copy the 16-character password
+""")
+    app_password = input("  Gmail App Password: ").strip()
+    if not app_password:
+        warn("No password entered. Email will be disabled.")
+        cfg["email_enabled"] = False
+        return
+
+    # Test connection
+    info("Testing SMTP connection...")
+    try:
+        import smtplib
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+            server.starttls()
+            server.login(from_addr, app_password)
+        ok("SMTP connection successful!")
+    except Exception as e:
+        warn(f"SMTP test failed: {e}")
+        warn("Email config saved anyway — you can fix the password later in config.yaml.")
+
+    # Write email config directly to config.yaml
+    config_path = Path(cfg["root_path"]) / "config.yaml"
+    if config_path.exists():
+        with open(config_path) as f:
+            config_data = yaml.safe_load(f) or {}
+        config_data["email"] = {
+            "enabled": True,
+            "from_address": from_addr,
+            "to_address": to_addr,
+            "gmail_app_password": app_password,
+        }
+        with open(config_path, "w") as f:
+            f.write("# claude-brain Configuration File\n")
+            f.write("# Updated by brain-setup.py on " + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n")
+            f.write("# See config.yaml.example for documentation of all options.\n\n")
+            yaml.dump(config_data, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
+        ok("Email config written to config.yaml")
+    else:
+        warn("config.yaml not found — run full setup first. Email config skipped.")
+        return
+
+    # Offer to set up cron
+    print()
+    root = cfg["root_path"]
+    digest_script = os.path.join(root, "scripts", "brain_digest.py")
+    log_dir = os.path.dirname(cfg["db_path"])
+    daily_cron = f'0 8 * * 1-5 /usr/bin/python3 {digest_script} --daily >> {log_dir}/digest.log 2>&1'
+    weekly_cron = f'0 8 * * 1 /usr/bin/python3 {digest_script} >> {log_dir}/digest.log 2>&1'
+
+    if ask_yn("  Set up daily standup cron (weekdays 8am)?", "y"):
+        try:
+            import subprocess
+            existing = subprocess.run(["crontab", "-l"], capture_output=True, text=True).stdout
+            if "brain_digest" not in existing and "--daily" not in existing:
+                new_cron = existing.rstrip("\n") + "\n" + daily_cron + "\n"
+                subprocess.run(["crontab", "-"], input=new_cron, text=True)
+                ok("Daily cron installed (weekdays 8am)")
+            else:
+                ok("Daily cron already exists, skipped")
+        except Exception as e:
+            warn(f"Could not set cron: {e}")
+            info(f"  Add manually: {daily_cron}")
+
+    if ask_yn("  Set up weekly digest cron (Monday 8am)?", "y"):
+        try:
+            existing = subprocess.run(["crontab", "-l"], capture_output=True, text=True).stdout
+            if "brain_digest" not in existing or "--daily" in existing:
+                # Check if weekly already there
+                if "brain_digest.py >>" in existing and "--daily" not in existing.split("brain_digest.py >>")[0].split("\n")[-1]:
+                    ok("Weekly cron already exists, skipped")
+                else:
+                    new_cron = existing.rstrip("\n") + "\n" + weekly_cron + "\n"
+                    subprocess.run(["crontab", "-"], input=new_cron, text=True)
+                    ok("Weekly cron installed (Monday 8am)")
+        except Exception as e:
+            warn(f"Could not set cron: {e}")
+            info(f"  Add manually: {weekly_cron}")
+
+    ok("Email digests configured")
+
+
+# Phase 8: Registration + Ingestion
+# ---------------------------------------------------------------------------
 # ---------------------------------------------------------------------------
 
 def phase_registration(cfg):
-    phase_header(7, 8, "REGISTRATION & INGESTION")
+    phase_header(8, 9, "REGISTRATION & INGESTION")
     root = Path(cfg["root_path"])
     home = Path.home()
 
@@ -1114,7 +1239,7 @@ def phase_registration(cfg):
 # ---------------------------------------------------------------------------
 
 def phase_health_check(cfg):
-    phase_header(8, 8, "HEALTH CHECK & NEXT STEPS")
+    phase_header(9, 9, "HEALTH CHECK & NEXT STEPS")
     root = Path(cfg["root_path"])
     home = Path.home()
     checks = []
@@ -1455,6 +1580,7 @@ def main():
     phase_directories(cfg)
     phase_database(cfg)
     phase_config(cfg)
+    phase_email(cfg)
     phase_registration(cfg)
     phase_health_check(cfg)
 
