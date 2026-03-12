@@ -1,0 +1,128 @@
+NEXT SESSION START PROMPT
+=========================
+
+ABSOLUTE RULE — READ THIS FIRST:
+NEVER write, edit, or modify code unless Mike says "GO" with a specific step or fix.
+"fix it" is NOT permission to code. "yes" is NOT permission to code.
+The ONLY trigger is: Mike says "GO" + names the specific step or fix.
+Before coding: PRESENT the plan, STOP, WAIT for "GO."
+
+SECOND RULE — SEARCH THE BRAIN BEFORE ANY NEW TASK:
+Before starting ANY new task, search the brain (MCP search_transcripts, get_recent_summaries)
+for prior discussion of that topic. Do NOT rely on assumptions or your own analysis.
+
+THIRD RULE — NEVER DOWNGRADE THE MODEL:
+NEVER override agent model to Sonnet or Haiku. Mike pays for Opus 4.6 on Claude Max.
+Agents inherit the parent model by default — leave it alone.
+
+FOURTH RULE — ALWAYS RUN SESSION START PROTOCOL:
+Read PROJECT_TRACKER.md, CLAUDE_BRAIN_MVP_PLAN.txt, query brain MCP tools.
+Confirm ready BEFORE Mike has to ask.
+
+SESSION 32 (2026-03-12)
+-----------------------------------
+1. B9 FIXED FOR REAL: Session 31's fix (sys.exit(0)) was WRONG — SystemExit gets
+   caught by FastMCP's asyncio event loop, process doesn't die, CC escalates to
+   SIGTERM and counts it as failed. Debug log proof: "SIGINT failed, sending SIGTERM".
+   Real fix: os._exit(0) — hard immediate process termination. Commit ed2d7c8.
+   This is the THIRD attempt at this bug (sessions 24, 30, 31 all failed).
+
+==========================================================================
+VALIDATE FIRST THING NEXT SESSION:
+==========================================================================
+1. /exit this session, check status bar — "1 MCP server failed" should be GONE
+2. If STILL there: check ~/.claude/debug/latest for "SIGINT failed" line
+3. If "SIGINT failed" still appears, the timeout is too short — try os.kill(os.getpid(), signal.SIGKILL)
+
+==========================================================================
+ALL REMAINING WORK — COMPREHENSIVE LIST
+==========================================================================
+
+PHASE 8: ARCHITECTURE MERGE (2 steps remaining)
+------------------------------------------------
+| Step | Status | What |
+|------|--------|------|
+| 8.10 | NOT DONE | Final test, commit, tag (post-architecture-merge) |
+| 8.11 | IN PROGRESS | Rewrite old notes — 15/113 done, 98 remaining (next: session 16) |
+
+FEATURE 2: AUTO FACT EXTRACTION (7 steps, FEATURE_PLAN.md)
+-----------------------------------------------------------
+| Step | What |
+|------|------|
+| 2.1 | Design LLM call approach (post-Phase 8) |
+| 2.2 | Design the extraction prompt |
+| 2.3 | Build scripts/extract_facts.py |
+| 2.4 | Add extraction tracking (new column or table) |
+| 2.5 | Test auto extraction |
+| 2.6 | Add slash command or hook integration (optional) |
+| 2.7 | Audit and commit |
+Depends on: Phase 8 complete.
+
+FEATURE 3: EMAIL DIGESTS (11 steps, FEATURE_PLAN.md)
+-----------------------------------------------------
+| Step | What |
+|------|------|
+| 3.1 | Read existing query infrastructure |
+| 3.2 | Design email config schema |
+| 3.3 | Build email query functions |
+| 3.4 | Build HTML email templates |
+| 3.5 | Build scripts/email_digest.py |
+| 3.6 | Test email delivery |
+| 3.7 | Document cron setup |
+| 3.8 | Update config.yaml.example |
+| 3.9 | Update brain-setup.py (optional) |
+| 3.10 | Update documentation |
+| 3.11 | Audit and commit |
+No dependencies — can start any time.
+
+FEATURE POST-BUILD (5 steps, FEATURE_PLAN.md)
+----------------------------------------------
+| Step | What |
+|------|------|
+| P.1 | Update CHANGELOG.md with all three features |
+| P.2 | Update POST_MVP_ROADMAP.md — mark features DONE |
+| P.3 | Run full brain_health.py — verify 9/9 PASS |
+| P.4 | Final README.md and HOW_TO review |
+| P.5 | Final commit and push to main |
+
+PHASE 9: PRE-PUBLIC LAUNCH (24 steps, PROJECT_TRACKER.md)
+----------------------------------------------------------
+Code Quality: 9.1-9.5 (deep review, Z timestamps, health, cleanup, security)
+Documentation: 9.6-9.10 (README rewrite, HOW_TO review, config, CHANGELOG, LICENSE)
+Beta Testing: 9.11-9.13 (friend clones, runs HOW_TO, fix issues)
+Marketing & Launch: 9.14-9.24 (identity, social, YouTube, Reddit, HN, Boris,
+  launch post, demo video, switch to PUBLIC, post to communities, monitor)
+
+MVP LEFTOVER:
+- 7.8: Beta tester onboarding (Mac user clones, runs setup)
+
+==========================================================================
+TOTALS:
+- Phase 8: 2 steps (8.10 + 8.11 with 98 note rewrites remaining)
+- Feature 2: 7 steps
+- Feature 3: 11 steps
+- Post-Build: 5 steps
+- Phase 9: 24 steps
+- MVP leftover: 1 step
+- GRAND TOTAL: 50 steps remaining
+==========================================================================
+
+GIT STATE:
+- Branch: main
+- Latest commit: ed2d7c8 (pushed)
+- Working tree: clean
+
+WHAT'S WORKING:
+- All 4 hooks: WORK (session-start has gap detection + project summary)
+- All 11 slash commands: WORK
+- MCP server (11 tools): WORKS (brain-server connects in ~5s)
+- Database (136 sessions, 20006 msgs, 6171 embeddings)
+- Debug logging: WORKING (--debug in ~/bin/cc)
+- brain_health: 9/9 PASS
+- B9 fix v2 deployed (os._exit(0)), needs /exit validation
+
+PRIORITY FOR NEXT SESSION:
+1. Validate B9 fix (check status bar after /exit)
+2. F1: Continue session note rewrites (98 remaining, session 16 next)
+3. Mike decides when to start Feature 2, Feature 3, or Phase 9
+==========================================================================
