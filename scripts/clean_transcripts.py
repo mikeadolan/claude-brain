@@ -105,6 +105,8 @@ _TECH_EXCLUSIONS = {
     "umount",
     # Fragments / wrong corrections (ED=1 finds wrong target)
     "spons", "erent", "sessing", "prohect", "infor", "assing",
+    # Real terms misidentified as typos
+    "cpython", "popen", "printf", "sprintf", "assed",
 }
 
 # Common English suffixes/prefixes — if the edit is just adding/removing one
