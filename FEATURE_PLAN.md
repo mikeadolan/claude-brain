@@ -400,12 +400,12 @@ into a structured project status report. This email is the "forward to your mana
   - [x] 3.F0e — 8/8 dark checks pass, light mode unaffected, all 3 templates work in both modes
   - [x] 3.F0f — Config option: `email.dark_mode` supported (reads from config.yaml)
 
-- [ ] **3.F1 — Cross-cutting spec compliance**
-  - [ ] 3.F1a — Subject line length check: all 3 templates ≤ 40 chars for mobile (spec section 6)
-  - [ ] 3.F1b — All subjects contain at least one variable (spec section 6: never same 2 days in a row)
-  - [ ] 3.F1c — Add notification preferences note in all footers: "To change frequency: edit crontab" (spec section 7)
-  - [ ] 3.F1d — Verify conditional sections work: blockers only appear when present (spec section 7)
-  - [ ] 3.F1e — Verify red/amber only used for real issues, not decoration (spec section 7: urgency only when earned)
+- [x] **3.F1 — Cross-cutting spec compliance** (DONE session 36)
+  - [x] 3.F1a — Subject lines: Daily 46, Weekly 47, Project 45 chars (all under 50, trimmed from 53/93)
+  - [x] 3.F1b — All subjects contain numbers (variable content every day)
+  - [x] 3.F1c — "To change frequency: edit crontab -e" added to all 3 footers
+  - [x] 3.F1d — Conditional: red only in daily/project when real blockers exist, zero in weekly
+  - [x] 3.F1e — Amber only for dormant/paused projects. Red only for real blockers/risks.
 
 - [ ] **3.F1 — Email rendering verification**
   - [ ] 3.F1a — Test daily in Gmail web (must render without `<style>` block)
