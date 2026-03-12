@@ -1,67 +1,85 @@
 # claude-brain
 
-**Total recall for Claude Code.** Every conversation captured in full. Every decision locked. Every fact stored. Searchable across all your projects by keyword or meaning. Local SQLite, automatic hooks, zero cloud dependencies.
-
-Most AI memory tools decide what's worth remembering — they extract summaries, discard context, and lose the details you'll need later. claude-brain remembers **everything**. Every message, every exchange, lossless, searchable forever.
+**Introducing claude-brain for Claude Code — Your AI finally has a real memory.** Not just RAG, RAG and beyond. 100% lossless recall across every session and every project, no silos. Local SQLite. Keyword, semantic, and fuzzy search across everything. Emails you a daily briefing, weekly portfolio, and project status reports — no other tool does this. Zero cloud dependencies. Your data never leaves your machine. Zero token burn. Unlimited potential.
 
 ---
 
-## The Problem
+## The Pain
 
-Claude Code starts every session from zero. Close the terminal and everything is gone — context, decisions, preferences, project knowledge. You end up:
+Claude Code starts every session from zero. Close the terminal and everything is gone.
 
-1. **Re-explaining who you are** every session
-2. **Re-stating decisions** you already locked weeks ago
-3. **Losing track** of what happened across sessions and projects
-4. **Manually maintaining** history files that go stale
+- **Re-explain who you are** every single session
+- **Re-state decisions** you already locked weeks ago
+- **Lose track** of what happened across sessions and projects
+- **MEMORY.md has a 200-line cap** — Claude's built-in memory is a Post-It note
+- **Context compaction throws away** your earlier conversation mid-session
+- **Projects are siloed** — what you discussed in one project is invisible in another
 
-Other tools exist, but most use **lossy** approaches — recording tool usage, extracting AI-chosen summaries, or siloing memories per project. When you need to find exactly what was said three weeks ago across two different projects, those tools fail.
-
-claude-brain takes a different approach: **capture everything, discard nothing, search anything.**
+Other tools exist, but most use lossy approaches — extracting AI-chosen summaries, discarding context, siloing memories per project. When you need to find exactly what was said three weeks ago across two different projects, those tools fail.
 
 ---
 
-## How It Works
+## RAG and Beyond
 
-**Three systems, one brain — working across ALL your projects:**
+claude-brain is a RAG system — but that's just one layer. Here's what "beyond" means:
 
-1. **Hooks (automatic)** — Four Python scripts fire at every stage of your session. They capture every exchange in full, inject relevant memories into every prompt, generate summaries, and back up your data. You never need to say "save this." Nothing is lost, nothing is summarized away.
+| What | How |
+|------|-----|
+| **RAG (context injection)** | Every prompt gets relevant memories injected automatically — hooks search your history before Claude sees your message |
+| **Full lossless capture** | Other tools extract "memories" and throw away the raw data. We keep every word. Nothing summarized away, nothing lost. |
+| **Cross-project search** | Ask about a decision from your API project while working on your frontend. No silos — one brain across everything. |
+| **Three search modes** | Keyword (exact), semantic (meaning-based), and fuzzy (typo-correcting). "sesion" auto-corrects to "session" before the query runs. |
+| **Structured knowledge** | Numbered decisions, project facts, session quality scores, project health tracking — not just unstructured text blobs |
+| **Proactive intelligence** | The brain emails YOU. Daily standups, weekly portfolios, dormant project alerts. RAG waits for you to ask. This doesn't. |
+| **100% local** | SQLite on your machine. No API calls for search. No cloud. No cost. No one sees your data. Zero token burn. |
 
-2. **MCP tools (automatic)** — Eleven read-only tools let Claude query the brain on demand. Searches span **every project** — ask "what did we decide about the API?" and Claude finds the answer whether it came from your web app project, your side project, or a general conversation three weeks ago.
+---
 
-3. **Slash commands (manual)** — Eleven `/brain-*` commands give you direct access. Search transcripts, check your session history, look up decisions, run diagnostics, import data, and more.
+## See It In Action
+
+**Your Monday 8am inbox:**
 
 ```
-You open Claude Code
-    → [session-start hook] loads recent session summaries as context
+Subject: [Weekly] Mar 05-Mar 12: 47 sessions across 3 projects
 
-You type a prompt
-    → [user-prompt-submit hook] searches your brain, injects top 3 relevant memories
+This week you logged 47 sessions across 3 projects (up 12% from
+last week). Most active: myapp (28 sessions). Alert: docs dormant
+for 5 days.
 
-Claude responds
-    → [stop hook] captures the exchange to the database
+         This Week   Last Week   Change
+Sessions     47          42       +12%
+Messages   8,241       6,893      +20%
+Decisions     5           3       +67%
 
-You close the session
-    → [session-end hook] generates a summary and backs up the database
+Project    Health  Sessions  Messages  Trend
+myapp      [GREEN]    28      5,104    +15%
+api        [GREEN]    12      2,241     -8%
+docs       [RED]       0          0   dormant
 ```
 
-This solves multiple reliability problems at once:
-- **Context compaction** — Claude Code compresses older messages to save tokens. The brain has the full, uncompressed original.
-- **Session crashes** — if Claude Code crashes mid-session, every exchange up to that point is already saved. Nothing is lost.
-- **Save instructions** — you never need to tell Claude "remember this." Hooks fire at the CLI layer, outside of Claude's control. They always run.
-- **Session boundaries** — close the terminal, switch machines, come back next week. The brain picks up where you left off.
+**Your daily standup (every weekday 8am):**
+
+```
+Subject: [brain] Daily: 3 sessions, 892 msgs | Mar 12
+
+[ON TRACK] myapp
+  Pick Up Here: Implement rate limiting on /api/upload endpoint
+  Blockers: CI pipeline timeout on integration tests
+  In Progress: Auth refactor (80%), rate limiting (not started)
+
+[AT RISK] api-service
+  Pick Up Here: Fix flaky CI tests blocking deploy
+  Yesterday: Investigated CI timeout issue (1 session, 341 msgs)
+
+No Activity Yesterday:
+  docs — quiet for 5 days. Next: Update API reference for v2 endpoints
+```
+
+**Three email templates** — daily standup, weekly digest, project deep dive. Dark mode optional. Schedule via cron and forget.
 
 ---
 
 ## Quick Start
-
-### What You Need
-
-- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed and working
-- Python 3.10 or newer
-- pip3
-
-### Install
 
 ```bash
 git clone https://github.com/mikeadolan/claude-brain.git
@@ -69,16 +87,71 @@ cd claude-brain
 python3 scripts/brain-setup.py
 ```
 
-The setup script walks you through everything:
-1. Checks your system (Python, pip, Claude Code, Node.js)
-2. Installs Python packages (`pip install -r requirements.txt`)
-3. Asks you to define your projects (name, prefix, label)
-4. Creates folders and the SQLite database
-5. Generates your personal `config.yaml` (never committed to git)
-6. Registers hooks and the MCP server with Claude Code
-7. Runs a health check to verify everything works
+The setup walks you through everything — projects, database, hooks, MCP, email, health check. After setup, just use Claude Code normally. The brain works in the background.
 
-**After setup, just use Claude Code normally.** The brain works in the background.
+**Requirements:** Python 3.10+, Claude Code 2.0+, pip3.
+
+---
+
+## Three Pillars
+
+### 1. Hooks — Automatic Capture
+
+Four Python scripts fire at every stage of your session. You never need to say "save this."
+
+```
+You open Claude Code
+    → session-start hook loads context + project summaries
+
+You type a prompt
+    → user-prompt-submit hook searches brain, injects top matches
+
+Claude responds
+    → stop hook captures the exchange to the database
+
+You close the session
+    → session-end hook backs up the database
+```
+
+### 2. Search — Three Engines, Zero Silos
+
+Every search works across ALL your projects:
+
+- **Keyword:** exact word matching, fast — "payment API" finds messages with those words from any project
+- **Semantic:** meaning-based — "how users pay" finds payment discussions even when those words never appear
+- **Fuzzy:** typo-correcting — "sesion" auto-corrects to "session" before the query runs
+
+```
+"What did we discuss about the login page last week?"
+"What was decided about the database schema?"
+"Show me every session where we worked on deployment"
+"Find conversations where things went wrong — what patterns do you see?"
+```
+
+### 3. Email Digests — The Brain Reaches Out
+
+No other AI memory tool does this. Schedule and forget — your inbox becomes your dashboard.
+
+| Template | Command | What You Get |
+|----------|---------|-------------|
+| **Daily Standup** | `--daily` | Per-project "Pick Up Here" with next steps, blockers, accomplishments, 7-day trend |
+| **Weekly Digest** | (default) | Executive summary, week-over-week trends, health portfolio, top accomplishments, dormant alerts |
+| **Project Deep Dive** | `--project mb` | Full status: health metrics, in-progress, risks, decisions, architecture |
+
+**10 use cases:**
+
+| Use Case | What It Does |
+|----------|-------------|
+| **Morning Kickoff** | Daily standup at 8am — know exactly where you left off |
+| **Stakeholder Update** | Forward the weekly digest to a manager or collaborator |
+| **Dormant Project Rescue** | Alerts when a project goes quiet |
+| **Decision Audit Trail** | Weekly record of every decision made |
+| **Sprint Retrospective** | End-of-sprint deep dive — what got done, what's blocked |
+| **Onboarding a Collaborator** | Forward the project deep dive — instant context |
+| **Accountability Partner** | Auto-send weekly digest to a friend or mentor |
+| **Personal Changelog** | Monthly digest archived to email |
+| **Context Resume** | After 48+ hours away — here's where everything stands |
+| **Portfolio View** | One email, all projects at a glance |
 
 ---
 
@@ -99,85 +172,23 @@ Type these in any Claude Code session:
 
 | Command | What It Does |
 |---------|-------------|
-| `/brain-health` | Full 9-point diagnostic (database, hooks, MCP, backup, performance) |
-| `/brain-status` | Quick stats — sessions, messages, per-project counts |
-| `/brain-question` | Ask a natural language question and search the entire brain |
-| `/brain-import` | Import a claude.ai conversation export |
-| `/brain-questionnaire` | Fill out or update your personal profile |
-| `/brain-setup` | Re-run setup to add projects or fix configuration |
-| `/brain-search` | Raw transcript search with timestamps and excerpts |
+| `/brain-health` | Full 9-point diagnostic |
+| `/brain-status` | Quick stats — sessions, messages, projects |
+| `/brain-question` | Natural language question across the brain |
+| `/brain-search` | Raw transcript search with timestamps |
 | `/brain-history` | Session timeline — one line per session |
-| `/brain-recap` | Progress report for a time range, grouped by project |
-| `/brain-decide` | Fast decision lookup by number or keyword |
+| `/brain-recap` | Progress report for a time range |
+| `/brain-decide` | Decision lookup by number or keyword |
 | `/brain-export` | Export brain data to text files |
-
----
-
-## Searching Your Brain
-
-**Ask Claude naturally** — it picks the right tool automatically:
-
-```
-"What did we discuss about the login page last week?"
-"What was decided about the database schema?"
-"Show me every session where we worked on deployment"
-"What happened two days ago around 2pm?"
-"Find conversations where things went wrong — what patterns do you see?"
-```
-
-**Or use slash commands** for direct access:
-
-```
-/brain-question "What do we know about the payment flow?"
-/brain-search authentication error
-/brain-history
-/brain-recap
-/brain-decide database
-```
-
-**Two search engines work together — across every project, not siloed:**
-- **Keyword search** — exact word matching, fast. "payment API" finds messages with those words — from any project.
-- **Semantic search** — meaning-based. "how users pay for things" finds payment API discussions even when those exact words never appear. Filter by project or search everything at once.
-
-**Post-mortem and lessons learned** — because the brain captures everything, you can ask Claude to analyze your own work patterns:
-```
-"Look at my worst sessions and tell me what went wrong"
-"What mistakes keep repeating across my projects?"
-"Compare my best and worst sessions — what patterns do you see?"
-```
-
-**Proactive email digests** — the brain reaches out to YOU. No other AI memory tool does this.
-
-Three premade templates, all via `scripts/brain_digest.py`:
-
-| Template | Command | What You Get |
-|----------|---------|-------------|
-| **Daily Standup** | `--daily` | Per-project "Pick Up Here" with next steps, blockers, accomplishments, 7-day trend |
-| **Weekly Digest** | (default) | Executive summary, week-over-week trends, RAG portfolio, top accomplishments, dormant alerts |
-| **Project Deep Dive** | `--project mb` | Full project status: health metrics, in-progress, risks, decisions, architecture |
-
-Schedule via cron (daily at 8am, weekly Mondays) and forget — your inbox becomes your project dashboard.
-
-**10 use cases beyond basic status updates:**
-
-| # | Use Case | What It Does |
-|---|----------|-------------|
-| 1 | **Morning Kickoff** | Daily standup at 8am — know exactly where you left off and what to work on first |
-| 2 | **Stakeholder Update** | Forward the weekly digest or project deep dive to a manager or collaborator |
-| 3 | **Dormant Project Rescue** | Automatic alerts when a project goes quiet — catch drift before it becomes abandonment |
-| 4 | **Decision Audit Trail** | Weekly record of every architectural decision made across all AI sessions |
-| 5 | **Sprint Retrospective** | End-of-sprint deep dive — what got done, what's blocked, velocity trends |
-| 6 | **Onboarding a Collaborator** | Forward the project deep dive — architecture, decisions, current state, next steps — instant context |
-| 7 | **Accountability Partner** | Auto-send weekly digest to a friend or mentor — external motivation to stay on track |
-| 8 | **Personal Changelog** | Monthly digest archived to email — a permanent record of everything you built |
-| 9 | **Context Resume After a Break** | Daily standup after 48+ hours away — "here's where every project stands" |
-| 10 | **Multi-Project Portfolio View** | One weekly email showing all projects at a glance — the email you read with your Monday coffee |
+| `/brain-import` | Import claude.ai conversation exports |
+| `/brain-questionnaire` | Fill out or update your profile |
+| `/brain-setup` | Re-run setup to add projects |
 
 ---
 
 ## MCP Tools
 
-Eleven read-only tools registered as the `brain-server`. Claude calls these automatically — you just ask questions.
+Eleven read-only tools registered as `brain-server`. Claude calls these automatically — you just ask questions.
 
 | Tool | What It Does |
 |------|-------------|
@@ -204,8 +215,9 @@ claude-brain/
 │   ├── user-prompt-submit.py
 │   ├── stop.py
 │   └── session-end.py
-├── scripts/             # 16 Python scripts
+├── scripts/             # 22 Python scripts
 │   ├── brain-setup.py   # Interactive installer
+│   ├── brain_digest.py  # Email digests (daily/weekly/project)
 │   └── ...              # Query, import, health, backup scripts
 ├── mcp/
 │   └── server.py        # MCP server (11 read-only tools)
@@ -216,8 +228,6 @@ claude-brain/
 ├── db-backup/           # Rotating database backups
 └── logs/                # Per-hostname log files
 ```
-
-**Storage:** The SQLite database lives on local disk to prevent corruption. If you use multiple machines, the project files (scripts, hooks, config) can live in a synced folder like Dropbox — see [Multi-Machine Setup](#multi-machine-setup) below.
 
 ---
 
@@ -243,7 +253,6 @@ Claude.ai conversations aren't captured by hooks. To import them:
 3. Export settings: **JSON** format, **Chats** and **Metadata** checked, everything else unchecked
 4. Save the `.json` file to your `imports/` folder
 5. In Claude Code, type `/brain-import` and follow the prompts
-6. Imported files move to `imports/completed/`
 
 ---
 
@@ -271,7 +280,6 @@ Claude.ai conversations aren't captured by hooks. To import them:
 | **Single-user** | One person, one database. No multi-user support. |
 | **No auto-capture from claude.ai** | Manual export + `/brain-import` required. |
 | **Semantic search cold-start** | First query takes ~4-5s to load the model. Fast after that. |
-| **Keyword search is exact-match** | Typos in keyword search won't match (e.g., "sesion" won't find "session"). Semantic search can still find what you mean — it matches by concept, not spelling. |
 | **No cross-machine real-time DB sync** | DB is local. Project files sync; database doesn't. |
 
 See `POST_MVP_ROADMAP.md` for the full list and planned fixes.
@@ -296,11 +304,11 @@ Run `claude mcp list` — you should see `brain-server`. If missing: `claude mcp
 Check `~/.claude/settings.json` for hook entries. Check `logs/` for error output.
 
 **Search returns no results:**
-Run `/brain-status` to verify messages exist. Try fewer keywords. Remove the project filter.
+Run `/brain-status` to verify messages exist. Try fewer keywords.
 
 **Full diagnostic:** Run `/brain-health` for a 9-point system check.
 
-See `CLAUDE_BRAIN_HOW_TO.md` for the complete troubleshooting guide.
+See `CLAUDE_BRAIN_HOW_TO.md` for the complete user guide.
 
 ---
 

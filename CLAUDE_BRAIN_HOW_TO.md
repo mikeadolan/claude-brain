@@ -14,7 +14,7 @@
 6. [Example Queries — What to Type in Claude Code](#6-example-queries)
 7. [Importing Claude.ai Conversations](#7-importing-claudeai-conversations)
 8. [Running Status and Health Checks](#8-status-and-health-checks)
-8.5. [Email Digests — Setup, Templates, Examples](#85-email-digests)
+8.5. [**Email Digests** — The brain emails YOU (no other tool does this)](#85-email-digests)
 9. [How Data Gets Into the Brain](#9-how-data-gets-into-the-brain)
 10. [Adding a New Project](#10-adding-a-new-project)
 11. [Troubleshooting](#11-troubleshooting)
@@ -32,24 +32,22 @@
 
 ## 1. WHAT IS CLAUDE-BRAIN?
 
-Claude-brain is a **total recall** memory system for Claude Code. Every message from
-every conversation is captured in full, stored in a local SQLite database, and made
-searchable by keyword or meaning — across **all** your projects, not siloed per project.
+**Your AI finally has a real memory.** Not just RAG — RAG and beyond.
 
-Most AI memory tools use a **lossy** approach: they record tool usage, extract
-AI-chosen summaries, or store only what the model decides is important. When you need
-the exact wording from three weeks ago, it's gone. claude-brain takes the opposite
-approach: **capture everything, discard nothing, search anything.**
+claude-brain gives Claude Code 100% lossless recall across every session and every project. No silos. Every word captured, every decision tracked, every project connected. It searches by keyword, meaning, or fuzzy match. It emails you a morning briefing before you open your laptop. Zero cloud dependencies — your data never leaves your machine.
 
-Without it, every Claude Code session starts from zero. With it, Claude knows:
-- **Who you are** — name, location, preferences, working style, career goals
-- **What you've discussed** — every conversation, every message, searchable by keyword or meaning
-- **What you've decided** — numbered, locked decisions per project that Claude won't re-ask
-- **What's true about your projects** — features, endpoints, characters, timelines, status
-- **What happened recently** — session summaries so Claude picks up where you left off
-- **What connects your projects** — search across all projects at once to find related work, shared patterns, and cross-project decisions
+**Without it:** Claude Code starts every session from zero. Close the terminal, everything is gone. MEMORY.md has a 200-line cap. Context compaction throws away your earlier conversation. Projects are siloed.
 
-Everything stays on YOUR machine. No cloud. No API calls for memory. No cost.
+**With it, Claude knows:**
+- **Who you are** — name, preferences, working style, career goals
+- **What you've discussed** — every conversation, searchable by keyword, meaning, or fuzzy match
+- **What you've decided** — numbered, locked decisions that Claude won't re-ask
+- **What's true about your projects** — features, architecture, timelines, status
+- **What happened recently** — session summaries, project health, next steps
+- **What connects your projects** — cross-project search finds related work, shared patterns, decisions
+- **What you should do today** — proactive email briefings with per-project next steps and blockers
+
+Everything stays on YOUR machine. No cloud. No API calls for memory. Zero token burn.
 
 ### What Can You Actually Do With It?
 
