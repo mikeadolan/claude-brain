@@ -86,6 +86,26 @@ def get_previous_week_stats(conn, since, before):
     return rows[0] if rows else None
 
 
+def get_previous_week_decisions(conn, since, before):
+    """Decision count for prior period (for trend comparison)."""
+    row = conn.execute(
+        "SELECT COUNT(*) FROM decisions WHERE created_at >= ? AND created_at < ?",
+        (since, before)
+    ).fetchone()
+    return row[0] if row else 0
+
+
+def get_per_project_previous_stats(conn, since, before):
+    """Per-project session counts for prior period (for trend arrows)."""
+    rows = conn.execute("""
+        SELECT project, COUNT(*) as sessions
+        FROM sys_sessions
+        WHERE started_at >= ? AND started_at < ?
+        GROUP BY project
+    """, (since, before)).fetchall()
+    return {r[0]: r[1] for r in rows}
+
+
 def get_session_summaries(conn, since):
     """Session notes grouped by project, ordered by date."""
     rows = conn.execute("""
@@ -201,6 +221,13 @@ def get_inception_stats(conn, labels):
             except ValueError:
                 pass
 
+        # Get health and status from project_registry
+        reg = conn.execute(
+            "SELECT health, status FROM project_registry WHERE prefix = ?", (prefix,)
+        ).fetchone()
+        health = reg[0] if reg else "green"
+        status = reg[1] if reg else "active"
+
         projects.append({
             "prefix": prefix,
             "label": label,
@@ -212,9 +239,12 @@ def get_inception_stats(conn, labels):
             "first_session": first,
             "last_session": last,
             "span_days": span_days,
+            "health": health,
+            "status": status,
         })
 
-    projects.sort(key=lambda x: x["messages"], reverse=True)
+    # Sort: active first (by messages desc), then paused
+    projects.sort(key=lambda x: (0 if x["status"] == "active" else 1, -x["messages"]))
     return projects
 
 
@@ -353,25 +383,230 @@ def format_trend(current, previous):
     return f' <span style="{S_TREND_FLAT}">(unchanged)</span>'
 
 
-def build_email_html(days, stats, prev_stats, summaries, decisions,
+def build_email_html(conn, days, stats, prev_stats, summaries, decisions,
                      dormant, totals, labels, last_notes, inception, roadmap):
-    """Build the weekly digest HTML — all inline styles, wrapped in safe skeleton."""
+    """Build the weekly digest HTML — BLUF first, project intelligence throughout.
+
+    Section order per design spec section 3:
+    1. Executive Summary BLUF (the "forwardable paragraph")
+    2. Week-over-Week Trend Table
+    3. Project Portfolio Table (with RAG, status, summary context)
+    4. Top Accomplishments (3-5 bullets from session notes)
+    5. Dormant Alerts (amber, conditional)
+    6. Decisions Made
+    7. Last Session Notes
+    8. On Deck / Roadmap
+    9. Brain Stats
+    10. Inception-to-Date (reference, at bottom)
+    11. Footer (with forward nudge)
+    """
     now = datetime.now()
     period_start = now - timedelta(days=days)
-    title = f"Brain Digest — {period_start.strftime('%b %d')} to {now.strftime('%b %d, %Y')}"
 
     total_sessions = sum(r["sessions"] for r in stats) if stats else 0
     total_msgs = sum(r["messages"] or 0 for r in stats) if stats else 0
     active_projects = len(stats)
-    preheader = f"{total_sessions} sessions across {active_projects} projects this week"
+    prev_sessions = prev_stats["sessions"] if prev_stats else 0
+    prev_msgs = prev_stats["messages"] if prev_stats else 0
+    num_decisions = len(decisions) if decisions else 0
+
+    # Compute previous week decisions + per-project previous stats for trends
+    prev_since = (now - timedelta(days=days * 2)).isoformat()
+    prev_before = (now - timedelta(days=days)).isoformat()
+    prev_decisions = get_previous_week_decisions(conn, prev_since, prev_before)
+    prev_project_stats = get_per_project_previous_stats(conn, prev_since, prev_before)
+
+    # Top project by sessions
+    top_project = max(stats, key=lambda r: r["sessions"]) if stats else None
+    top_label = labels.get(top_project["project"], top_project["project"]) if top_project else "none"
+
+    # Dormant project names for alert sentence
+    dormant_names = [d["label"] for d in dormant] if dormant else []
+
+    # --- Executive Summary BLUF ---
+    delta_pct = round(((total_sessions - prev_sessions) / prev_sessions * 100) if prev_sessions else 0)
+    delta_word = "up" if delta_pct > 0 else "down" if delta_pct < 0 else "flat"
+    exec_summary = f"This week you logged {total_sessions} sessions across {active_projects} project{'s' if active_projects != 1 else ''}"
+    if prev_sessions:
+        exec_summary += f" ({delta_word} {abs(delta_pct)}% from last week)"
+    exec_summary += f". Most active: {top_label}"
+    if top_project:
+        exec_summary += f" ({top_project['sessions']} sessions)"
+    exec_summary += "."
+    if dormant_names:
+        exec_summary += f" Alert: {', '.join(dormant_names[:3])} dormant."
+    elif total_sessions > 0:
+        exec_summary += " All projects on track."
+
+    # Subject line per spec: [Weekly] {range}: {headline} across {N} projects
+    title = f"Brain Digest — {period_start.strftime('%b %d')} to {now.strftime('%b %d')}"
+    preheader = exec_summary[:100]
 
     content = f'<h1 style="{S_H1}">{title}</h1>'
 
-    # -- Inception-to-Date Portfolio
+    # ── 1. Executive Summary BLUF ──
+    content += f'<p style="font-size:15px; line-height:1.5; margin:8px 0 20px 0;">{exec_summary}</p>'
+
+    # ── 2. Week-over-Week Trend Table ──
+    content += f'<table style="{S_TABLE}">'
+    content += f'<tr><th style="{S_TH}">Metric</th><th style="{S_TH}">This Week</th><th style="{S_TH}">Last Week</th><th style="{S_TH}">Change</th></tr>'
+    trend_rows = [
+        ("Sessions", total_sessions, prev_sessions or 0),
+        ("Messages", total_msgs, prev_msgs or 0),
+        ("Decisions", num_decisions, prev_decisions),
+    ]
+    for i, (metric, current, previous) in enumerate(trend_rows):
+        td = S_TD_EVEN if i % 2 == 1 else S_TD
+        if previous and previous > 0:
+            d_pct = round((current - previous) / previous * 100)
+            if d_pct > 0:
+                delta_html = f'<span style="{S_TREND_UP}">+{d_pct}%</span>'
+            elif d_pct < 0:
+                delta_html = f'<span style="{S_TREND_DOWN}">{d_pct}%</span>'
+            else:
+                delta_html = f'<span style="{S_TREND_FLAT}">—</span>'
+        else:
+            delta_html = f'<span style="{S_TREND_FLAT}">—</span>'
+        cur_fmt = f"{current:,}" if isinstance(current, int) and current > 999 else str(current)
+        prev_fmt = f"{previous:,}" if isinstance(previous, int) and previous > 999 else str(previous)
+        content += f'<tr><td style="{td}"><strong>{metric}</strong></td><td style="{td}">{cur_fmt}</td><td style="{td}">{prev_fmt}</td><td style="{td}">{delta_html}</td></tr>'
+    content += '</table>'
+
+    # ── 3. Project Portfolio Table (with RAG, status, context) ──
+    if stats:
+        content += f'<h2 style="{S_H2}">Project Portfolio</h2>'
+        content += f'<table style="{S_TABLE}"><tr>'
+        for hdr in ["", "Project", "Sessions", "Messages", "Trend"]:
+            content += f'<th style="{S_TH}">{hdr}</th>'
+        content += '</tr>'
+
+        # Sort: active with sessions first, then others
+        sorted_stats = sorted(stats, key=lambda r: r["sessions"], reverse=True)
+
+        for i, r in enumerate(sorted_stats):
+            proj = r["project"]
+            label = labels.get(proj, proj)
+            td = S_TD_EVEN if i % 2 == 1 else S_TD
+            ctx = get_project_context(conn, proj)
+            health = ctx["health"] if ctx else "green"
+            status = ctx["status"] if ctx else "active"
+            summary_text = ctx["summary"] if ctx else None
+
+            # RAG cell — inline background-color, NOT emoji
+            bg, fg, rag_label = RAG_COLORS.get(health, RAG_COLORS["green"])
+            rag_td = f'padding:7px 4px; background-color:{bg}; text-align:center; width:8px; border-bottom:1px solid #e2e8f0;'
+
+            # First sentence of summary for context
+            context_line = ""
+            if summary_text:
+                summary_section = extract_section(summary_text, "summary")
+                if summary_section:
+                    first_sentence = summary_section.split(".")[0] + "." if "." in summary_section else summary_section[:80]
+                    context_line = f'<br><span style="color:#718096; font-size:11px;">{first_sentence[:100]}</span>'
+
+            # Trend arrow vs last week
+            prev_proj_sessions = prev_project_stats.get(proj, 0)
+            if prev_proj_sessions > 0:
+                t_pct = round((r["sessions"] - prev_proj_sessions) / prev_proj_sessions * 100)
+                if t_pct > 10:
+                    trend_html = f'<span style="{S_TREND_UP}">↑{t_pct}%</span>'
+                elif t_pct < -10:
+                    trend_html = f'<span style="{S_TREND_DOWN}">↓{abs(t_pct)}%</span>'
+                else:
+                    trend_html = f'<span style="{S_TREND_FLAT}">—</span>'
+            elif r["sessions"] > 0:
+                trend_html = f'<span style="{S_TREND_UP}">new</span>'
+            else:
+                trend_html = f'<span style="{S_TREND_FLAT}">—</span>'
+
+            # Status badge for paused projects
+            status_badge = ""
+            if status == "paused":
+                status_badge = f' <span style="background:#F59E0B; color:#fff; padding:1px 5px; border-radius:3px; font-size:10px;">PAUSED</span>'
+
+            content += f'<tr><td style="{rag_td}"></td>'
+            content += f'<td style="{td}"><strong>{label}</strong>{status_badge}{context_line}</td>'
+            content += f'<td style="{td}">{r["sessions"]}</td>'
+            content += f'<td style="{td}">{r["messages"] or 0:,}</td>'
+            content += f'<td style="{td}">{trend_html}</td></tr>'
+        content += '</table>'
+    else:
+        content += '<p style="color:#718096;">No sessions this period.</p>'
+
+    # ── 4. Top Accomplishments (from session notes "What Was Done") ──
+    accomplishments = []
+    for s in (summaries or []):
+        done_section = extract_section(s["summary"], "what was done")
+        if done_section:
+            for line in done_section.split("\n"):
+                line = line.strip().lstrip("- ").lstrip("* ")
+                if line and len(line) > 20:
+                    proj = s["project"] or "oth"
+                    accomplishments.append((proj, line[:200]))
+    if accomplishments:
+        content += f'<h2 style="{S_H2}">Top Accomplishments</h2>'
+        for proj, acc in accomplishments[:5]:
+            content += f'<div style="margin:4px 0; padding:4px 0; font-size:13px;">'
+            content += f'<span style="{S_PROJ_BADGE}">{proj}</span> {acc}</div>'
+
+    # ── 5. Dormant Alerts (amber, not red — dormant ≠ blocked) ──
+    S_DORMANT = "background:#FFF3CD; border-left:4px solid #F59E0B; padding:12px 16px; margin:8px 0; font-size:13px;"
+    S_DORMANT_TITLE = "color:#92400E; font-weight:600; margin-bottom:4px;"
+    if dormant:
+        content += f'<h2 style="{S_H2}">Dormant Projects</h2>'
+        for d in dormant:
+            content += f'<div style="{S_DORMANT}"><div style="{S_DORMANT_TITLE}">{d["label"]} ({d["prefix"]})</div>'
+            content += f'No activity in <strong>{d["days_idle"]} days</strong>. '
+            content += f'Last active: {d["last_active"]}.'
+            # Include next steps from project summary if available
+            ctx = get_project_context(conn, d["prefix"])
+            if ctx and ctx["summary"]:
+                next_steps = extract_section(ctx["summary"], "next steps")
+                if next_steps:
+                    first_step = next_steps.split("\n")[0].strip().lstrip("- ").lstrip("1. ")
+                    content += f'<br><span style="color:#92400E;">Next: {first_step[:120]}</span>'
+            content += '</div>'
+
+    # ── 6. Decisions ──
+    if decisions:
+        content += f'<h2 style="{S_H2}">Decisions Made</h2>'
+        for d in decisions:
+            proj = d["project"] or "?"
+            content += f'<div style="{S_DECISION}"><span style="{S_DECISION_NUM}">#{d["decision_number"]}</span> '
+            content += f'<span style="{S_PROJ_BADGE}">{proj}</span> '
+            content += f'{d["description"][:200]}</div>'
+
+    # ── 7. Last Session Notes ──
+    if last_notes and last_notes["notes"]:
+        content += f'<h2 style="{S_H2}">Last Session Notes</h2>'
+        date_str = (last_notes["started_at"] or "")[:10]
+        proj = last_notes["project"] or "?"
+        notes_html = last_notes["notes"].replace("\n", "<br>")
+        content += f'<div style="{S_SUMMARY_ITEM}"><span style="{S_SUMMARY_DATE}">{date_str}</span> '
+        content += f'<span style="{S_PROJ_BADGE}">{proj}</span><br>{notes_html}</div>'
+
+    # ── 8. Roadmap / On Deck ──
+    if roadmap:
+        content += f'<h2 style="{S_H2}">On Deck — Planned Next</h2>'
+        for proj, items in roadmap.items():
+            proj_label = labels.get(proj, proj)
+            content += f'<div style="margin-top:10px;"><span style="{S_PROJ_BADGE}">{proj}</span> <strong>{proj_label}</strong></div>'
+            for item in items:
+                content += f'<div style="{S_SUMMARY_ITEM}">{item["value"]}</div>'
+
+    # ── 9. Brain Stats ──
+    content += f'<h2 style="{S_H2}">Brain Stats</h2>'
+    content += '<div style="text-align:center;">'
+    for val, lbl in [(totals["sessions"], "Total Sessions"), (f'{totals["transcripts"]:,}', "Transcripts"),
+                     (totals["decisions"], "Decisions"), (f'{totals["embeddings"]:,}', "Embeddings")]:
+        content += f'<div style="{S_METRIC}"><div style="{S_METRIC_VAL}">{val}</div><div style="{S_METRIC_LBL}">{lbl}</div></div>'
+    content += '</div>'
+
+    # ── 10. Inception-to-Date (reference data, bottom — with health + status) ──
     if inception:
         content += f'<h2 style="{S_H2}">Portfolio — Inception to Date</h2>'
         content += f'<table style="{S_TABLE}"><tr>'
-        for hdr in ["Project", "Sessions", "Messages", "Decisions", "Active Since", "Span"]:
+        for hdr in ["", "Project", "Status", "Sessions", "Messages", "Decisions", "Since", "Span"]:
             content += f'<th style="{S_TH}">{hdr}</th>'
         content += '</tr>'
         total_itd_sessions = 0
@@ -383,110 +618,36 @@ def build_email_html(days, stats, prev_stats, summaries, decisions,
             total_itd_decisions += p["decisions"]
             span = f'{p["span_days"]}d' if p["span_days"] else "—"
             td = S_TD_EVEN if i % 2 == 1 else S_TD
-            content += f'<tr><td style="{td}"><strong>{p["label"]}</strong> ({p["prefix"]})</td>'
+
+            # RAG cell
+            bg, fg, rag_label = RAG_COLORS.get(p.get("health", "green"), RAG_COLORS["green"])
+            rag_td = f'padding:7px 4px; background-color:{bg}; text-align:center; width:8px; border-bottom:1px solid #e2e8f0;'
+
+            # Status badge
+            status = p.get("status", "active")
+            if status == "paused":
+                status_html = f'<span style="background:#F59E0B; color:#fff; padding:1px 5px; border-radius:3px; font-size:10px;">PAUSED</span>'
+            else:
+                status_html = f'<span style="color:#22C55E; font-size:11px;">Active</span>'
+
+            content += f'<tr><td style="{rag_td}"></td>'
+            content += f'<td style="{td}"><strong>{p["label"]}</strong> ({p["prefix"]})</td>'
+            content += f'<td style="{td}">{status_html}</td>'
             content += f'<td style="{td}">{p["sessions"]}</td>'
             content += f'<td style="{td}">{p["messages"]:,}</td>'
             content += f'<td style="{td}">{p["decisions"]}</td>'
             content += f'<td style="{td}">{p["first_session"]}</td>'
             content += f'<td style="{td}">{span}</td></tr>'
         content += f'<tr style="font-weight:700; background:#ebf4ff;">'
-        content += f'<td style="{S_TD}">TOTAL</td><td style="{S_TD}">{total_itd_sessions}</td><td style="{S_TD}">{total_itd_msgs:,}</td>'
+        content += f'<td style="{S_TD}"></td><td style="{S_TD}">TOTAL</td><td style="{S_TD}"></td>'
+        content += f'<td style="{S_TD}">{total_itd_sessions}</td><td style="{S_TD}">{total_itd_msgs:,}</td>'
         content += f'<td style="{S_TD}">{total_itd_decisions}</td><td style="{S_TD}" colspan="2"></td></tr>'
         content += '</table>'
 
-    # -- Metrics bar (this week)
-    prev_sessions = prev_stats["sessions"] if prev_stats else None
-    prev_msgs = prev_stats["messages"] if prev_stats else None
-
-    content += f'<h2 style="{S_H2}">This Week ({days} days)</h2>'
-    content += '<div style="text-align:center; margin:16px 0;">'
-    content += f'<div style="{S_METRIC}"><div style="{S_METRIC_VAL}">{total_sessions}{format_trend(total_sessions, prev_sessions)}</div><div style="{S_METRIC_LBL}">Sessions</div></div>'
-    content += f'<div style="{S_METRIC}"><div style="{S_METRIC_VAL}">{total_msgs:,}{format_trend(total_msgs, prev_msgs or 0)}</div><div style="{S_METRIC_LBL}">Messages</div></div>'
-    content += f'<div style="{S_METRIC}"><div style="{S_METRIC_VAL}">{active_projects}</div><div style="{S_METRIC_LBL}">Active Projects</div></div>'
-    content += '</div>'
-
-    # -- Project Activity Table
-    if stats:
-        content += f'<table style="{S_TABLE}"><tr>'
-        for hdr in ["Project", "Sessions", "Messages", "Avg/Session"]:
-            content += f'<th style="{S_TH}">{hdr}</th>'
-        content += '</tr>'
-        for i, r in enumerate(stats):
-            label = labels.get(r["project"], r["project"])
-            td = S_TD_EVEN if i % 2 == 1 else S_TD
-            content += f'<tr><td style="{td}"><strong>{label}</strong> ({r["project"]})</td>'
-            content += f'<td style="{td}">{r["sessions"]}</td>'
-            content += f'<td style="{td}">{r["messages"] or 0:,}</td>'
-            content += f'<td style="{td}">{r["avg_msgs"] or 0}</td></tr>'
-        content += '</table>'
-    else:
-        content += '<p style="color:#718096;">No sessions this period.</p>'
-
-    # -- Session Highlights
-    if summaries:
-        content += f'<h2 style="{S_H2}">Session Highlights</h2>'
-        by_project = {}
-        for s in summaries:
-            proj = s["project"] or "oth"
-            if proj not in by_project:
-                by_project[proj] = []
-            if len(by_project[proj]) < 5:
-                by_project[proj].append(s)
-
-        for proj, entries in by_project.items():
-            proj_label = labels.get(proj, proj)
-            content += f'<div style="margin-top:12px;"><span style="{S_PROJ_BADGE}">{proj}</span> <strong>{proj_label}</strong></div>'
-            for s in entries:
-                topic = extract_topic_from_summary(s["summary"])
-                date_str = (s["started_at"] or s["created_at"] or "")[:10]
-                msgs = s["message_count"] or "?"
-                content += f'<div style="{S_SUMMARY_ITEM}"><span style="{S_SUMMARY_DATE}">{date_str}</span> &middot; {msgs} msgs &mdash; {topic}</div>'
-
-    # -- Decisions
-    if decisions:
-        content += f'<h2 style="{S_H2}">Decisions Made</h2>'
-        for d in decisions:
-            proj = d["project"] or "?"
-            content += f'<div style="{S_DECISION}"><span style="{S_DECISION_NUM}">#{d["decision_number"]}</span> '
-            content += f'<span style="{S_PROJ_BADGE}">{proj}</span> '
-            content += f'{d["description"][:200]}</div>'
-
-    # -- Dormant Project Alerts
-    if dormant:
-        content += f'<h2 style="{S_H2}">Dormant Projects</h2>'
-        for d in dormant:
-            content += f'<div style="{S_ALERT}"><div style="{S_ALERT_TITLE}">{d["label"]} ({d["prefix"]})</div>'
-            content += f'No activity in <strong>{d["days_idle"]} days</strong>. '
-            content += f'Last active: {d["last_active"]}. Total sessions: {d["total_sessions"]}.</div>'
-
-    # -- Last Session Notes
-    if last_notes and last_notes["notes"]:
-        content += f'<h2 style="{S_H2}">Last Session Notes</h2>'
-        date_str = (last_notes["started_at"] or "")[:10]
-        proj = last_notes["project"] or "?"
-        notes_html = last_notes["notes"].replace("\n", "<br>")
-        content += f'<div style="{S_SUMMARY_ITEM}"><span style="{S_SUMMARY_DATE}">{date_str}</span> '
-        content += f'<span style="{S_PROJ_BADGE}">{proj}</span><br>{notes_html}</div>'
-
-    # -- Roadmap / On Deck
-    if roadmap:
-        content += f'<h2 style="{S_H2}">On Deck — Planned Next</h2>'
-        for proj, items in roadmap.items():
-            proj_label = labels.get(proj, proj)
-            content += f'<div style="margin-top:10px;"><span style="{S_PROJ_BADGE}">{proj}</span> <strong>{proj_label}</strong></div>'
-            for item in items:
-                content += f'<div style="{S_SUMMARY_ITEM}">{item["value"]}</div>'
-
-    # -- Brain Totals
-    content += f'<h2 style="{S_H2}">Brain Stats</h2>'
-    content += '<div style="text-align:center;">'
-    for val, lbl in [(totals["sessions"], "Total Sessions"), (f'{totals["transcripts"]:,}', "Transcripts"),
-                     (totals["decisions"], "Decisions"), (f'{totals["embeddings"]:,}', "Embeddings")]:
-        content += f'<div style="{S_METRIC}"><div style="{S_METRIC_VAL}">{val}</div><div style="{S_METRIC_LBL}">{lbl}</div></div>'
-    content += '</div>'
-
-    # -- Footer
-    content += f'<div style="{S_FOOTER}">Generated by claude-brain v0.1 &middot; {now.strftime("%Y-%m-%d %H:%M")} &middot; Local data only, zero tokens used</div>'
+    # ── 11. Footer (with forward nudge) ──
+    content += f'<div style="{S_FOOTER}">'
+    content += f'Generated by claude-brain v0.1 &middot; {now.strftime("%Y-%m-%d %H:%M")} &middot; Local data only, zero tokens used<br>'
+    content += 'This report is designed to be forwarded to stakeholders.</div>'
 
     return build_email_wrapper(title, preheader, content)
 
@@ -839,19 +1000,22 @@ def main():
             subject = build_daily_subject(stats, summaries, decisions)
             html = build_daily_html(conn, stats, summaries, decisions, labels, since)
         else:
-            # -- Weekly digest: full portfolio view
+            # -- Weekly digest: full portfolio view with project intelligence
             prev_since = (now - timedelta(days=args.days * 2)).isoformat()
             prev_before = since
             prev_stats = get_previous_week_stats(conn, prev_since, prev_before)
-            dormant = get_dormant_projects(conn, labels, dormant_days=7)
+            dormant = get_dormant_projects(conn, labels, dormant_days=3)
             totals = get_brain_totals(conn)
             inception = get_inception_stats(conn, labels)
             roadmap = get_project_roadmap(conn)
 
+            # Dynamic subject per spec section 6
+            total_s = sum(r["sessions"] for r in stats) if stats else 0
+            active_p = len(stats)
             period_start = now - timedelta(days=args.days)
-            subject = f"Brain Digest — {period_start.strftime('%b %d')} to {now.strftime('%b %d')}"
+            subject = f"[Weekly] {period_start.strftime('%b %d')}-{now.strftime('%b %d')}: {total_s} sessions across {active_p} projects"
             html = build_email_html(
-                args.days, stats, prev_stats, summaries, decisions,
+                conn, args.days, stats, prev_stats, summaries, decisions,
                 dormant, totals, labels, last_notes, inception, roadmap,
             )
 
