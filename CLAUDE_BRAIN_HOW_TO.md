@@ -14,6 +14,7 @@
 6. [Example Queries — What to Type in Claude Code](#6-example-queries)
 7. [Importing Claude.ai Conversations](#7-importing-claudeai-conversations)
 8. [Running Status and Health Checks](#8-status-and-health-checks)
+8.5. [Email Digests — Setup, Templates, Examples](#85-email-digests)
 9. [How Data Gets Into the Brain](#9-how-data-gets-into-the-brain)
 10. [Adding a New Project](#10-adding-a-new-project)
 11. [Troubleshooting](#11-troubleshooting)
@@ -94,13 +95,11 @@ get answers from your own history. Here are real things you can ask:
 "Find every time I had to redo something — what caused it?"
 ```
 
-**Proactive email digests** (scheduled summaries delivered to your inbox):
+**Proactive email digests** — the brain reaches out to YOU (see Section 8.5):
 ```
-Daily:   "Here's what you worked on yesterday across all projects"
-Weekly:  "3 projects active, 5 decisions made, 2 projects dormant for 14+ days"
-Stalled: "Your recipe-app project hasn't been touched in 3 weeks — pick it back up?"
-Patterns: "You've had 4 frustrated sessions this week — all during late-night coding"
-Digest:  "Across 12 sessions this week, here are the key decisions and next steps"
+Daily:   Per-project "Pick Up Here" + blockers + accomplishments at 8am
+Weekly:  Executive summary, RAG portfolio, trends, dormant alerts — forwardable
+Project: Full status report for one project — health, risks, decisions, architecture
 ```
 
 **Personal profile queries:**
@@ -743,6 +742,99 @@ increased. If hooks are firing, every exchange adds to the database.
 ### Check Backup
 The brain backs up automatically at session end. Backups rotate (bak1, bak2, bak3).
 Location: `db-backup/claude-brain.db.bak1`
+
+---
+
+## 8.5. EMAIL DIGESTS
+
+The brain can email you proactive status reports — daily, weekly, or per-project. No other AI memory tool does this. Schedule via cron and forget.
+
+### Setup
+
+**1. Gmail App Password (required):**
+1. Go to myaccount.google.com → Security → 2-Step Verification (must be ON)
+2. At the bottom of the 2-Step page, click "App passwords"
+3. Create one for "Mail" on "Other (custom name)" → name it "claude-brain"
+4. Copy the 16-character password
+5. Add to your config.yaml:
+
+```yaml
+email:
+  enabled: true
+  from_address: "your-email@gmail.com"
+  to_address: "your-email@gmail.com"
+  gmail_app_password: "xxxx xxxx xxxx xxxx"
+```
+
+**2. Test it works:**
+```bash
+python3 scripts/brain_digest.py --test          # Test SMTP connection
+python3 scripts/brain_digest.py --daily --dry-run   # Preview daily (no send)
+python3 scripts/brain_digest.py --dry-run       # Preview weekly (no send)
+```
+
+**3. Schedule via cron (crontab -e):**
+```
+# Daily standup — weekdays at 8am
+0 8 * * 1-5 /usr/bin/python3 /path/to/scripts/brain_digest.py --daily >> ~/claude-brain-local/digest.log 2>&1
+
+# Weekly digest — Monday at 8am
+0 8 * * 1 /usr/bin/python3 /path/to/scripts/brain_digest.py >> ~/claude-brain-local/digest.log 2>&1
+```
+
+Or run `python3 scripts/brain-setup.py` — it offers to configure email and install cron for you.
+
+### Three Templates
+
+**Daily Standup** (`--daily`) — 150-250 words, fits one screen:
+- BLUF summary: "10 sessions across 2 projects yesterday"
+- Per-project blocks: RAG health badge, "Pick Up Here" (from project next steps), blockers (red), in-progress
+- Decisions made (if any)
+- Quiet projects (no activity yesterday, with last session date)
+- Metrics with 7-day rolling average comparison
+- Subject: `[brain] Daily: 10 sessions, 5,419 msgs | Mar 12`
+
+**Weekly Digest** (default, no flag) — 300-500 words, forwardable:
+- Executive summary BLUF: "This week you logged 47 sessions... All projects on track."
+- Week-over-week trend table (sessions/messages/decisions + delta %)
+- Project portfolio with RAG health, status (Active/Paused), 1-line context, trend arrows
+- Top accomplishments extracted from session notes
+- Dormant project alerts (amber, with next steps)
+- Decisions, last session notes, roadmap, brain stats, inception-to-date
+- Subject: `[Weekly] Mar 05-Mar 12: 47 sessions across 1 projects`
+
+**Project Deep Dive** (`--project mb`) — 500-800 words, full status report:
+- RAG health badge header + project stats (since date, total sessions)
+- Executive summary (from project summary in database)
+- Health metrics: sessions (7d with trend), messages, decisions, summary freshness
+- In Progress, Risks & Blockers, Next Steps (all from project summary)
+- Recent sessions (last 5-7 with topics)
+- Key decisions (last 10)
+- Architecture snapshot
+- Subject: `[mb] Status: ON TRACK — Personal memory system for Claude Code | Mar 12`
+
+### Example Output (Daily Standup)
+
+```
+Subject: [brain] Daily: 3 sessions, 892 msgs | Mar 12
+
+Daily Standup — Wednesday, Mar 12
+
+3 sessions across 2 projects yesterday (myapp, api-service) with 892 messages.
+
+[ON TRACK] myapp
+  Pick Up Here: Implement rate limiting on /api/upload endpoint
+  In Progress: Auth refactor (80%), rate limiting (not started)
+  Yesterday (2 sessions): Auth middleware refactor · API endpoint tests
+
+[AT RISK] api-service
+  Pick Up Here: Fix flaky CI tests blocking deploy
+  Blockers: CI pipeline fails intermittently on integration tests
+  Yesterday (1 session): Investigated CI timeout issue
+
+No Activity Yesterday:
+  docs — last session Mar 8
+```
 
 ---
 

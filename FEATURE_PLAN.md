@@ -385,10 +385,10 @@ into a structured project status report. This email is the "forward to your mana
   - [x] 3.E4b — brain-setup.py offers to install weekly cron: `0 8 * * 1 ...`
   - [x] 3.E4c — brain_digest.py docstring updated with all cron examples
 
-- [ ] **3.E5 — Update documentation**
-  - [ ] 3.E5a — README.md: add Email Digests section with all 3 templates + use cases
-  - [ ] 3.E5b — CLAUDE_BRAIN_HOW_TO.md: email setup (Gmail app password, cron, examples)
-  - [ ] 3.E5c — Include example email output per template
+- [x] **3.E5 — Update documentation** (DONE session 36)
+  - [x] 3.E5a — README.md: 3-template table + 10 use cases (done in E1)
+  - [x] 3.E5b — HOW_TO: new section 8.5 — Gmail setup, test commands, cron, all 3 templates described, subject line examples
+  - [x] 3.E5c — Example daily output in HOW_TO showing per-project RAG, Pick Up Here, Blockers, Quiet projects
 
 #### PHASE F: Quality & Ship
 
