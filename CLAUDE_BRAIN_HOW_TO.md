@@ -16,7 +16,7 @@
 8. [Running Status and Health Checks](#8-status-and-health-checks)
 8.5. [**Email Digests** - The brain emails YOU (no other tool does this)](#85-email-digests)
 9. [How Data Gets Into the Brain](#9-how-data-gets-into-the-brain)
-10. [Adding a New Project](#10-adding-a-new-project)
+10. [Multi-Project Workflow](#10-multi-project-workflow)
 11. [Troubleshooting](#11-troubleshooting)
 12. [What the Brain Cannot Do (Yet)](#12-limitations)
 
@@ -873,32 +873,42 @@ No Activity Yesterday:
 
 ---
 
-## 10. ADDING A NEW PROJECT
+## 10. MULTI-PROJECT WORKFLOW
 
-To add a new project to the brain:
+claude-brain is designed to work across multiple projects. Each project gets its own folder inside the claude-brain directory, and Claude has full memory access from any of them.
 
-### The Easy Way (recommended)
+### How It Works
 
-Run the setup script again - it's safe to re-run anytime:
+When you open Claude Code in any project folder (e.g., `claude-brain/my-website/`), three things happen automatically:
+
+1. **Hooks fire** -- the session-start hook loads your last session notes, flags unfinished items, and injects a checklist. The user-prompt-submit hook searches your brain for relevant memories on every message.
+2. **MCP tools are available** -- Claude can search transcripts, look up decisions, check project state, and query your profile from any project folder.
+3. **CLAUDE.md loads** -- each project folder has its own CLAUDE.md with project-specific instructions plus brain connection rules.
+
+You don't need to do anything special. Just `cd` into a project folder and run `claude`. The brain is there.
+
+### Adding a New Project
+
+Use the standalone add-project script (no need to re-run the full setup):
+
+```bash
+python3 scripts/add-project.py
+```
+
+The script will:
+1. Read your existing config.yaml (won't duplicate projects)
+2. Ask for folder name, prefix, and label
+3. Create the project folder with a CLAUDE.md (includes session protocols)
+4. Update config.yaml with the new project
+5. Register the project in the database (project_registry table)
+6. Register the brain-server MCP so Claude can access the brain from that folder
+7. Detect other MCP servers on your root path (like web search) and offer to register them too
+
+Alternatively, re-run the full setup script -- it's safe to run anytime:
 
 ```bash
 python3 scripts/brain-setup.py
 ```
-
-The script will:
-1. Detect your existing projects (won't duplicate them)
-2. Ask if you want to add a new project
-3. Prompt for three things:
-   - **Folder name** - lowercase with hyphens (e.g., `my-website`)
-   - **Prefix** - 2-3 letter shortcode (e.g., `mw`)
-   - **Label** - human-readable name (e.g., `My Website Project`)
-4. Create the project folder
-5. Create a CLAUDE.md file inside it (tells Claude how to use the brain from that folder)
-6. Update your config.yaml
-7. Register the project in the database
-8. Register the MCP server so Claude can access the brain from that folder
-
-After it finishes, open Claude Code in your new project folder and the brain is ready.
 
 ### Naming Rules
 
@@ -908,11 +918,52 @@ After it finishes, open Claude Code in your new project folder and the brain is 
 | Prefix | Lowercase, 2-3 characters | `mw`, `bk`, `gen` |
 | Label | Plain English, any format | `My Website`, `Book Project` |
 
+### What CLAUDE.md Does in Each Project Folder
+
+Every project folder has a CLAUDE.md that Claude Code auto-loads at session start. It contains:
+
+- **Project identity** -- name, prefix, label
+- **Brain connection** -- tells Claude the MCP tools exist and how to use them
+- **Session protocols** -- start-session and end-session checklists (see below)
+- **Project-specific rules** -- anything unique to that project
+
+This is what makes the brain work across projects. Without CLAUDE.md, Claude doesn't know the brain exists in that folder.
+
+### Session Protocols (Start and End)
+
+Session protocols keep your brain accurate and your context continuous across sessions.
+
+**Start-session protocol** (runs automatically via hook + CLAUDE.md instructions):
+- Hook injects last session notes, unfinished items, and a verification checklist
+- Claude searches the brain for recent context
+- Claude reads the project tracker (if applicable)
+- Claude presents unfinished items for you to review before starting new work
+
+**End-session protocol** (triggered when you say "end session"):
+- Session notes are written to the database
+- Project summary is updated
+- Governance files are updated (tracker, feature plan)
+- You're asked: "Anything you want Claude to know next session?"
+- Your answer is saved to NEXT_SESSION.md (see below)
+- Changes are committed and pushed
+
+Without the end protocol, session notes never get written and tomorrow's Claude starts from scratch. Without the start protocol, Claude skips context it already has. Both matter.
+
+### NEXT_SESSION.md (Cross-Session Memory)
+
+NEXT_SESSION.md is how you pass messages to your next session with zero friction:
+
+1. At end of session, Claude asks: "Anything you want Claude to know next session?"
+2. Your answer (plus a session summary) is written to NEXT_SESSION.md in the project folder
+3. Next session, the session-start hook reads NEXT_SESSION.md automatically and injects it into Claude's context
+
+You never have to type "read the notes file" or paste anything. The hook handles it. The file is gitignored (it's personal context, not code).
+
 ### The Manual Way (advanced)
 
-If you prefer to do it yourself:
+If you prefer to add a project without the script:
 
-1. **Edit `config.yaml`** - add entries under `projects:` and `jsonl_project_mapping:`:
+1. **Edit `config.yaml`** -- add entries under `projects:` and `jsonl_project_mapping:`:
    ```yaml
    projects:
      - folder_name: "my-website"
@@ -928,15 +979,16 @@ If you prefer to do it yourself:
    mkdir my-website
    ```
 
-3. **Create a CLAUDE.md** inside the new folder - copy from an existing project
-   folder and update the project name, prefix, and label.
+3. **Create a CLAUDE.md** inside the new folder -- copy from an existing project
+   folder and update the project name, prefix, and label. Include the session
+   protocol checklist tables.
 
 4. **Register MCP** so Claude can access the brain from this folder:
    ```bash
    claude mcp add brain-server python3 /path/to/claude-brain/mcp/server.py
    ```
 
-5. **Restart Claude Code** - the startup hook will register the new project automatically.
+5. **Restart Claude Code** -- the startup hook will register the new project automatically.
 
 ---
 
