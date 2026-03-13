@@ -62,9 +62,11 @@ When Mike says "end session" (or similar: "wrap up", "done for today", "close it
    `python3 scripts/write_project_summary.py --prefix <prefix> --summary "<text>"`
    Rewrite the FULL summary reflecting current state - not a patch, a complete rewrite.
 3. Update MEMORY.md LAST SESSION section as backup.
-4. Update governance files: PROJECT_TRACKER.md, FEATURE_PLAN.md, NEXT_SESSION_START_PROMPT.txt.
-5. Git commit + push all changes.
-6. Output verified checklist table. EVERY row must show ✓ DONE:
+4. Update governance files: PROJECT_TRACKER.md, FEATURE_PLAN.md as needed.
+5. Ask Mike: **"Anything you want Claude to know next session?"**
+6. Write NEXT_SESSION.md with session summary + Mike's answer (hook reads this automatically next session).
+7. Git commit + push all changes.
+8. Output verified checklist table. EVERY row must show ✓ DONE:
 
 ```
 ┌─────────────────────────────┬──────────┐
@@ -77,6 +79,8 @@ When Mike says "end session" (or similar: "wrap up", "done for today", "close it
 │ MEMORY.md updated           │ ✓ DONE   │
 ├─────────────────────────────┼──────────┤
 │ Governance files updated    │ ✓ DONE   │
+├─────────────────────────────┼──────────┤
+│ NEXT_SESSION.md written     │ ✓ DONE   │
 ├─────────────────────────────┼──────────┤
 │ Git committed + pushed      │ ✓ DONE   │
 └─────────────────────────────┴──────────┘
