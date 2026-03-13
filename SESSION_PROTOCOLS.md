@@ -7,19 +7,34 @@ Primary source: brain database (brain_preferences table).
 
 ## SESSION START PROTOCOL
 
-Do this EVERY session:
+Do this EVERY session. Output the checklist table BEFORE doing anything else.
 
-1. Read PROJECT_TRACKER.md FIRST - know where we are before doing anything
-2. Read CLAUDE_BRAIN_MVP_PLAN.txt (root) - the MASTER PROJECT PLAN with full architecture
-3. Check BUILD-PHASE DECISIONS section in tracker for recent decisions
-4. Check OPEN ITEMS in tracker for unresolved blockers
-5. Review the session-start hook output - it injects a verification checklist, last session notes, and flagged unfinished items automatically. Do NOT skip these.
-6. If picking up unfinished work: VERIFY the premise independently before acting. Reproduce the problem. Identify which component is actually failing. Never trust prior notes blindly.
-7. Query brain MCP tools for full context - use search_transcripts, get_recent_summaries, or search_semantic as needed. Do this EVERY session, not just after gaps.
-8. Confirm current step with Mike before starting work
-9. Never re-ask locked decisions - they're in the tracker and MVP plan
-10. Never start coding without Mike's GO
-11. When Mike says "start session" or opens with a task, follow this protocol then confirm ready with a brief status line: "MEMORY.md loaded. Last session: [one-line summary]. Tracker read. Current step: [phase/step]. Ready." - do not recite the full protocol, just this confirmation.
+1. Search the brain (search_transcripts + get_recent_summaries) AND web (Exa).
+2. Read PROJECT_TRACKER.md - know where we are.
+3. Review session-start hook output - it injects a verification checklist, last session notes, and flagged unfinished items automatically. Do NOT skip these.
+4. If picking up unfinished work: VERIFY the premise independently before acting. Reproduce the problem. Identify which component is actually failing. Never trust prior notes blindly.
+5. Never re-ask locked decisions. Never start coding without Mike's GO.
+6. Output this verified checklist (EVERY item must show DONE):
+
+```
+┌─────────────────────────────────────┬──────────┐
+│ Start-Session Checklist             │ Status   │
+├─────────────────────────────────────┼──────────┤
+│ Brain searched                      │ ✓ DONE   │
+├─────────────────────────────────────┼──────────┤
+│ Exa web searched                    │ ✓ DONE   │
+├─────────────────────────────────────┼──────────┤
+│ PROJECT_TRACKER.md read             │ ✓ DONE   │
+├─────────────────────────────────────┼──────────┤
+│ Session-start hook output reviewed  │ ✓ DONE   │
+├─────────────────────────────────────┼──────────┤
+│ Unfinished items verified           │ ✓ DONE   │
+└─────────────────────────────────────┴──────────┘
+```
+
+7. Confirm ready: "MEMORY.md loaded. Brain searched. Last session: [summary]. Tracker read. Current step: [step]. Ready."
+
+If ANY row shows ✗ MISSING, STOP and fix it before proceeding.
 
 ### Hook-Enforced Behaviors (automated, non-negotiable)
 

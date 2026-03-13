@@ -1,29 +1,32 @@
 cat > ~/bin/cc << 'SCRIPT'
 #!/bin/bash
 
-# Claude Code launcher with auto-session logging + live token monitor
+# Claude Code launcher with auto-session logging + token monitor
 # Logs saved to: ~/Dropbox/Documents/AI/Claude/claude-brain/chat-logs/
-# Token usage shown in Zed terminal tab title (updates every 10 seconds)
+# Token usage: desktop notifications at 25%, 50%, 70%, 80%, 90%+
 
 LOGDIR="$HOME/Dropbox/Documents/AI/Claude/claude-brain/chat-logs"
 PROJECT="$(basename "$PWD")"
 mkdir -p "$LOGDIR/$PROJECT"
 
 # ---------------------------------------------------------------------------
-# Token monitor - live token usage in terminal title + desktop notifications
+# Token monitor - desktop notifications only (Zed terminal doesn't support OSC)
 #
 # Reads Claude Code debug log (effectiveWindow is dynamic - works for both
 # 200K Max and 1M Bedrock automatically). Zero API tokens.
 #
-# Warning zones:
-#   Normal  (< 70%)  - title shows usage quietly
-#   Warm    (70-80%)  - title adds ⚠, ONE yellow desktop popup
-#   Hot     (80-90%)  - title adds 🔴, red popup every 60s
-#   Critical(> 90% or free < 30K) - title shows END SESSION, red popup every 60s
+# Notification thresholds (one popup each, except critical which repeats):
+#   25%  - informational
+#   50%  - halfway
+#   70%  - past halfway, be aware
+#   80%  - start wrapping up
+#   90%+ or free < 30K - END SESSION NOW, repeats every 60s
 #
 # End-session reserve: ~25K tokens needed for notes + summary + governance + git
 # ---------------------------------------------------------------------------
 END_SESSION_RESERVE=30000
+WARNED_25=0
+WARNED_50=0
 WARNED_70=0
 WARNED_80=0
 LAST_CRITICAL_NOTIFY=0
@@ -57,9 +60,6 @@ monitor_tokens() {
 
                     # ── Critical: > 90% OR free < end-session reserve ──
                     if [ "$PCT" -ge 90 ] || [ "$FREE" -lt "$END_SESSION_RESERVE" ]; then
-                        printf '\033]2;🔴 END SESSION NOW - %dK free - %s\007' \
-                            "$FREE_K" "$PROJECT"
-                        # Red popup every 60 seconds
                         if [ "$((NOW - LAST_CRITICAL_NOTIFY))" -ge 60 ]; then
                             notify-send --urgency=critical \
                                 "🔴 END SESSION NOW" \
@@ -70,8 +70,6 @@ monitor_tokens() {
 
                     # ── Hot: 80-90% ──
                     elif [ "$PCT" -ge 80 ]; then
-                        printf '\033]2;🔴 %s - %dK / %dK (%d%%) - %dK free - END SOON\007' \
-                            "$PROJECT" "$TOKENS_K" "$USABLE_K" "$PCT" "$FREE_K"
                         if [ "$WARNED_80" -eq 0 ]; then
                             notify-send --urgency=critical \
                                 "🔴 Token Warning - 80%" \
@@ -82,20 +80,33 @@ monitor_tokens() {
 
                     # ── Warm: 70-80% ──
                     elif [ "$PCT" -ge 70 ]; then
-                        printf '\033]2;⚠ %s - %dK / %dK (%d%%) - %dK free\007' \
-                            "$PROJECT" "$TOKENS_K" "$USABLE_K" "$PCT" "$FREE_K"
                         if [ "$WARNED_70" -eq 0 ]; then
                             notify-send --urgency=normal \
                                 "⚠ Token Usage - 70%" \
-                                "${TOKENS_K}K / ${USABLE_K}K used (${PCT}%)\n${FREE_K}K remaining\nPlenty of room, but be aware" \
+                                "${TOKENS_K}K / ${USABLE_K}K used (${PCT}%)\n${FREE_K}K remaining\nPast halfway - be aware" \
                                 2>/dev/null
                             WARNED_70=1
                         fi
 
-                    # ── Normal: < 70% ──
-                    else
-                        printf '\033]2;%s - %dK / %dK (%d%%) - %dK free\007' \
-                            "$PROJECT" "$TOKENS_K" "$USABLE_K" "$PCT" "$FREE_K"
+                    # ── Half: 50-70% ──
+                    elif [ "$PCT" -ge 50 ]; then
+                        if [ "$WARNED_50" -eq 0 ]; then
+                            notify-send --urgency=normal \
+                                "📊 Token Usage - 50%" \
+                                "${TOKENS_K}K / ${USABLE_K}K used (${PCT}%)\n${FREE_K}K remaining\nHalfway through context window" \
+                                2>/dev/null
+                            WARNED_50=1
+                        fi
+
+                    # ── Quarter: 25-50% ──
+                    elif [ "$PCT" -ge 25 ]; then
+                        if [ "$WARNED_25" -eq 0 ]; then
+                            notify-send --urgency=low \
+                                "📊 Token Usage - 25%" \
+                                "${TOKENS_K}K / ${USABLE_K}K used (${PCT}%)\n${FREE_K}K remaining" \
+                                2>/dev/null
+                            WARNED_25=1
+                        fi
                     fi
                 fi
             fi
@@ -119,7 +130,7 @@ case $MODE_CHOICE in
         echo ""
         echo "  Starting Claude Code (Subscription + High Thinking)..."
         echo "  Session log: $LOGFILE"
-        echo "  Token usage: watch your Zed terminal tab title"
+        echo "  Token usage: desktop notifications at 25%, 50%, 70%, 80%, 90%"
         echo ""
         monitor_tokens &
         MONITOR_PID=$!
@@ -128,7 +139,6 @@ case $MODE_CHOICE in
         MAX_THINKING_TOKENS=31999 \
         command claude --debug --dangerously-skip-permissions'
         kill $MONITOR_PID 2>/dev/null
-        printf '\033]2;\007'
         echo ""
         echo "  Session saved to: $LOGFILE"
         ;;
@@ -137,7 +147,7 @@ case $MODE_CHOICE in
         echo ""
         echo "  Starting Claude Code (OpenRouter + High Thinking)..."
         echo "  Session log: $LOGFILE"
-        echo "  Token usage: watch your Zed terminal tab title"
+        echo "  Token usage: desktop notifications at 25%, 50%, 70%, 80%, 90%"
         echo ""
         monitor_tokens &
         MONITOR_PID=$!
@@ -154,7 +164,6 @@ case $MODE_CHOICE in
         OPENROUTER_HEADERS='"'"'{"extra_body": {"cache_control": {"type": "ephemeral", "ttl": "1h"}}}'"'"' \
         command claude --debug --dangerously-skip-permissions'
         kill $MONITOR_PID 2>/dev/null
-        printf '\033]2;\007'
         echo ""
         echo "  Session saved to: $LOGFILE"
         ;;
@@ -163,7 +172,7 @@ case $MODE_CHOICE in
         echo ""
         echo "  Starting Claude Code (Amazon Bedrock)..."
         echo "  Session log: $LOGFILE"
-        echo "  Token usage: watch your Zed terminal tab title"
+        echo "  Token usage: desktop notifications at 25%, 50%, 70%, 80%, 90%"
         echo ""
         monitor_tokens &
         MONITOR_PID=$!
@@ -177,7 +186,6 @@ case $MODE_CHOICE in
         MAX_THINKING_TOKENS=31999 \
         command claude --debug --dangerously-skip-permissions'
         kill $MONITOR_PID 2>/dev/null
-        printf '\033]2;\007'
         echo ""
         echo "  Session saved to: $LOGFILE"
         ;;

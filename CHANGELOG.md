@@ -27,7 +27,7 @@ All notable changes to claude-brain.
 - **Rule #1 expanded** - brain search + Exa web search before all work.
 - **End-session verified checklist** - table with solid lines, every row must show DONE.
 - **`CLAUDE.md.example`** - generic version for new users (brain-first rule included).
-- **Token monitor** - `cc-updated.sh` with terminal title bar usage + desktop popups at 70/80/90%.
+- **Token monitor** - `cc-updated.sh` with desktop notifications at 25/50/70/80/90% thresholds.
 - **Office skills** - docx, xlsx, pdf, pptx skills installed from tfriedel/claude-office-skills.
 - **Exa MCP** - web search registered for Claude Code.
 
