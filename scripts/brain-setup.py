@@ -839,15 +839,15 @@ def phase_config(cfg):
             (last session notes, NEXT_SESSION.md, recent summaries). Before responding to the user:
             1. Search the brain: search_transcripts + get_recent_summaries for project '{p['prefix']}'
             2. Review the injected context (last session notes, NEXT_SESSION.md if present)
-            3. Confirm where we left off
+            3. SHOW unfinished items and next-session notes to the user prominently (they must SEE and react)
             4. Output this checklist (every row must show DONE):
 
             | Start-Session Checklist              | Status   |
             |--------------------------------------|----------|
             | Brain searched                       | DONE     |
             | Last session notes reviewed          | DONE     |
-            | NEXT_SESSION.md loaded (if exists)   | DONE     |
-            | Confirmed where we left off          | DONE     |
+            | Unfinished items SHOWN to user       | DONE     |
+            | Next-session notes SHOWN to user     | DONE     |
 
             If any row cannot show DONE, stop and fix it before proceeding.
 

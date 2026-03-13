@@ -9,12 +9,13 @@ Primary source: brain database (brain_preferences table).
 
 Do this EVERY session. Output the checklist table BEFORE doing anything else.
 
-1. Search the brain (search_transcripts + get_recent_summaries) AND web (Exa).
+1. Search the brain (search_transcripts + get_recent_summaries).
 2. Read PROJECT_TRACKER.md - know where we are.
 3. Review session-start hook output - it injects a verification checklist, last session notes, and flagged unfinished items automatically. Do NOT skip these.
 4. If picking up unfinished work: VERIFY the premise independently before acting. Reproduce the problem. Identify which component is actually failing. Never trust prior notes blindly.
-5. Never re-ask locked decisions. Never start coding without Mike's GO.
-6. Output this verified checklist (EVERY item must show DONE):
+5. **PRESENT unfinished items and NEXT_SESSION.md notes to the user prominently.** They need to SEE and react to them -- not just a checkmark.
+6. Never re-ask locked decisions. Never start coding without Mike's GO.
+7. Output this verified checklist (EVERY item must show DONE):
 
 ```
 ┌─────────────────────────────────────┬──────────┐
@@ -22,17 +23,17 @@ Do this EVERY session. Output the checklist table BEFORE doing anything else.
 ├─────────────────────────────────────┼──────────┤
 │ Brain searched                      │ ✓ DONE   │
 ├─────────────────────────────────────┼──────────┤
-│ Exa web searched                    │ ✓ DONE   │
-├─────────────────────────────────────┼──────────┤
 │ PROJECT_TRACKER.md read             │ ✓ DONE   │
 ├─────────────────────────────────────┼──────────┤
 │ Session-start hook output reviewed  │ ✓ DONE   │
 ├─────────────────────────────────────┼──────────┤
-│ Unfinished items verified           │ ✓ DONE   │
+│ Unfinished items SHOWN to user      │ ✓ DONE   │
+├─────────────────────────────────────┼──────────┤
+│ Next-session notes SHOWN to user    │ ✓ DONE   │
 └─────────────────────────────────────┴──────────┘
 ```
 
-7. Confirm ready: "MEMORY.md loaded. Brain searched. Last session: [summary]. Tracker read. Current step: [step]. Ready."
+8. Confirm ready: "MEMORY.md loaded. Brain searched. Last session: [summary]. Tracker read. Current step: [step]. Ready."
 
 If ANY row shows ✗ MISSING, STOP and fix it before proceeding.
 
