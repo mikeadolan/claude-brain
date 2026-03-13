@@ -248,7 +248,7 @@ The setup script asks whether you want "synced" or "local" mode.
 
 Claude.ai conversations aren't captured by hooks. To import them:
 
-1. Install the [AI Chat Exporter](https://chromewebstore.google.com/detail/ai-chat-exporter/) Chrome extension
+1. Install the [AI Chat Exporter](https://chromewebstore.google.com/detail/claude-exporter-save-clau/elhmfakncmnghlnabnolalcjkdpfjnin) Chrome extension
 2. Open a conversation on claude.ai, click the extension icon
 3. Export settings: **JSON** format, **Chats** and **Metadata** checked, everything else unchecked
 4. Save the `.json` file to your `imports/` folder

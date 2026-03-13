@@ -130,7 +130,7 @@ def phase_preflight():
             ok(f"Claude Code found at {claude_path}")
     else:
         fail("Claude Code not installed")
-        info("  Install: https://docs.anthropic.com/en/docs/claude-code/overview")
+        info("  Install: https://code.claude.com/docs/en/overview")
         errors.append("Claude Code not found")
 
     # pip
@@ -1392,10 +1392,9 @@ def phase_health_check(cfg):
      your conversation history into the brain.
 
      Step 1 - Install the Chrome extension:
-       Open Chrome and go to the Chrome Web Store:
-         https://chromewebstore.google.com
-       Search for "AI Chat Exporter" (by Ankit Maity).
-       It's a free extension with a blue download icon.
+       Open Chrome and go to:
+         https://chromewebstore.google.com/detail/claude-exporter-save-clau/elhmfakncmnghlnabnolalcjkdpfjnin
+       Or search the Chrome Web Store for "AI Chat Exporter".
        Click "Add to Chrome" and confirm the install.
        You'll see a small icon appear in your browser toolbar.
 
