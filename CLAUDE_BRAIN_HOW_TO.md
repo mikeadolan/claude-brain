@@ -877,15 +877,66 @@ No Activity Yesterday:
 
 claude-brain is designed to work across multiple projects. Each project gets its own folder inside the claude-brain directory, and Claude has full memory access from any of them.
 
-### How It Works
+### Starting a Session in Any Project
 
-When you open Claude Code in any project folder (e.g., `claude-brain/my-website/`), three things happen automatically:
+This is the core workflow. Once a project is set up (see "Adding a New Project" below), here's exactly how to use it:
 
-1. **Hooks fire** -- the session-start hook loads your last session notes, flags unfinished items, and injects a checklist. The user-prompt-submit hook searches your brain for relevant memories on every message.
-2. **MCP tools are available** -- Claude can search transcripts, look up decisions, check project state, and query your profile from any project folder.
-3. **CLAUDE.md loads** -- each project folder has its own CLAUDE.md with project-specific instructions plus brain connection rules.
+**From the terminal:**
 
-You don't need to do anything special. Just `cd` into a project folder and run `claude`. The brain is there.
+```bash
+# 1. Navigate to your project folder
+cd ~/Dropbox/Documents/AI/Claude/claude-brain/my-website/
+
+# 2. Launch Claude Code
+claude
+
+# 3. That's it. The brain is live. Just start talking.
+```
+
+**From a code editor (VS Code, Zed, Cursor, etc.):**
+
+1. Open your editor
+2. Open the project folder (File > Open Folder, then pick `claude-brain/my-website/`)
+3. Open the built-in terminal (usually Ctrl+` or View > Terminal)
+4. Type `claude` and press Enter
+5. The brain is live. Start working.
+
+**Running multiple projects at the same time:**
+
+You can have separate Claude Code sessions running in different projects simultaneously. Each one has its own independent conversation with full brain access.
+
+1. Open a second editor window (Ctrl+Shift+N in most editors, or File > New Window)
+2. In that new window, open a different project folder (File > Open Folder)
+3. Open the terminal in that window
+4. Type `claude` and press Enter
+5. Now you have two Claude sessions, each in their own project, both with brain access
+
+Both sessions share the same database. If you make a decision in one project, Claude in the other project can find it. All sessions share your account's rate limit, so running multiple heavy sessions will use your quota faster.
+
+### What Happens Automatically When You Start a Session
+
+You don't need to configure anything or run any commands. When you type `claude` in a project folder, four things happen behind the scenes:
+
+1. **CLAUDE.md loads** -- your project folder has a file called CLAUDE.md. Claude reads this automatically at the start of every session. It contains your project name, brain connection rules, and any project-specific instructions you've added.
+
+2. **Session-start hook fires** -- a background script runs that:
+   - Reads your NEXT_SESSION.md file (if you left notes from last time)
+   - Loads your last session's notes from the database
+   - Flags any unfinished items from your previous session
+   - Injects all of this into Claude's context so it knows where you left off
+
+3. **Memory search hook activates** -- on every message you send, a background script searches your brain database for relevant past conversations and silently injects them into Claude's context. You don't see this happening, but Claude does.
+
+4. **MCP tools become available** -- Claude can search your transcripts, look up decisions, check project facts, and query your profile. It does this on its own when it needs information. You can also ask directly: "What did we decide about the database?" or "Show me sessions from last week."
+
+### What You'll See
+
+When your first session starts in a new project, Claude will:
+- Greet you and confirm it has brain access
+- Show you any notes from your last session (if any exist)
+- Be ready to search your full conversation history across all projects
+
+If something isn't working, run `/brain-health` to check all 9 diagnostic points.
 
 ### Adding a New Project
 

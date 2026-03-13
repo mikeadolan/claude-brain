@@ -87,9 +87,26 @@ cd claude-brain
 python3 scripts/brain-setup.py
 ```
 
-The setup walks you through everything - projects, database, hooks, MCP, email, health check. After setup, just use Claude Code normally. The brain works in the background.
+The setup walks you through everything - projects, database, hooks, MCP, email, health check.
 
 **Requirements:** Python 3.10+, Claude Code 2.0+, pip3.
+
+### Working in a Project
+
+After setup, each project has its own folder inside the claude-brain directory. To start working:
+
+```bash
+cd ~/path/to/claude-brain/my-website/   # go to any project folder
+claude                                   # start Claude Code -- brain is live
+```
+
+That's all you need to do. The brain works automatically in the background:
+- Your last session's notes are loaded
+- Every message you send is searched against your full history
+- Claude can query decisions, facts, and transcripts from all projects
+- Everything you discuss is captured to the database in real-time
+
+**Multiple projects at once:** Open a second terminal or editor window, navigate to a different project folder, and run `claude` again. Both sessions have independent conversations with full brain access. See `CLAUDE_BRAIN_HOW_TO.md` Section 10 for the complete multi-project workflow.
 
 ---
 
