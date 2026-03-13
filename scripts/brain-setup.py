@@ -834,14 +834,51 @@ def phase_config(cfg):
             4. Project text files in this folder
             5. Tell user: "I don't have this information"
 
+            ## SESSION START PROTOCOL
+            When a session starts, you receive automatic context from the session-start hook
+            (last session notes, NEXT_SESSION.md, recent summaries). Before responding to the user:
+            1. Search the brain: search_transcripts + get_recent_summaries for project '{p['prefix']}'
+            2. Review the injected context (last session notes, NEXT_SESSION.md if present)
+            3. Confirm where we left off
+            4. Output this checklist (every row must show DONE):
+
+            | Start-Session Checklist              | Status   |
+            |--------------------------------------|----------|
+            | Brain searched                       | DONE     |
+            | Last session notes reviewed          | DONE     |
+            | NEXT_SESSION.md loaded (if exists)   | DONE     |
+            | Confirmed where we left off          | DONE     |
+
+            If any row cannot show DONE, stop and fix it before proceeding.
+
+            ## SESSION END PROTOCOL
+            When the user says "end session" (or similar), complete ALL steps:
+            1. Write session notes to the database:
+               python3 {root}/scripts/write_session_notes.py --notes "<what was done, decisions, next steps>"
+            2. Update project summary (if significant progress):
+               python3 {root}/scripts/write_project_summary.py --prefix {p['prefix']} --summary "<current state>"
+            3. Ask the user: "Anything you want Claude to know next session?"
+            4. Write their answer (plus session summary) to NEXT_SESSION.md in this project folder
+            5. Output this checklist (every row must show DONE):
+
+            | End-Session Checklist                | Status   |
+            |--------------------------------------|----------|
+            | Session notes written to DB          | DONE     |
+            | Project summary updated              | DONE     |
+            | NEXT_SESSION.md written              | DONE     |
+
+            If any row cannot show DONE, stop and fix it before proceeding.
+
+            ## SLASH COMMANDS
+            Type these in Claude Code for direct access:
+            /brain-question, /brain-search, /brain-history, /brain-recap, /brain-decide,
+            /brain-health, /brain-status, /brain-import, /brain-questionnaire, /brain-setup,
+            /brain-export
+
             ## FILE VERSIONING
             After creating or modifying any file, run:
             python3 {root}/scripts/copy_chat_file.py \\
               [filepath] --project {p['prefix']} --session $SESSION_ID
-
-            ## SESSION END
-            Hooks handle session summary generation and database backup
-            automatically. No manual steps required.
         """)
 
         write_it = True

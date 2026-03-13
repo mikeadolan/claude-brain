@@ -31,6 +31,8 @@ DATABASE_INFO.txt
 
 # Session prompts, workflow docs, and brainstorming (personal)
 NEXT_SESSION_START_PROMPT.txt
+NEXT_SESSION.md
+**/NEXT_SESSION.md
 BRAIN_BRAINSTORMING_IDEAS.md
 DUAL_SESSION_GUIDE.txt
 SESSION_PROMPTS_REFERENCE.md

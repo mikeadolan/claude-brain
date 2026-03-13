@@ -60,6 +60,22 @@ def main():
         lines.append("- Do NOT trust prior session notes blindly - they may contain wrong assumptions")
         lines.append("")
 
+        # Read NEXT_SESSION.md from CWD if it exists
+        cwd = os.environ.get("CWD", os.getcwd())
+        next_session_path = os.path.join(cwd, "NEXT_SESSION.md")
+        if os.path.isfile(next_session_path):
+            try:
+                with open(next_session_path) as nsf:
+                    next_session_content = nsf.read().strip()
+                if next_session_content:
+                    lines.append("## Next Session Notes (from NEXT_SESSION.md)")
+                    lines.append("The previous session left these notes for you:")
+                    lines.append("")
+                    lines.append(next_session_content)
+                    lines.append("")
+            except Exception:
+                pass
+
         # Get last session notes (most valuable context for continuity)
         notes_text = None
         try:
