@@ -940,10 +940,11 @@ If something isn't working, run `/brain-health` to check all 9 diagnostic points
 
 ### Adding a New Project
 
-Use the standalone add-project script (no need to re-run the full setup):
+Use the standalone add-project script (no need to re-run the full setup). You must be in the claude-brain root folder:
 
 ```bash
-python3 scripts/add-project.py
+cd ~/path/to/claude-brain          # go to your claude-brain root folder
+python3 scripts/add-project.py     # creates a new project subfolder here
 ```
 
 The script will:
