@@ -3,7 +3,7 @@ cat > ~/bin/cc << 'SCRIPT'
 
 # Claude Code launcher with auto-session logging + live token monitor
 # Logs saved to: ~/Dropbox/Documents/AI/Claude/claude-brain/chat-logs/
-# Token usage shown in terminal title bar (updates every 10 seconds)
+# Token usage shown in Zed terminal tab title (updates every 10 seconds)
 
 LOGDIR="$HOME/Dropbox/Documents/AI/Claude/claude-brain/chat-logs"
 PROJECT="$(basename "$PWD")"
@@ -57,7 +57,7 @@ monitor_tokens() {
 
                     # ── Critical: > 90% OR free < end-session reserve ──
                     if [ "$PCT" -ge 90 ] || [ "$FREE" -lt "$END_SESSION_RESERVE" ]; then
-                        printf '\033]0;🔴 END SESSION NOW - %dK free - %s\007' \
+                        printf '\033]2;🔴 END SESSION NOW - %dK free - %s\007' \
                             "$FREE_K" "$PROJECT"
                         # Red popup every 60 seconds
                         if [ "$((NOW - LAST_CRITICAL_NOTIFY))" -ge 60 ]; then
@@ -70,7 +70,7 @@ monitor_tokens() {
 
                     # ── Hot: 80-90% ──
                     elif [ "$PCT" -ge 80 ]; then
-                        printf '\033]0;🔴 %s - %dK / %dK (%d%%) - %dK free - END SOON\007' \
+                        printf '\033]2;🔴 %s - %dK / %dK (%d%%) - %dK free - END SOON\007' \
                             "$PROJECT" "$TOKENS_K" "$USABLE_K" "$PCT" "$FREE_K"
                         if [ "$WARNED_80" -eq 0 ]; then
                             notify-send --urgency=critical \
@@ -82,7 +82,7 @@ monitor_tokens() {
 
                     # ── Warm: 70-80% ──
                     elif [ "$PCT" -ge 70 ]; then
-                        printf '\033]0;⚠ %s - %dK / %dK (%d%%) - %dK free\007' \
+                        printf '\033]2;⚠ %s - %dK / %dK (%d%%) - %dK free\007' \
                             "$PROJECT" "$TOKENS_K" "$USABLE_K" "$PCT" "$FREE_K"
                         if [ "$WARNED_70" -eq 0 ]; then
                             notify-send --urgency=normal \
@@ -94,7 +94,7 @@ monitor_tokens() {
 
                     # ── Normal: < 70% ──
                     else
-                        printf '\033]0;%s - %dK / %dK (%d%%) - %dK free\007' \
+                        printf '\033]2;%s - %dK / %dK (%d%%) - %dK free\007' \
                             "$PROJECT" "$TOKENS_K" "$USABLE_K" "$PCT" "$FREE_K"
                     fi
                 fi
@@ -119,7 +119,7 @@ case $MODE_CHOICE in
         echo ""
         echo "  Starting Claude Code (Subscription + High Thinking)..."
         echo "  Session log: $LOGFILE"
-        echo "  Token usage: watch your terminal title bar"
+        echo "  Token usage: watch your Zed terminal tab title"
         echo ""
         monitor_tokens &
         MONITOR_PID=$!
@@ -128,7 +128,7 @@ case $MODE_CHOICE in
         MAX_THINKING_TOKENS=31999 \
         command claude --debug --dangerously-skip-permissions'
         kill $MONITOR_PID 2>/dev/null
-        printf '\033]0;\007'
+        printf '\033]2;\007'
         echo ""
         echo "  Session saved to: $LOGFILE"
         ;;
@@ -137,7 +137,7 @@ case $MODE_CHOICE in
         echo ""
         echo "  Starting Claude Code (OpenRouter + High Thinking)..."
         echo "  Session log: $LOGFILE"
-        echo "  Token usage: watch your terminal title bar"
+        echo "  Token usage: watch your Zed terminal tab title"
         echo ""
         monitor_tokens &
         MONITOR_PID=$!
@@ -154,7 +154,7 @@ case $MODE_CHOICE in
         OPENROUTER_HEADERS='"'"'{"extra_body": {"cache_control": {"type": "ephemeral", "ttl": "1h"}}}'"'"' \
         command claude --debug --dangerously-skip-permissions'
         kill $MONITOR_PID 2>/dev/null
-        printf '\033]0;\007'
+        printf '\033]2;\007'
         echo ""
         echo "  Session saved to: $LOGFILE"
         ;;
@@ -163,7 +163,7 @@ case $MODE_CHOICE in
         echo ""
         echo "  Starting Claude Code (Amazon Bedrock)..."
         echo "  Session log: $LOGFILE"
-        echo "  Token usage: watch your terminal title bar"
+        echo "  Token usage: watch your Zed terminal tab title"
         echo ""
         monitor_tokens &
         MONITOR_PID=$!
@@ -177,7 +177,7 @@ case $MODE_CHOICE in
         MAX_THINKING_TOKENS=31999 \
         command claude --debug --dangerously-skip-permissions'
         kill $MONITOR_PID 2>/dev/null
-        printf '\033]0;\007'
+        printf '\033]2;\007'
         echo ""
         echo "  Session saved to: $LOGFILE"
         ;;
