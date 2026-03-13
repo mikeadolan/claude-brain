@@ -25,7 +25,7 @@ Search terms: `"brain-server" "mcp/server" "FastMCP" "mcpServers"`
 |----------|-------|
 | Code | mcp/server.py, scripts/brain-setup.py (registration), scripts/brain_health.py (health check), scripts/startup_check.py (folder check), scripts/fuzzy_search.py (comment) |
 | Config | requirements.txt, ~/.claude.json (project entries) |
-| Docs | README.md, CLAUDE_BRAIN_HOW_TO.md (Section 4), ARCHITECTURE.md, CHANGELOG.md, FEATURE_PLAN.md, FOLDER_SCHEMA.md, NEXT_SESSION_START_PROMPT.txt, PROJECT_TRACKER.md |
+| Docs | README.md, CLAUDE_BRAIN_HOW_TO.md (Section 4), ARCHITECTURE.md, CHANGELOG.md, FEATURE_PLAN.md, FOLDER_SCHEMA.md, PROJECT_TRACKER.md |
 | Routing | CLAUDE.md, CLAUDE.md.example, general/CLAUDE.md, job-search/CLAUDE.md, johnny-goods/CLAUDE.md, johnny-goods-assistant/CLAUDE.md, leg-therapy/CLAUDE.md, other/CLAUDE.md |
 | Tests | verification/SCRIPT_CONTRACTS.md, verification/TEST_SPECIFICATIONS.md |
 | External | ~/.claude.json (mcpServers entries per project) |
@@ -40,7 +40,7 @@ Search terms: `"session-start" "session-end" "user-prompt-submit" "stop.py"`
 |----------|-------|
 | Code | hooks/session-start.py, hooks/user-prompt-submit.py, hooks/stop.py, hooks/session-end.py, scripts/write_exchange.py (called by stop), scripts/brain_sync.py (called by session-end) |
 | Config | ~/.claude/settings.json (hook registration) |
-| Docs | README.md, CLAUDE_BRAIN_HOW_TO.md, ARCHITECTURE.md, SESSION_PROTOCOLS.md, NEXT_SESSION_START_PROMPT.txt, FOLDER_SCHEMA.md, MIGRATION_BASH_TO_PYTHON.md, PROJECT_TRACKER.md |
+| Docs | README.md, CLAUDE_BRAIN_HOW_TO.md, ARCHITECTURE.md, SESSION_PROTOCOLS.md, FOLDER_SCHEMA.md, MIGRATION_BASH_TO_PYTHON.md, PROJECT_TRACKER.md |
 | Tests | verification/SCRIPT_CONTRACTS.md, verification/TEST_SPECIFICATIONS.md |
 
 ---
@@ -102,7 +102,7 @@ Search terms: `"brain_health" "brain-health"`
 |----------|-------|
 | Code | scripts/brain_health.py, scripts/brain-setup.py (calls health at end) |
 | Config | commands/brain-health.md |
-| Docs | README.md, CLAUDE_BRAIN_HOW_TO.md, CHANGELOG.md, FEATURE_PLAN.md, PROJECT_TRACKER.md, NEXT_SESSION_START_PROMPT.txt, MIGRATION_BASH_TO_PYTHON.md, POST_MVP_ROADMAP.md |
+| Docs | README.md, CLAUDE_BRAIN_HOW_TO.md, CHANGELOG.md, FEATURE_PLAN.md, PROJECT_TRACKER.md, MIGRATION_BASH_TO_PYTHON.md, POST_MVP_ROADMAP.md |
 
 ---
 
