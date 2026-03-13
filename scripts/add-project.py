@@ -311,7 +311,7 @@ def main():
         conn = sqlite3.connect(db_path)
         try:
             conn.execute(
-                "INSERT OR IGNORE INTO project_registry (folder_name, prefix, label, status, health, created_at) "
+                "INSERT OR IGNORE INTO project_registry (folder_name, prefix, label, status, health, registered_at) "
                 "VALUES (?, ?, ?, 'active', 'green', ?)",
                 (name, prefix, label, now)
             )
