@@ -255,7 +255,8 @@ claude-brain works across multiple projects from a single database. Each project
 To add a new project after initial setup:
 
 ```bash
-python3 scripts/add-project.py
+cd ~/path/to/claude-brain          # must be in the claude-brain root folder
+python3 scripts/add-project.py     # creates a new project subfolder here
 ```
 
 The script creates the folder, CLAUDE.md, config entry, database registration, and MCP registration. See `CLAUDE_BRAIN_HOW_TO.md` Section 10 for the full multi-project workflow.
