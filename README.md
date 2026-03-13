@@ -215,7 +215,7 @@ claude-brain/
 │   ├── user-prompt-submit.py
 │   ├── stop.py
 │   └── session-end.py
-├── scripts/             # 22 Python scripts
+├── scripts/             # 24 Python scripts
 │   ├── brain-setup.py   # Interactive installer
 │   ├── brain_digest.py  # Email digests (daily/weekly/project)
 │   └── ...              # Query, import, health, backup scripts
@@ -228,6 +228,32 @@ claude-brain/
 ├── db-backup/           # Rotating database backups
 └── logs/                # Per-hostname log files
 ```
+
+---
+
+## Multi-Project Support
+
+claude-brain works across multiple projects from a single database. Each project gets its own folder with a CLAUDE.md file. Claude has full memory access from any of them -- search, decisions, facts, and session history all cross project boundaries.
+
+To add a new project after initial setup:
+
+```bash
+python3 scripts/add-project.py
+```
+
+The script creates the folder, CLAUDE.md, config entry, database registration, and MCP registration. See `CLAUDE_BRAIN_HOW_TO.md` Section 10 for the full multi-project workflow.
+
+---
+
+## Web Search Integration
+
+claude-brain handles local memory. For web search (current docs, error messages, best practices), add a web search MCP server alongside brain-server. Any MCP-compatible web search tool works. For example, [Exa](https://exa.ai/) provides semantic web search with 2,000 free queries/month:
+
+```bash
+claude mcp add exa-search npx -y exa-mcp-server
+```
+
+The `add-project.py` script detects web search MCPs registered on your root path and offers to register them for new projects automatically.
 
 ---
 
