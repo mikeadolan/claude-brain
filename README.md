@@ -320,5 +320,7 @@ MIT
 
 ## Contributing & Contact
 
+Created by [Mike Dolan](https://github.com/mikeadolan).
+
 - **Bug reports and feature requests:** [GitHub Issues](https://github.com/mikeadolan/claude-brain/issues)
 - **Questions and discussion:** [GitHub Discussions](https://github.com/mikeadolan/claude-brain/discussions)
