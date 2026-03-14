@@ -897,9 +897,10 @@ No Activity Yesterday:
 |--------|---------------|------|
 | Claude Code conversations | Hooks (automatic) | Every exchange, real-time |
 | Claude.ai conversations | Manual import (import_claude_ai.py) | When you export + import |
+| ChatGPT conversations | Full data export (import_chatgpt.py) | When you export from OpenAI + import |
+| Gemini conversations | Google Takeout HTML (import_gemini.py) | When you export from Google + import |
 | Your profile (facts, preferences) | Populated via scripts | During setup / manually |
-| Project facts | Populated via scripts | During setup / manually |
-| Decisions | Populated via scripts | During setup / manually |
+| Project facts and decisions | Populated via scripts | During setup / manually |
 
 ### What's Stored
 
@@ -908,9 +909,9 @@ No Activity Yesterday:
 
 | Table | What | Example rows |
 |-------|------|----------------|
-| transcripts | Every message from every session | 15,082 |
-| transcript_embeddings | Semantic search vectors (384-dim, float32) | 5,435 |
-| sys_sessions | One row per session (metadata + quality score + tags) | 121 |
+| transcripts | Every message from every session (4 sources) | 44,000+ |
+| transcript_embeddings | Semantic search vectors (384-dim, float32) | 7,500+ |
+| sys_sessions | One row per session (metadata + quality score + tags) | 1,300+ |
 | brain_facts | Everything about you (cross-project) | 98 |
 | brain_preferences | How you work (cross-project) | 41 |
 | facts | Project-specific knowledge | 145 |
