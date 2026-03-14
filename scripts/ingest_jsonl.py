@@ -325,11 +325,11 @@ def ingest_jsonl_file(conn, file_path, project, file_type, logger):
                     """INSERT OR IGNORE INTO transcripts
                        (session_id, project, uuid, parent_uuid, type, subtype, role,
                         content, model, timestamp, token_input, token_output,
-                        stop_reason, is_subagent, source_file, raw_json, created_at)
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                        stop_reason, is_subagent, source_file, raw_json, created_at, source)
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                     (session_id, project, uuid, parent_uuid, msg_type, subtype, role,
                      content, model, timestamp, token_input, token_output,
-                     stop_reason, is_subagent, file_path, raw_line, now),
+                     stop_reason, is_subagent, file_path, raw_line, now, "claude_code"),
                 )
                 if conn.total_changes > changes_before:
                     records_imported += 1
