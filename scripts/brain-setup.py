@@ -406,7 +406,9 @@ DDL_STATEMENTS = [
         message_count    INTEGER DEFAULT 0,
         created_at       TEXT,
         quality_score    INTEGER DEFAULT NULL,
-        quality_tags     TEXT DEFAULT NULL
+        quality_tags     TEXT DEFAULT NULL,
+        notes            TEXT,
+        tags             TEXT
     )""",
     """CREATE TABLE IF NOT EXISTS sys_ingest_log (
         file_path        TEXT PRIMARY KEY,
@@ -446,7 +448,8 @@ DDL_STATEMENTS = [
         is_subagent      INTEGER DEFAULT 0,
         source_file      TEXT,
         raw_json         TEXT,
-        created_at       TEXT
+        created_at       TEXT,
+        source           TEXT
     )""",
     """CREATE TABLE IF NOT EXISTS tool_results (
         id               INTEGER PRIMARY KEY AUTOINCREMENT,
