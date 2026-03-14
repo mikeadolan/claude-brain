@@ -110,7 +110,7 @@ Project: Full status report for one project - health, risks, decisions, architec
 You can search from two places:
 1. **Just ask Claude** - type a question naturally and Claude calls the right brain tool
 2. **Slash commands** - type `/brain-question`, `/brain-search`, `/brain-history`,
-   `/brain-recap`, `/brain-decide`, or any of the 11 brain commands for direct access
+   `/brain-recap`, `/brain-decide`, or any of the 13 brain commands for direct access
 
 ---
 
@@ -189,7 +189,7 @@ If Claude answers from its own context instead of checking the brain, be explici
 
 ### Way 2: Slash Commands (direct access)
 
-Type these yourself for instant, specific results. All 11 brain commands:
+Type these yourself for instant, specific results. All 13 brain commands:
 
 | Command | When to Use It | Example |
 |---------|---------------|---------|
@@ -204,6 +204,8 @@ Type these yourself for instant, specific results. All 11 brain commands:
 | `/brain-questionnaire` | Fill out or update your profile | Name, preferences, goals, working style |
 | `/brain-setup` | Re-run setup to add projects or fix config | Safe to re-run anytime |
 | `/brain-export` | Save brain data to text files | Exports profile, decisions, or search results |
+| `/brain-topics` | Browse sessions by tag | Shows tag counts, drill into "finance", "memoir", etc. |
+| `/brain-tag-review` | Batch tag review via spreadsheet | Generates xlsx, you edit tags, then update DB |
 
 ### Way 3: MCP Tools (Claude calls these - you just ask)
 
@@ -914,11 +916,11 @@ No Activity Yesterday:
 | sys_sessions | One row per session (metadata + quality score + tags) | 1,300+ |
 | brain_facts | Everything about you (cross-project) | 98 |
 | brain_preferences | How you work (cross-project) | 41 |
-| facts | Project-specific knowledge | 145 |
-| decisions | Locked decisions per project | 34 |
-| tool_results | Tool call outputs | 50 |
-| sys_ingest_log | Import tracking (prevents duplicates) | 214 |
-| project_registry | Project name-to-prefix mapping | 7 |
+| facts | Project-specific knowledge | 171 |
+| decisions | Locked decisions per project | 58 |
+| tool_results | Tool call outputs | 144 |
+| sys_ingest_log | Import tracking (prevents duplicates) | 480 |
+| project_registry | Project name-to-prefix mapping | 8 |
 
 ---
 
@@ -1177,6 +1179,8 @@ See `POST_MVP_ROADMAP.md` for the full roadmap and planned fixes.
 /brain-health      Full 9-point system diagnostic
 /brain-status      Quick database stats
 /brain-import      Import a claude.ai conversation export
+/brain-topics      Browse sessions by tag -- drill into any topic
+/brain-tag-review  Batch tag review -- generate spreadsheet, edit, update
 /brain-questionnaire   Fill out or update your profile
 /brain-setup       Re-run setup to add projects or fix config
 /brain-export      Export brain data to text files

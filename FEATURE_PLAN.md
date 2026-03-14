@@ -2,7 +2,7 @@
 
 **Created:** 2026-03-09
 **Branch backup:** `pre-feature-3-backup` (commit 88a5c6c)
-**Status:** Feature 1 COMPLETE. Feature 2 BLOCKED by Phase 8 (Architecture Merge). Next: Phase 8.
+**Status:** Feature 1 COMPLETE. Feature 2 DEFERRED. Feature 3 COMPLETE. Features 4-6 COMPLETE (Session 41: ChatGPT import, Tags/Topics, Gemini import).
 
 ---
 
