@@ -131,6 +131,38 @@ def import_export(file_path, project, root_path=None, config=None, move_on_succe
     created_at = data.get("created_at", "")
     export_model = data.get("model")
 
+    # Auto-suggest tags from conversation name + first few messages
+    tag_keywords = {
+        "book-editing": ["edit", "polish", "chapter", "manuscript", "copyedit"],
+        "memoir": ["memoir", "johnny", "goods", "maffia", "mob", "harlem", "three fingers"],
+        "job-search": ["resume", "job", "interview", "career", "hiring"],
+        "finance": ["money", "bank", "invest", "stock", "crypto", "tax"],
+        "coding": ["python", "script", "code", "programming", "api", "github"],
+        "ai-tools": ["chatgpt", "claude", "gpt", "anthropic", "gemini", "llm"],
+        "tech-setup": ["linux", "fedora", "install", "setup", "config", "terminal"],
+        "family": ["mom", "mother", "father", "wife", "daughter", "family"],
+        "health": ["doctor", "medical", "health", "therapy", "leg"],
+        "legal": ["lawyer", "legal", "court", "contract", "estate"],
+        "brain-project": ["brain", "mcp", "hook", "session", "memory", "database"],
+    }
+    tag_text = (conversation_name or "").lower()
+    # Add first few message contents for better matching
+    for msg in (chat_messages or [])[:5]:
+        if isinstance(msg, dict):
+            msg_content = ""
+            content_blocks = msg.get("content")
+            if isinstance(content_blocks, list):
+                for block in content_blocks:
+                    if isinstance(block, dict) and block.get("text"):
+                        msg_content += block["text"][:200] + " "
+            if not msg_content:
+                msg_content = msg.get("text", "")[:200]
+            tag_text += " " + msg_content.lower()
+    suggested_tags = ", ".join(
+        tag for tag, kws in tag_keywords.items()
+        if any(kw in tag_text for kw in kws)
+    )[:3 * 30]  # max 3 tags
+
     if not session_id:
         logger.error("Missing uuid in export %s", file_path)
         return {"records_imported": 0, "conversation_name": conversation_name, "exit_code": 1}
@@ -156,9 +188,10 @@ def import_export(file_path, project, root_path=None, config=None, move_on_succe
         # Create session row
         conn.execute(
             """INSERT OR IGNORE INTO sys_sessions
-               (session_id, project, started_at, model, source, created_at)
-               VALUES (?, ?, ?, ?, ?, ?)""",
-            (session_id, project, created_at, export_model, "claude_ai_import", now),
+               (session_id, project, started_at, model, source, created_at, notes, tags)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+            (session_id, project, created_at, export_model, "claude_ai_import", now,
+             f"Claude.ai import: {conversation_name}", suggested_tags),
         )
 
         # Import messages
@@ -198,11 +231,11 @@ def import_export(file_path, project, root_path=None, config=None, move_on_succe
                 """INSERT OR IGNORE INTO transcripts
                    (session_id, project, uuid, parent_uuid, type, role,
                     content, model, timestamp, is_subagent,
-                    source_file, raw_json, created_at)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    source_file, raw_json, created_at, source)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 (session_id, project, msg_uuid, parent_uuid, msg_type, role,
                  content, export_model, timestamp, 0,
-                 file_path, raw_json, now),
+                 file_path, raw_json, now, "claude_ai"),
             )
             if conn.total_changes > changes_before:
                 records_imported += 1

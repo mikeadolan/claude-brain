@@ -12,7 +12,7 @@
 4. [MCP Tools Reference](#4-mcp-tools-reference)
 5. [Session Quality & Analysis](#5-session-quality--analysis)
 6. [Example Queries - What to Type in Claude Code](#6-example-queries)
-7. [Importing Claude.ai Conversations](#7-importing-claudeai-conversations)
+7. [Importing Conversations from Other Platforms](#7-importing-conversations-from-other-platforms)
 8. [Running Status and Health Checks](#8-status-and-health-checks)
 8.5. [**Email Digests** - The brain emails YOU (no other tool does this)](#85-email-digests)
 9. [How Data Gets Into the Brain](#9-how-data-gets-into-the-brain)
@@ -646,51 +646,99 @@ Here are example queries you can type in Claude Code and what happens behind the
 
 ---
 
-## 7. IMPORTING CLAUDE.AI CONVERSATIONS
+## 7. IMPORTING CONVERSATIONS FROM OTHER PLATFORMS
 
-Conversations from claude.ai (the web interface) are NOT automatically captured
-by hooks. You need to export and import them manually.
+claude-brain can import from four sources. Claude Code conversations are captured automatically by hooks. The other three require manual export and import.
 
-### Step 1: Export from claude.ai
-- Install the **AI Chat Exporter** Chrome extension
-- On claude.ai, open a conversation and click the extension icon
-- Set these export options:
-  - **Chat format:** JSON
-  - **Chats:** checked
-  - **Metadata:** checked
-  - **Extended Thinking:** unchecked (not parsed, adds bulk)
-  - **All Artifact options:** unchecked (not parsed)
-- Click **Export Current Conversation**
-- Save the .json file to: `imports/` folder in your claude-brain directory
+### 7.1 Claude.ai (Web Interface)
 
-### Step 2: Import into the brain
+**Export:**
+1. Install the **AI Chat Exporter** Chrome extension
+2. On claude.ai, open a conversation and click the extension icon
+3. Export settings: **JSON** format, **Chats** and **Metadata** checked, everything else unchecked
+4. Save the `.json` file to your `imports/` folder
 
-In Claude Code, type:
+**Import:**
 ```
 /brain-import
 ```
-The command will:
-1. Find JSON files in your `imports/` folder
-2. Ask which project to assign the conversation to
-3. Import all messages into the database
-4. Move the file to `imports/completed/`
+Or from the terminal: `python3 scripts/import_claude_ai.py "imports/filename.json" --project gen`
 
-**Alternative** - run directly from the terminal:
+### 7.2 ChatGPT (Full Account Export)
+
+**Export:**
+1. Go to ChatGPT → Settings → Data Controls → Export data
+2. Click "Export" -- you'll get a confirmation email
+3. Wait 1-2 days for the export to process
+4. When you get the email, click the download link
+5. Save the zip to your `imports/` folder
+6. Extract: `unzip the-file.zip -d imports/chatgpt-export/`
+
+**Scan and review:**
 ```bash
-python3 scripts/import_claude_ai.py "imports/filename.json" --project gen
+cd ~/path/to/claude-brain
+python3 scripts/import_chatgpt.py --scan imports/chatgpt-export/
+```
+This generates `imports/chatgpt_import_map.xlsx` with three tabs:
+- **Conversations** -- one row per conversation with auto-suggested project and tags (yellow columns, edit these)
+- **Project Reference** -- all your project prefixes
+- **Tag Reference** -- available tags with descriptions
+
+Review the xlsx. Edit the project and tags columns. Delete rows you don't want.
+
+**Import:**
+```bash
+python3 scripts/import_chatgpt.py --import imports/chatgpt-export/ --map imports/chatgpt_import_map.xlsx
 ```
 
-### Step 3: Verify
+Safe to re-run. Already-imported conversations are skipped automatically.
 
-Search for something from that conversation to confirm it imported:
+### 7.3 Gemini (Google Takeout)
+
+**Export:**
+1. Go to [takeout.google.com](https://takeout.google.com)
+2. Click "Deselect all"
+3. Scroll to **My Activity** (NOT "Gemini") and check it
+4. Click "All activity data included" inside that row
+5. In the popup, deselect all, then check only **Gemini Apps**. Click OK.
+6. Scroll down, click "Next step", then "Create export"
+7. Wait for the email (a few hours to a day)
+8. Download the zip, save to `imports/`
+9. Extract: `unzip takeout-*.zip -d imports/gemini-export/`
+
+**Important:** Selecting just "Gemini" gives you an empty file. You must go through **My Activity > Gemini Apps** to get your conversation history.
+
+**Scan and review:**
+```bash
+cd ~/path/to/claude-brain
+python3 scripts/import_gemini.py --scan imports/gemini-export/
 ```
-"Search transcripts for [a topic from that conversation]"
+Same xlsx workflow as ChatGPT. Gemini exports individual exchanges (not sessions), so the script groups exchanges within 30 minutes of each other into sessions automatically.
+
+**Import:**
+```bash
+python3 scripts/import_gemini.py --import imports/gemini-export/ --map imports/gemini_import_map.xlsx
 ```
 
-### Project assignment
-When importing, you pick which project the conversation belongs to. Use
-whatever prefixes you created during setup (e.g., `gen` for general,
-`wp` for a website project, etc.).
+### 7.4 Tags and Topic Discovery
+
+Every import auto-suggests tags based on conversation content (e.g., `coding`, `finance`, `family`, `memoir`). You review and edit tags in the xlsx before importing.
+
+**Browse by topic:**
+```
+/brain-topics              # Show all tags with session counts
+/brain-topics finance      # Show all sessions tagged 'finance'
+/brain-topics --project jg # Tags for one project only
+```
+
+**Batch tag review** (for sessions imported without tags, like Claude Code sessions):
+```
+/brain-tag-review          # Generates a spreadsheet of untagged sessions
+```
+Edit the spreadsheet, then run the update command shown in the output.
+
+**Inline tag editing** (for fixing one session):
+Just tell Claude: "tag this session as finance, coding" or "change the tags on yesterday's session to legal, family." Claude finds the session and updates it directly. No commands needed.
 
 ---
 
