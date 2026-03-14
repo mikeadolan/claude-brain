@@ -758,9 +758,9 @@ This runs a 9-point diagnostic:
   [PASS] Backup: 2 copies, newest 24m old, integrity OK
   [PASS] Performance: FTS5 0.1ms, LIKE 16.0ms, COUNT(*) 0.3ms
   [PASS] Dependencies: all 4 packages importable
-  [PASS] MCP: brain-server registered for 2 projects, server.py exists
+  [PASS] MCP: brain-server registered for 3 projects, server.py exists
   [PASS] Hooks: 4/4 registered, all files exist
-  [PASS] Config: config.yaml valid, 7 projects, all paths exist
+  [PASS] Config: config.yaml valid, 8 projects, all paths exist
 
   Score: 9/9 PASS
 ```
