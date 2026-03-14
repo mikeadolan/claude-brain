@@ -217,6 +217,7 @@ Type these in any Claude Code session:
 | `/brain-tag-review` | Batch tag review -- generate spreadsheet, edit, update |
 | `/brain-questionnaire` | Fill out or update your profile |
 | `/brain-setup` | Re-run setup to add projects |
+| `/brain-consistency` | Automated doc/data consistency check |
 
 ---
 
@@ -249,7 +250,7 @@ claude-brain/
 │   ├── user-prompt-submit.py
 │   ├── stop.py
 │   └── session-end.py
-├── scripts/             # 28 Python scripts
+├── scripts/             # 29 Python scripts
 │   ├── brain-setup.py   # Interactive installer
 │   ├── brain_digest.py  # Email digests (daily/weekly/project)
 │   └── ...              # Query, import, health, backup scripts

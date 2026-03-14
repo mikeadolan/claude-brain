@@ -110,7 +110,7 @@ Project: Full status report for one project - health, risks, decisions, architec
 You can search from two places:
 1. **Just ask Claude** - type a question naturally and Claude calls the right brain tool
 2. **Slash commands** - type `/brain-question`, `/brain-search`, `/brain-history`,
-   `/brain-recap`, `/brain-decide`, or any of the 13 brain commands for direct access
+   `/brain-recap`, `/brain-decide`, or any of the 14 brain commands for direct access
 
 ---
 
@@ -189,7 +189,7 @@ If Claude answers from its own context instead of checking the brain, be explici
 
 ### Way 2: Slash Commands (direct access)
 
-Type these yourself for instant, specific results. All 13 brain commands:
+Type these yourself for instant, specific results. All 14 brain commands:
 
 | Command | When to Use It | Example |
 |---------|---------------|---------|
@@ -206,6 +206,7 @@ Type these yourself for instant, specific results. All 13 brain commands:
 | `/brain-export` | Save brain data to text files | Exports profile, decisions, or search results |
 | `/brain-topics` | Browse sessions by tag | Shows tag counts, drill into "finance", "memoir", etc. |
 | `/brain-tag-review` | Batch tag review via spreadsheet | Generates xlsx, you edit tags, then update DB |
+| `/brain-consistency` | Automated consistency check | Verifies all counts, paths, data integrity |
 
 ### Way 3: MCP Tools (Claude calls these - you just ask)
 
@@ -760,7 +761,7 @@ This runs a 9-point diagnostic:
   [PASS] Backup: 2 copies, newest 24m old, integrity OK
   [PASS] Performance: FTS5 0.1ms, LIKE 16.0ms, COUNT(*) 0.3ms
   [PASS] Dependencies: all 4 packages importable
-  [PASS] MCP: brain-server registered for 3 projects, server.py exists
+  [PASS] MCP: brain-server registered for 8 projects, server.py exists
   [PASS] Hooks: 4/4 registered, all files exist
   [PASS] Config: config.yaml valid, 8 projects, all paths exist
 
@@ -1184,6 +1185,7 @@ See `POST_MVP_ROADMAP.md` for the full roadmap and planned fixes.
 /brain-questionnaire   Fill out or update your profile
 /brain-setup       Re-run setup to add projects or fix config
 /brain-export      Export brain data to text files
+/brain-consistency Automated doc + data consistency check
 ```
 
 ---

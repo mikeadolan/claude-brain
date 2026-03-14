@@ -93,10 +93,10 @@ config.yaml
 | ROOT | ~/Dropbox/claude-brain (or wherever you cloned the repo) |
 | DB | ~/claude-brain-local/claude-brain.db (local disk, not synced) |
 | Config | {ROOT}/config.yaml |
-| Scripts | {ROOT}/scripts/ (28 scripts) |
+| Scripts | {ROOT}/scripts/ (29 scripts) |
 | Hooks | {ROOT}/hooks/ (4 hooks) |
 | MCP | {ROOT}/mcp/server.py (11 tools) |
-| Slash commands | ~/.claude/commands/ (13 commands) |
+| Slash commands | ~/.claude/commands/ (14 commands) |
 | Skills | ~/.claude/skills/ (10 JG skills + 4 office skills) |
 | Tests | {ROOT}/verification/ |
 

@@ -159,11 +159,11 @@ Search terms: `"sys_sessions" "transcripts" "project_registry" "transcript_embed
 
 ## SLASH COMMANDS (commands/)
 
-Search terms: `"brain-status" "brain-search" "brain-question" "brain-decide" "brain-recap" "brain-history" "brain-export" "brain-import" "brain-setup" "brain-questionnaire" "brain-health" "brain-tag-review" "brain-topics"`
+Search terms: `"brain-status" "brain-search" "brain-question" "brain-decide" "brain-recap" "brain-history" "brain-export" "brain-import" "brain-setup" "brain-questionnaire" "brain-health" "brain-tag-review" "brain-topics" "brain-consistency"`
 
 | Category | Files |
 |----------|-------|
-| Code | commands/*.md (13 command files), scripts/* (each command calls a script) |
+| Code | commands/*.md (14 command files), scripts/* (each command calls a script) |
 | Docs | README.md, CLAUDE_BRAIN_HOW_TO.md (Section 3) |
 | Note | **Adding/removing a command requires updating README (count + table) and HOW_TO (section 3).** |
 
