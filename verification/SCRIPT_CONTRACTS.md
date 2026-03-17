@@ -615,30 +615,27 @@ stop.py having captured all exchanges already.
 |----------|------|---------|
 | `get_profile()` | none | All brain_facts + brain_preferences rows |
 | `get_project_state(project)` | project: str | Recent decisions + key facts for project |
-| `search_transcripts(query, project?, limit?, recency_bias?)` | query: str, project: str\|None, limit: int=20, recency_bias: bool=False | FTS5 search results with content preview |
+| `search_transcripts(query, project?)` | query: str, project: str\|None | FTS5 search results with content preview (20 results, relevance-ranked) |
 | `get_session(session_id)` | session_id: str | All transcript rows for session, ordered by timestamp |
 | `get_recent_sessions(project?, count?)` | project: str\|None, count: int=10 | List of recent sessions with metadata |
 | `lookup_decision(project, topic)` | project: str, topic: str | Matching decisions by keyword search |
-| `lookup_fact(project, category?, key?, recency_bias?)` | project: str, category: str\|None, key: str\|None, recency_bias: bool=True | Matching facts |
+| `lookup_fact(project, category?, key?)` | project: str, category: str\|None, key: str\|None | Matching facts (sorted by category, key) |
 | `get_recent_summaries(project?, count?)` | project: str\|None, count: int=5 | Last N session summaries |
 | `search_semantic(query, project?, limit?)` | query: str, project: str\|None, limit: int=10 | ChromaDB vector search results |
 | `get_status()` | none | DB stats (same as status.py --json) |
 
 ### Recency Bias Rules
 
-| Function | Default | Rationale |
-|----------|---------|-----------|
-| search_transcripts | OFF | User explicitly searching, relevance matters more |
-| lookup_decision | Always OFF | Decisions are locked. Age is irrelevant. |
-| lookup_fact | ON | Preferences and status change over time |
-| search_semantic | OFF | Meaning-based search, relevance matters more |
+Recency bias has been **removed from all MCP tool schemas** (S42 bug fix). Claude cannot
+override search defaults. The internal `_run_fts_query` helper still accepts recency_bias
+for direct Python callers, but it is never exposed via MCP.
 
-### Recency Bias Implementation
-
-When ON: multiply FTS5 rank by a time decay factor.
-```sql
-ORDER BY rank * (1.0 / (1.0 + julianday('now') - julianday(timestamp)))
-```
+| Function | MCP Exposed | Behavior |
+|----------|-------------|----------|
+| search_transcripts | query, project only | Always relevance-ranked, limit=20 |
+| lookup_decision | project, topic only | Always OFF (decisions are locked) |
+| lookup_fact | project, category, key only | Always sorted by category, key |
+| search_semantic | query, project, limit | Always relevance-ranked |
 Newer rows get a boost. Very old rows deprioritized but not excluded.
 
 ---

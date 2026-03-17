@@ -275,13 +275,13 @@ def _format_results(rows, header: str = "") -> str:
 def search_transcripts(
     query: str,
     project: str | None = None,
-    limit: int = 20,
-    recency_bias: bool = False,
 ) -> str:
     """FTS5 full-text search across all conversation transcripts.
     Args: query - search terms (natural language or FTS5 syntax),
-    project - filter by prefix (optional),
-    limit - max results (default 20), recency_bias - weight newer results higher."""
+    project - filter by prefix (optional).
+    Returns up to 20 results ranked by relevance."""
+    limit = 20
+    recency_bias = False
     conn = get_db()
     try:
         # FTS5 syntax passthrough - no fuzzy correction
@@ -442,11 +442,10 @@ def lookup_fact(
     project: str,
     category: str | None = None,
     key: str | None = None,
-    recency_bias: bool = True,
 ) -> str:
     """Finds project-specific facts by category and/or key.
     Args: project - project prefix, category - filter (character, location, etc.),
-    key - specific fact key, recency_bias - weight newer facts higher (default True)."""
+    key - specific fact key."""
     conn = get_db()
     try:
         conditions = ["project = ?"]
@@ -460,11 +459,7 @@ def lookup_fact(
             params.extend([f"%{key}%", f"%{key}%"])
 
         where = " AND ".join(conditions)
-
-        if recency_bias:
-            order = "COALESCE(updated_at, created_at) DESC"
-        else:
-            order = "category, key"
+        order = "category, key"
 
         rows = conn.execute(
             f"""SELECT category, key, value, source

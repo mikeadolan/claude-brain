@@ -267,14 +267,12 @@ ask better questions.
 
 ---
 
-### search_transcripts(query, project?, limit?, recency_bias?)
-**What:** Full-text search across ALL conversation transcripts ever captured - every project, every session, every message.
+### search_transcripts(query, project?)
+**What:** Full-text search across ALL conversation transcripts ever captured - every project, every session, every message. Returns up to 20 results ranked by relevance.
 **When Claude uses it:** Any time you ask about past conversations or topics.
 **Parameters:**
 - `query` - search terms (required)
 - `project` - filter to one project by prefix, e.g. `gen`, `app`, `js` (optional)
-- `limit` - max results, default 20 (optional)
-- `recency_bias` - weight newer results higher, default false (optional)
 
 **Example prompts:**
 ```

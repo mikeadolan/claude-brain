@@ -280,8 +280,8 @@ File versioning to chat-files/ per project.
 | T-MCP-SEARCH-01 | FTS5 search | query="ASUS laptop", transcripts has matching row | Returns matching rows with content preview. |
 | T-MCP-SEARCH-02 | Project filter | query="test", project="jg" | Only returns jg rows. |
 | T-MCP-SEARCH-03 | Limit | limit=5, 20 matches exist | Returns exactly 5. |
-| T-MCP-SEARCH-04 | Recency bias on | recency_bias=True | Newer results rank higher than older with same relevance. |
-| T-MCP-SEARCH-05 | Recency bias off | recency_bias=False | Pure relevance ranking. |
+| T-MCP-SEARCH-04 | Relevance ranking | Two results with different relevance | Higher-relevance result ranks first (recency_bias removed from MCP schema). |
+| T-MCP-SEARCH-05 | Fixed limit | 30 matches exist in DB | Returns exactly 20 (hardcoded limit, not overridable via MCP). |
 | T-MCP-SEARCH-06 | No results | query="xyzzynonexistent" | Returns empty list. No error. |
 
 ### search_semantic()
