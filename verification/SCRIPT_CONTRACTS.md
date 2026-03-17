@@ -589,7 +589,14 @@ environment or Claude Code metadata. Pass to write_exchange.py.
 | Stdin | `{}` (session metadata) |
 | Stdout | `{}` |
 | Calls | `scripts/brain_sync.py` (detached via Popen) |
+| Reads | `config.yaml`, `sys_sessions`, `transcripts` |
+| Writes | `sys_sessions.notes` (fallback only, if Claude didn't write notes) |
 | Blocking | N/A - session is ending |
+
+**Fallback notes:** Before running backup, checks if the current session has notes.
+If notes are missing, writes a placeholder marked `AUTO-GENERATED FALLBACK` with
+basic session metadata (project, message count, timestamps, first user message).
+Next session-start.py detects the marker and forces Claude to rewrite with real notes.
 
 **Note:** May not fire on terminal close. Data integrity guaranteed by
 stop.py having captured all exchanges already.

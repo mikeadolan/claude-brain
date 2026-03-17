@@ -142,6 +142,34 @@ def main():
         except Exception:
             pass
 
+        # Fallback notes detection: force Claude to rewrite placeholder notes
+        FALLBACK_MARKER = "AUTO-GENERATED FALLBACK"
+        try:
+            fallbacks = conn.execute("""
+                SELECT session_id, project, started_at,
+                       (SELECT COUNT(*) FROM transcripts t WHERE t.session_id = s.session_id) as msg_count
+                FROM sys_sessions s
+                WHERE notes LIKE ?
+                ORDER BY started_at DESC
+                LIMIT 5
+            """, (FALLBACK_MARKER + "%",)).fetchall()
+            if fallbacks:
+                lines.append("## MANDATORY FIRST TASK: Rewrite Placeholder Notes")
+                lines.append("The following session(s) ended without Claude writing proper notes.")
+                lines.append("You MUST fix these BEFORE doing any other work:")
+                lines.append("")
+                for sid, proj, started, msg_count in fallbacks:
+                    date = started[:10] if started else "unknown"
+                    lines.append(f"- **{date} | {proj} | {msg_count} messages | {sid}**")
+                lines.append("")
+                lines.append("For EACH session above:")
+                lines.append("1. Read the transcript: `get_session(session_id)`")
+                lines.append("2. Write real notes: `python3 scripts/write_session_notes.py --notes \"<notes>\"`")
+                lines.append("3. Update project summary: `python3 scripts/write_project_summary.py --prefix <prefix> --summary \"<summary>\"`")
+                lines.append("")
+        except Exception:
+            pass
+
         # Project summary injection: show current project context
         try:
             cwd = os.environ.get("CWD", os.getcwd())

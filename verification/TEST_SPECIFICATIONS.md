@@ -260,7 +260,9 @@ File versioning to chat-files/ per project.
 |----|------|-------|----------|
 | T-HOOK-END-01 | Runs backup | Hook fires on session end | brain_sync.py runs (detached). New backup in db-backup/. |
 | T-HOOK-END-02 | Returns instantly | Hook fires | Hook returns {} without blocking. brain_sync.py detached. |
-| T-HOOK-END-03 | Valid JSON output | Any state | stdout: {} (empty JSON object). |
+| T-HOOK-END-03 | Fallback notes written | Session has no notes when hook fires | sys_sessions.notes updated with AUTO-GENERATED FALLBACK placeholder. |
+| T-HOOK-END-04 | No-op when notes exist | Session already has notes from Claude | sys_sessions.notes unchanged. Hook does not overwrite. |
+| T-HOOK-END-05 | Valid JSON output | Any state | stdout: {} (empty JSON object). |
 
 ---
 

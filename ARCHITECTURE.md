@@ -56,6 +56,7 @@ config.yaml
  ├─ ingest_jsonl.py ← startup_check.py ← session-start.py (hook)
  ├─ write_exchange.py ← stop.py (hook)
  ├─ brain_sync.py ← session-end.py (hook, detached) + startup_check.py
+ │  session-end.py also writes fallback notes if Claude didn't (safety net)
  ├─ import_claude_ai.py (standalone, /brain-import)
  ├─ import_chatgpt.py (standalone, scan → xlsx → import)
  ├─ import_gemini.py (standalone, scan → xlsx → import)

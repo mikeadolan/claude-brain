@@ -38,7 +38,7 @@ Search terms: `"session-start" "session-end" "user-prompt-submit" "stop.py"`
 
 | Category | Files |
 |----------|-------|
-| Code | hooks/session-start.py, hooks/user-prompt-submit.py, hooks/stop.py, hooks/session-end.py, scripts/write_exchange.py (called by stop), scripts/brain_sync.py (called by session-end) |
+| Code | hooks/session-start.py, hooks/user-prompt-submit.py, hooks/stop.py, hooks/session-end.py, scripts/write_exchange.py (called by stop), scripts/brain_sync.py (called by session-end), scripts/write_session_notes.py (fallback logic in session-end) |
 | Config | ~/.claude/settings.json (hook registration) |
 | Docs | README.md, CLAUDE_BRAIN_HOW_TO.md, ARCHITECTURE.md, SESSION_PROTOCOLS.md, FOLDER_SCHEMA.md, MIGRATION_BASH_TO_PYTHON.md, PROJECT_TRACKER.md |
 | Tests | verification/SCRIPT_CONTRACTS.md, verification/TEST_SPECIFICATIONS.md |
