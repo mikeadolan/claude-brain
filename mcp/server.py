@@ -235,7 +235,7 @@ def _run_fts_query(conn, fts_query: str, project: str | None, limit: int,
     if project:
         return conn.execute(
             f"""SELECT t.session_id, t.project, t.timestamp, t.type,
-                      substr(t.content, 1, 300) as preview
+                      substr(t.content, 1, 600) as preview
                FROM transcripts_fts fts
                JOIN transcripts t ON t.rowid = fts.rowid
                WHERE transcripts_fts MATCH ? AND t.project = ?
@@ -246,7 +246,7 @@ def _run_fts_query(conn, fts_query: str, project: str | None, limit: int,
     else:
         return conn.execute(
             f"""SELECT t.session_id, t.project, t.timestamp, t.type,
-                      substr(t.content, 1, 300) as preview
+                      substr(t.content, 1, 600) as preview
                FROM transcripts_fts fts
                JOIN transcripts t ON t.rowid = fts.rowid
                WHERE transcripts_fts MATCH ?
@@ -268,6 +268,8 @@ def _format_results(rows, header: str = "") -> str:
         date = row["timestamp"][:10] if row["timestamp"] else "?"
         preview = (row["preview"] or "").replace("\n", " ").strip()
         lines.append(f"- [{date}, {row['project']}, {row['type']}] {preview}")
+    lines.append("")
+    lines.append("Tip: For full message content, use get_session(session_id).")
     return "\n".join(lines)
 
 
@@ -592,9 +594,11 @@ def search_semantic(
             for sim, row in top:
                 date = row["timestamp"][:10] if row["timestamp"] else "?"
                 proj = row["project"] or "?"
-                preview = (row["content"] or "")[:300].replace("\n", " ").strip()
+                preview = (row["content"] or "")[:600].replace("\n", " ").strip()
                 lines.append(f"- [{date}, {proj}, {sim:.3f}] {preview}")
 
+            lines.append("")
+            lines.append("Tip: For full message content, use get_session(session_id).")
             return "\n".join(lines)
         finally:
             conn.close()

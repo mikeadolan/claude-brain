@@ -130,7 +130,7 @@ def handle_frustration(prompt_text, root):
             try:
                 rows = conn.execute(
                     """SELECT t.project, t.timestamp,
-                              substr(t.content, 1, 300) as preview
+                              substr(t.content, 1, 600) as preview
                        FROM transcripts_fts fts
                        JOIN transcripts t ON t.rowid = fts.rowid
                        WHERE transcripts_fts MATCH ?

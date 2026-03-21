@@ -622,7 +622,7 @@ stop.py having captured all exchanges already.
 |----------|------|---------|
 | `get_profile()` | none | All brain_facts + brain_preferences rows |
 | `get_project_state(project)` | project: str | Recent decisions + key facts for project |
-| `search_transcripts(query, project?)` | query: str, project: str\|None | FTS5 search results with content preview (20 results, relevance-ranked) |
+| `search_transcripts(query, project?)` | query: str, project: str\|None | FTS5 search results with 600-char preview (20 results, relevance-ranked). Includes get_session tip. |
 | `get_session(session_id)` | session_id: str | All transcript rows for session, ordered by timestamp |
 | `get_recent_sessions(project?, count?)` | project: str\|None, count: int=10 | List of recent sessions with metadata |
 | `lookup_decision(project, topic)` | project: str, topic: str | Matching decisions by keyword search |
