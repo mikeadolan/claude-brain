@@ -152,7 +152,7 @@ want to search, check status, import data, or run diagnostics yourself:
 | `/brain-decide` | Fast decision lookup by number or keyword |
 | `/brain-health` | Full 9-point diagnostic (database, hooks, MCP, backup, performance) |
 | `/brain-status` | Quick stats - sessions, messages, per-project counts |
-| `/brain-import` | Import a claude.ai conversation export |
+| `/brain-import` | Import conversations (Claude.ai, ChatGPT, Gemini) |
 | `/brain-questionnaire` | Fill out or update your personal profile |
 | `/brain-setup` | Re-run setup to add projects or fix configuration |
 | `/brain-export` | Export brain data to timestamped text files |
@@ -200,7 +200,7 @@ Type these yourself for instant, specific results. All 14 brain commands:
 | `/brain-decide` | Look up a specific decision | "12" or "database" |
 | `/brain-health` | Full 9-point system diagnostic | Checks DB, hooks, MCP, backup, performance |
 | `/brain-status` | Quick database stats | Session counts, message counts, per-project |
-| `/brain-import` | Import a claude.ai conversation | Drop JSON in `imports/`, then run this |
+| `/brain-import` | Import conversations (Claude.ai, ChatGPT, Gemini) | Claude.ai: drop JSON in `imports/`. ChatGPT/Gemini: ask Claude or run import scripts directly. |
 | `/brain-questionnaire` | Fill out or update your profile | Name, preferences, goals, working style |
 | `/brain-setup` | Re-run setup to add projects or fix config | Safe to re-run anytime |
 | `/brain-export` | Save brain data to text files | Exports profile, decisions, or search results |
@@ -1177,7 +1177,7 @@ See `POST_MVP_ROADMAP.md` for the full roadmap and planned fixes.
 /brain-decide      Decision lookup by number or keyword
 /brain-health      Full 9-point system diagnostic
 /brain-status      Quick database stats
-/brain-import      Import a claude.ai conversation export
+/brain-import      Import conversations (Claude.ai, ChatGPT, Gemini)
 /brain-topics      Browse sessions by tag -- drill into any topic
 /brain-tag-review  Batch tag review -- generate spreadsheet, edit, update
 /brain-questionnaire   Fill out or update your profile

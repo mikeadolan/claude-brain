@@ -212,7 +212,7 @@ Type these in any Claude Code session:
 | `/brain-recap` | Progress report for a time range |
 | `/brain-decide` | Decision lookup by number or keyword |
 | `/brain-export` | Export brain data to text files |
-| `/brain-import` | Import claude.ai conversation exports |
+| `/brain-import` | Import conversations (Claude.ai, ChatGPT, Gemini) |
 | `/brain-topics` | Browse sessions by tag -- drill into any topic |
 | `/brain-tag-review` | Batch tag review -- generate spreadsheet, edit, update |
 | `/brain-questionnaire` | Fill out or update your profile |

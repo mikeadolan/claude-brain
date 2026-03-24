@@ -1149,8 +1149,9 @@ def phase_registration(cfg):
 
     slash_commands = {
         "brain-import": textwrap.dedent(f"""\
-            Import claude.ai conversation exports into the brain database.
+            Import conversations from Claude.ai, ChatGPT, or Gemini into the brain database.
 
+            **Claude.ai:** Uses JSON files exported via Chrome extension.
             Step 1: List JSON files in the imports folder:
               ls {root}/imports/*.json
 
@@ -1160,6 +1161,9 @@ def phase_registration(cfg):
             2. Go to claude.ai, open a conversation, click the extension icon, export as JSON
             3. Move the downloaded .json file to: {root}/imports/
             4. Then run /brain-import again"
+
+            **ChatGPT:** Tell the user to run: python3 {root}/scripts/import_chatgpt.py --scan <path-to-chatgpt-export>
+            **Gemini:** Tell the user to run: python3 {root}/scripts/import_gemini.py --scan <path-to-gemini-takeout>
             And stop here.
 
             Step 2: If files ARE found, show the user a numbered list of filenames.
@@ -1409,7 +1413,7 @@ def phase_health_check(cfg):
     print(f"""
   These commands work inside any Claude Code session:
 
-    /brain-import         Import claude.ai web conversations
+    /brain-import         Import conversations (Claude.ai, ChatGPT, Gemini)
     /brain-status         Check brain health and statistics
     /brain-setup          Re-run setup (add projects, fix config)
     /brain-questionnaire  Fill out or update your brain profile
@@ -1427,10 +1431,10 @@ def phase_health_check(cfg):
      The brain activates automatically - hooks fire, MCP connects,
      context loads. Nothing else to configure.
 
-  2. IMPORT CLAUDE.AI CONVERSATIONS (optional)
-     If you've been using claude.ai (the website), you can import
-     your conversation history into the brain.
+  2. IMPORT CONVERSATIONS (optional)
+     You can import conversation history from Claude.ai, ChatGPT, and Gemini.
 
+     CLAUDE.AI:
      Step 1 - Install the Chrome extension:
        Open Chrome and go to:
          https://chromewebstore.google.com/detail/claude-exporter-save-clau/elhmfakncmnghlnabnolalcjkdpfjnin
@@ -1458,6 +1462,16 @@ def phase_health_check(cfg):
        Claude will walk you through assigning each conversation
        to a project. Successfully imported files are moved to
        imports/completed/ automatically.
+
+     CHATGPT:
+       Export your data from OpenAI (Settings > Data > Export).
+       Then run: python3 scripts/import_chatgpt.py --scan <path-to-export>
+       Or just tell Claude: "import my ChatGPT conversations"
+
+     GEMINI:
+       Export via Google Takeout (select Gemini Apps).
+       Then run: python3 scripts/import_gemini.py --scan <path-to-takeout>
+       Or just tell Claude: "import my Gemini conversations"
 
   3. FILL OUT THE QUESTIONNAIRE (optional)
      Open Claude Code and type:  /brain-questionnaire
