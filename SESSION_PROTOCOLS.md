@@ -55,9 +55,10 @@ If ANY row shows ✗ MISSING, STOP and fix it before proceeding.
 
 When Mike says "end session" (or similar: "wrap up", "done for today", "close it out"), do ALL of these:
 
-1. Write session notes to DB:
-   `python3 scripts/write_session_notes.py --notes "<text>"`
-   Include: date, provider, what was done, decisions, files modified, current state, next step.
+1. Write session notes + tags to DB:
+   `python3 scripts/write_session_notes.py --notes "<text>" --tags "<comma-separated tags>"`
+   Notes: date, provider, what was done, decisions, files modified, current state, next step.
+   Tags: pick 1-3 from: book-editing, memoir, job-search, finance, coding, ai-tools, tech-setup, family, health, legal, home, auto, music, business, writing, research, brain-project, launch
 2. Update project summary in DB:
    `python3 scripts/write_project_summary.py --prefix <prefix> --summary "<text>"`
    Rewrite the FULL summary reflecting current state - not a patch, a complete rewrite.

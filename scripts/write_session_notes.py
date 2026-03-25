@@ -7,6 +7,7 @@ sys_sessions.notes and read by session-start.py on next session start.
 
 Usage:
     python3 write_session_notes.py --notes <text>
+    python3 write_session_notes.py --notes <text> --tags "coding,debugging"
     python3 write_session_notes.py --notes-file <path>
 
 Session ID is auto-detected from the active session's JSONL file.
@@ -68,8 +69,8 @@ def auto_detect_session_id():
 # Main
 # ---------------------------------------------------------------------------
 
-def write_notes(session_id, notes, db_path):
-    """Write session notes to sys_sessions.notes column."""
+def write_notes(session_id, notes, db_path, tags=None):
+    """Write session notes (and optionally tags) to sys_sessions."""
     conn = connect_db(db_path)
     try:
         # Support both full UUIDs and prefix matches (e.g. first 8 chars)
@@ -94,8 +95,14 @@ def write_notes(session_id, notes, db_path):
             "UPDATE sys_sessions SET notes = ? WHERE session_id = ?",
             (notes, full_id),
         )
+        if tags:
+            conn.execute(
+                "UPDATE sys_sessions SET tags = ? WHERE session_id = ?",
+                (tags.strip(), full_id),
+            )
         conn.commit()
-        print(f"Session notes written for {full_id} ({len(notes)} chars)")
+        tag_msg = f", tags: {tags.strip()}" if tags else ""
+        print(f"Session notes written for {full_id} ({len(notes)} chars{tag_msg})")
         return 0
     except Exception as e:
         print(f"ERROR: {e}", file=sys.stderr)
@@ -141,6 +148,7 @@ def main():
     parser.add_argument("--session-id", help=argparse.SUPPRESS)
     parser.add_argument("--notes", help="Session notes text")
     parser.add_argument("--notes-file", help="Read notes from file instead of --notes")
+    parser.add_argument("--tags", help="Comma-separated session tags (e.g. 'coding,debugging,ai-tools')")
     parser.add_argument("--read-latest", action="store_true",
                         help="Read the most recent session notes instead of writing")
     parser.add_argument("--project", help="Filter by project prefix (for --read-latest)")
@@ -177,7 +185,7 @@ def main():
         print("ERROR: Must provide --notes or --notes-file", file=sys.stderr)
         sys.exit(1)
 
-    exit_code = write_notes(session_id, notes, db_path)
+    exit_code = write_notes(session_id, notes, db_path, tags=args.tags)
     sys.exit(exit_code)
 
 

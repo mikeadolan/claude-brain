@@ -164,7 +164,7 @@ def main():
                 lines.append("")
                 lines.append("For EACH session above:")
                 lines.append("1. Read the transcript: `get_session(session_id)`")
-                lines.append("2. Write real notes: `python3 scripts/write_session_notes.py --notes \"<notes>\"`")
+                lines.append("2. Write real notes: `python3 scripts/write_session_notes.py --notes \"<notes>\" --tags \"<tags>\"`")
                 lines.append("3. Update project summary: `python3 scripts/write_project_summary.py --prefix <prefix> --summary \"<summary>\"`")
                 lines.append("")
         except Exception:

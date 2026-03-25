@@ -177,8 +177,8 @@ def generate_claude_md(project, cfg):
 
         ## SESSION END PROTOCOL
         When the user says "end session" (or similar), complete ALL steps:
-        1. Write session notes to the database:
-           python3 {root}/scripts/write_session_notes.py --notes "<what was done, decisions, next steps>"
+        1. Write session notes + tags to the database:
+           python3 {root}/scripts/write_session_notes.py --notes "<what was done, decisions, next steps>" --tags "<1-3 comma-separated tags>"
         2. Update project summary (if significant progress):
            python3 {root}/scripts/write_project_summary.py --prefix {project['prefix']} --summary "<current state>"
         3. Ask the user: "Anything you want Claude to know next session?"

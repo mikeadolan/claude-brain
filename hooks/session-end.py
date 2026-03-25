@@ -27,6 +27,28 @@ import yaml
 
 FALLBACK_MARKER = "AUTO-GENERATED FALLBACK"
 
+# Same tag keywords used by import_chatgpt.py and brain_tag_review.py
+TAG_KEYWORDS = {
+    "book-editing": ["edit", "polish", "chapter", "manuscript", "copyedit", "proofread", "rewrite", "revision"],
+    "memoir": ["memoir", "johnny", "goods", "maffia", "mob", "harlem", "gangster", "three fingers"],
+    "job-search": ["resume", "job search", "interview", "career", "hiring", "salary", "recruiter", "linkedin"],
+    "finance": ["money", "bank", "invest", "stock", "crypto", "budget", "tax", "financial"],
+    "coding": ["python", "script", "code", "programming", "debug", "function", "api", "github"],
+    "ai-tools": ["chatgpt", "claude", "gpt", "openai", "anthropic", "gemini", "llm", "prompt"],
+    "tech-setup": ["linux", "fedora", "install", "setup", "config", "terminal", "laptop", "asus"],
+    "family": ["mom", "mother", "father", "wife", "daughter", "son", "family"],
+    "health": ["doctor", "medical", "health", "therapy", "leg", "injury"],
+    "legal": ["lawyer", "legal", "court", "contract", "lawsuit", "attorney"],
+    "home": ["house", "home", "repair", "plumbing", "electric", "hvac", "mortgage"],
+    "auto": ["car", "toyota", "highlander", "vehicle", "mechanic"],
+    "music": ["music", "song", "guitar", "band", "album"],
+    "business": ["business", "company", "startup", "entrepreneur", "marketing"],
+    "writing": ["writing", "write", "story", "narrative", "voice", "author", "publisher"],
+    "research": ["research", "compare", "analysis", "review", "recommend"],
+    "brain-project": ["brain", "mcp", "hook", "session-start", "session-end", "ingest", "sqlite"],
+    "launch": ["launch", "readme", "github", "public", "tweet", "reddit", "hacker news"],
+}
+
 
 def _detect_session_id():
     """Auto-detect current session ID from JSONL files (same logic as stop.py)."""
@@ -38,6 +60,69 @@ def _detect_session_id():
         return None
     jsonl_path = max(jsonl_files, key=os.path.getmtime)
     return os.path.splitext(os.path.basename(jsonl_path))[0]
+
+
+def _suggest_tags(conn, session_id):
+    """Auto-suggest tags from transcript content (same logic as import scripts)."""
+    rows = conn.execute(
+        """SELECT content FROM transcripts
+           WHERE session_id = ? AND role = 'user' AND content IS NOT NULL
+           ORDER BY timestamp LIMIT 20""",
+        (session_id,),
+    ).fetchall()
+
+    if not rows:
+        return ""
+
+    search_text = " ".join(r[0][:500].lower() for r in rows if r[0])
+    matched = []
+    for tag, keywords in TAG_KEYWORDS.items():
+        if any(kw in search_text for kw in keywords):
+            matched.append(tag)
+
+    return ", ".join(matched[:3]) if matched else ""
+
+
+def _write_fallback_tags(root, session_id):
+    """Check if session has tags. If not, auto-suggest from transcript content."""
+    try:
+        config_path = os.path.join(root, "config.yaml")
+        if not os.path.exists(config_path):
+            return
+        with open(config_path) as f:
+            config = yaml.safe_load(f)
+        db_path = config["storage"]["local_db_path"]
+        if not os.path.exists(db_path):
+            return
+
+        conn = sqlite3.connect(db_path)
+        conn.execute("PRAGMA busy_timeout=5000;")
+
+        row = conn.execute(
+            "SELECT tags FROM sys_sessions WHERE session_id = ?",
+            (session_id,),
+        ).fetchone()
+
+        if not row:
+            conn.close()
+            return
+
+        existing_tags = row[0]
+        if existing_tags and existing_tags.strip():
+            conn.close()
+            return
+
+        tags = _suggest_tags(conn, session_id)
+        if tags:
+            conn.execute(
+                "UPDATE sys_sessions SET tags = ? WHERE session_id = ?",
+                (tags, session_id),
+            )
+            conn.commit()
+
+        conn.close()
+    except Exception:
+        pass
 
 
 def _write_fallback_notes(root, session_id):
@@ -125,10 +210,11 @@ def main():
     # Determine ROOT (parent of hooks/)
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-    # Check for missing session notes and write fallback if needed
+    # Check for missing session notes and tags, write fallbacks if needed
     session_id = _detect_session_id()
     if session_id:
         _write_fallback_notes(root, session_id)
+        _write_fallback_tags(root, session_id)
 
     # Run database backup (detached - hook must return immediately)
     try:

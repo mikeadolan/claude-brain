@@ -33,7 +33,7 @@ Personal memory system for Claude Code. Local SQLite + MCP + hooks.
 
 ## END-SESSION PROTOCOL
 When ending a session, complete ALL steps and output the checklist table:
-1. Write session notes: `python3 scripts/write_session_notes.py --notes "<text>"`
+1. Write session notes + tags: `python3 scripts/write_session_notes.py --notes "<text>" --tags "<tags>"`
 2. Update project summary: `python3 scripts/write_project_summary.py --prefix <prefix> --summary "<text>"`
 3. Update MEMORY.md LAST SESSION section as backup.
 4. Update any governance/tracking files as needed.
