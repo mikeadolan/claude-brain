@@ -33,6 +33,8 @@ claude-brain is a RAG system - but that's just one layer. Here's what "beyond" m
 | **Proactive intelligence** | The brain emails YOU. Daily standups, weekly portfolios, dormant project alerts. RAG waits for you to ask. This doesn't. |
 | **100% local** | SQLite on your machine. No API calls for search. No cloud. No cost. No one sees your data. Zero token burn. |
 
+**Beyond Auto Memory.** Claude Code's built-in auto memory stores project preferences in a markdown file. claude-brain goes further: full lossless capture of every conversation, structured decisions and facts, cross-project search, multi-platform import (ChatGPT, Gemini, Claude.ai), and semantic search across your complete history. Auto memory is a notepad. This is the database.
+
 ---
 
 ## See It In Action

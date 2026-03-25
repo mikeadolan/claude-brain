@@ -36,6 +36,8 @@
 
 claude-brain gives Claude Code 100% lossless recall across every session and every project. No silos. Every word captured, every decision tracked, every project connected. It searches by keyword, meaning, or fuzzy match. It emails you a morning briefing before you open your laptop. Zero cloud dependencies - your data never leaves your machine.
 
+**Beyond Auto Memory.** Claude Code's built-in auto memory stores project preferences in a markdown file. claude-brain goes further: full lossless capture of every conversation, structured decisions and facts, cross-project search, multi-platform import (ChatGPT, Gemini, Claude.ai), and semantic search across your complete history. Auto memory is a notepad. This is the database.
+
 **Without it:** Claude Code starts every session from zero. Close the terminal, everything is gone. MEMORY.md has a 200-line cap. Context compaction throws away your earlier conversation. Projects are siloed.
 
 **With it, Claude knows:**
