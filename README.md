@@ -1,5 +1,9 @@
 # claude-brain
 
+[![CI Tests](https://github.com/mikeadolan/claude-brain/actions/workflows/test-setup.yml/badge.svg)](https://github.com/mikeadolan/claude-brain/actions/workflows/test-setup.yml)
+
+**Tested on:** macOS, Ubuntu, Windows (automated CI) | Fedora 43 (primary development)
+
 **Introducing claude-brain for Claude Code - Your AI finally has a real memory.** Not just RAG, RAG and beyond. 100% lossless recall across every session and every project, no silos. Local SQLite. Keyword, semantic, and fuzzy search across everything. Emails you a daily briefing, weekly portfolio, and project status reports - no other tool does this. Zero cloud dependencies. Your data never leaves your machine. Zero token burn. Unlimited potential.
 
 ---
