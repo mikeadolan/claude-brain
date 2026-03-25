@@ -73,7 +73,7 @@ When Mike says "end session" (or similar: "wrap up", "done for today", "close it
 ┌─────────────────────────────┬──────────┐
 │ End-Session Checklist       │ Status   │
 ├─────────────────────────────┼──────────┤
-│ Session notes written to DB │ ✓ DONE   │
+│ Session notes + tags written │ ✓ DONE   │
 ├─────────────────────────────┼──────────┤
 │ Project summary updated     │ ✓ DONE   │
 ├─────────────────────────────┼──────────┤

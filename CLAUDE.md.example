@@ -42,7 +42,7 @@ When ending a session, complete ALL steps and output the checklist table:
 ┌─────────────────────────────┬──────────┐
 │ End-Session Checklist       │ Status   │
 ├─────────────────────────────┼──────────┤
-│ Session notes written to DB │ ✓ DONE   │
+│ Session notes + tags written │ ✓ DONE   │
 ├─────────────────────────────┼──────────┤
 │ Project summary updated     │ ✓ DONE   │
 ├─────────────────────────────┼──────────┤

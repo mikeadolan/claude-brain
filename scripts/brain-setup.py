@@ -866,7 +866,7 @@ def phase_config(cfg):
 
             | End-Session Checklist                | Status   |
             |--------------------------------------|----------|
-            | Session notes written to DB          | DONE     |
+            | Session notes + tags written         | DONE     |
             | Project summary updated              | DONE     |
             | NEXT_SESSION.md written              | DONE     |
 
