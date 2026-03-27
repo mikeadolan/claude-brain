@@ -31,3 +31,15 @@ jobs:
 
       - name: Run CI tests
         run: python tests/ci_test.py
+
+      - name: Test installer prereq checks (Linux/macOS only)
+        if: runner.os != 'Windows'
+        run: |
+          # Test that install.sh runs prereq checks without errors
+          # We patch it to skip clone/setup (already in the repo)
+          bash -c '
+            set +e
+            source <(head -115 install.sh)
+            echo "Prereq check exit: $ERRORS errors"
+            exit $ERRORS
+          '
