@@ -231,6 +231,21 @@ def main():
                         lines.append(f"- [{date}] {topic}")
                 lines.append("")
 
+        # Check for available updates (silent, 3-second timeout)
+        try:
+            root_path = config.get("storage", {}).get("root_path", "")
+            if root_path and os.path.isdir(os.path.join(root_path, ".git")):
+                result = subprocess.run(
+                    ["git", "-C", root_path, "fetch", "--dry-run"],
+                    capture_output=True, text=True, timeout=3
+                )
+                if result.stderr.strip():
+                    lines.append("## Brain Update Available")
+                    lines.append(f"To update: `cd {root_path} && git pull && pip3 install -r requirements.txt`")
+                    lines.append("")
+        except Exception:
+            pass
+
         if lines:
             print(json.dumps({"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": "\n".join(lines)}}))
         else:

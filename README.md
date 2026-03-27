@@ -87,6 +87,14 @@ No Activity Yesterday:
 
 ## Quick Start
 
+**One-line install** (checks prerequisites, clones, installs dependencies, runs setup):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/mikeadolan/claude-brain/main/install.sh | bash
+```
+
+**Manual install** (if you prefer to do it yourself):
+
 ```bash
 git clone https://github.com/mikeadolan/claude-brain.git
 cd claude-brain
@@ -96,6 +104,17 @@ python3 scripts/brain-setup.py
 The setup walks you through everything - projects, database, hooks, MCP, email, health check.
 
 **Requirements:** Python 3.10+, Claude Code 2.0+, pip3.
+
+### Updating
+
+The brain checks for updates automatically on every session start. When an update is available, you will see:
+
+```
+Brain Update Available
+To update: cd /your/install/path && git pull && pip3 install -r requirements.txt
+```
+
+The path shown is your actual install location. Copy and paste the command to update. Updates never happen automatically.
 
 ### Working in a Project
 

@@ -11,7 +11,7 @@ Source of truth for the dependency chain. See CLAUDE_BRAIN_MVP_PLAN.txt for full
 |-------|---------|
 | sys_sessions | One row per session (session_id PK, project, source, quality_score, tags, notes) |
 | sys_ingest_log | Tracks imported files, prevents re-import (file_path PK) |
-| project_registry | Maps folders to prefixes (8 projects). Columns: folder_name PK, prefix UNIQUE, label, summary, status, health |
+| project_registry | Maps folders to prefixes (9 projects). Columns: folder_name PK, prefix UNIQUE, label, summary, status, health |
 | transcripts | Every message, every session (uuid UNIQUE, FTS5 on content, source field for platform tracking) |
 | transcripts_fts | FTS5 virtual table on transcripts.content |
 | transcript_embeddings | Semantic search vectors (transcript_id PK, embedding BLOB, 384-dim) |
@@ -23,7 +23,7 @@ Source of truth for the dependency chain. See CLAUDE_BRAIN_MVP_PLAN.txt for full
 
 ---
 
-## 8 PROJECTS
+## 9 PROJECTS
 
 | Prefix | Project | Description |
 |--------|---------|-------------|
@@ -34,6 +34,7 @@ Source of truth for the dependency chain. See CLAUDE_BRAIN_MVP_PLAN.txt for full
 | js | job-search | Job search |
 | lt | leg-therapy | Leg therapy |
 | mp | music-project | Music auto play site |
+| igb | igobono | Social currency platform (RoR rebuild) |
 | oth | other | Uncategorized, default fallback |
 
 ---

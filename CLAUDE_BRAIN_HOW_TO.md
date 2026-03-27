@@ -761,9 +761,9 @@ This runs a 9-point diagnostic:
   [PASS] Backup: 2 copies, newest 24m old, integrity OK
   [PASS] Performance: FTS5 0.1ms, LIKE 16.0ms, COUNT(*) 0.3ms
   [PASS] Dependencies: all 4 packages importable
-  [PASS] MCP: brain-server registered for 8 projects, server.py exists
+  [PASS] MCP: brain-server registered for 9 projects, server.py exists
   [PASS] Hooks: 4/4 registered, all files exist
-  [PASS] Config: config.yaml valid, 8 projects, all paths exist
+  [PASS] Config: config.yaml valid, 9 projects, all paths exist
 
   Score: 9/9 PASS
 ```
@@ -1135,6 +1135,29 @@ If you prefer to add a project without the script:
 ### "Database is locked"
 - **Cause:** Another process is writing. The DB uses WAL mode with 5-second timeout.
 - **Fix:** Wait a moment and try again. If persistent, check for stuck processes.
+
+---
+
+## 11.5. UPDATING CLAUDE-BRAIN
+
+The brain checks for updates automatically every time you start a session. If the GitHub repository has new commits that you have not pulled, you will see this message when your session starts:
+
+```
+Brain Update Available
+To update: cd /your/install/path && git pull && pip3 install -r requirements.txt
+```
+
+**How to update:**
+1. Copy the exact command shown in the notification (it uses your real install path)
+2. Run it in a terminal
+3. Start a new Claude Code session
+
+**What the update includes:**
+- `git pull` downloads the latest scripts, hooks, and MCP server code
+- `pip3 install -r requirements.txt` installs any new Python dependencies
+- If no new dependencies were added, pip just says "already satisfied" and moves on
+
+**Updates never happen automatically.** The brain only notifies you. You decide when to update. If you are offline or the check takes longer than 3 seconds, it is skipped silently.
 
 ---
 
