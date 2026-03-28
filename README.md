@@ -87,6 +87,8 @@ No Activity Yesterday:
 
 ## Quick Start
 
+![Install Demo](assets/brain-install-demo.gif)
+
 **One-line install** (checks prerequisites, clones, installs dependencies, runs setup):
 
 ```bash
