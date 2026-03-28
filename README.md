@@ -6,7 +6,7 @@
 
 **Introducing claude-brain for Claude Code - Your AI finally has a real memory.** Not just RAG, RAG and beyond. 100% lossless recall across every session and every project, no silos. Local SQLite. Keyword, semantic, and fuzzy search across everything. Emails you a daily briefing, weekly portfolio, and project status reports - no other tool does this. Zero cloud dependencies. Your data never leaves your machine. Zero token burn. Unlimited potential.
 
-**Watch the explainer video:** [claude-brain in 85 seconds](https://youtu.be/yf1RIo1MtBI)
+**Watch the explainer video:** [claude-brain in 85 seconds](https://youtu.be/0kf-6VRi72M)
 
 ---
 
