@@ -1170,7 +1170,7 @@ def phase_registration(cfg):
             Ask: "Which file do you want to import?" (they can say a number or filename)
 
             Step 3: Ask which project to assign it to. Show the available projects by running:
-              python3 -c "import sqlite3; conn=sqlite3.connect('{db_path}'); [print(f'  {{r[1]}} - {{r[2]}}') for r in conn.execute('SELECT folder_name, prefix, label FROM project_registry ORDER BY folder_name')]"
+              python3 -c "import sqlite3; conn=sqlite3.connect('{cfg['db_path']}'); [print(f'  {{r[1]}} - {{r[2]}}') for r in conn.execute('SELECT folder_name, prefix, label FROM project_registry ORDER BY folder_name')]"
 
             Step 4: Run the import with their choices:
               python3 {root}/scripts/import_claude_ai.py "<chosen_file_path>" --project <chosen_prefix>
