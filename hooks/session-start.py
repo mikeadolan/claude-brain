@@ -19,6 +19,140 @@ import sys
 import yaml
 
 
+def _verify_pending_items(conn, next_session_content):
+    """Parse NEXT_SESSION.md for pending items, verify each against brain DB.
+
+    Searches the brain for each pending item individually. If the brain has
+    evidence that an item is already resolved, flags it so Claude does NOT
+    present it as pending to the user.
+
+    Parsing: Only captures numbered/bulleted list items under sections whose
+    headers START with keywords like REMAINING, PENDING, DECISIONS.
+    Verification: Topic keyword AND resolution word must appear in the SAME
+    line of a transcript message — prevents false positives from unrelated
+    mentions of "done" or "complete" elsewhere in the message.
+
+    Returns list of dicts: {item, date, snippet} for items that appear resolved.
+    """
+    if not next_session_content:
+        return []
+
+    # Step 1: Extract list items from pending/remaining/decisions sections
+    pending_items = []
+    in_pending_section = False
+
+    for line in next_session_content.split("\n"):
+        stripped = line.strip()
+        upper = stripped.upper()
+
+        # Section header must START with the keyword (prevents false triggers
+        # like "REVIEW FINAL FIXES + REMAINING TASKS" in a title)
+        if any(upper.startswith(kw) for kw in [
+            "REMAINING", "PENDING", "DECISIONS",
+            "STILL OPEN", "UNRESOLVED", "TODO",
+        ]):
+            in_pending_section = True
+            continue
+
+        # Exit on separator lines or known non-pending section headers
+        if in_pending_section and stripped.startswith("===="):
+            in_pending_section = False
+            continue
+        if in_pending_section and any(upper.startswith(kw) for kw in [
+            "WHAT WAS DONE", "COMPLETED", "DETAILED STATUS",
+            "THREE QUALITY", "IMMEDIATE ACTION",
+        ]):
+            in_pending_section = False
+            continue
+
+        # Only capture numbered items (1. ...) or bulleted items (- ...)
+        if (in_pending_section and stripped and len(stripped) < 200
+                and (re.match(r'^\d+\.?\s', stripped) or stripped.startswith('-')
+                     or stripped.startswith('•'))):
+            pending_items.append(stripped)
+
+    if not pending_items:
+        return []
+
+    # Step 2: Get recent session notes (structured summaries — high precision)
+    # Session notes say things like "Removed: X" and "Step Y: COMPLETE",
+    # which are much more reliable than raw transcript searches.
+    try:
+        notes_rows = conn.execute("""
+            SELECT notes, started_at
+            FROM sys_sessions
+            WHERE notes IS NOT NULL AND notes != ''
+            AND started_at > datetime('now', '-90 days')
+            ORDER BY started_at DESC
+            LIMIT 30
+        """).fetchall()
+    except Exception:
+        return []
+
+    if not notes_rows:
+        return []
+
+    skip_words = {
+        "the", "a", "an", "in", "on", "at", "to", "for", "of", "is",
+        "it", "or", "and", "not", "yet", "still", "mike", "waiting",
+        "confirm", "needed", "open", "pending", "after", "from", "with",
+        "has", "been", "that", "this", "will", "need", "needs", "ready",
+        "order", "send", "run", "use", "check", "page", "step", "when",
+        "but", "its", "are", "was", "our", "can", "may", "via", "just",
+        "create", "created", "produce", "produced", "new", "update",
+    }
+
+    # Resolution words — chosen carefully to avoid ambiguity.
+    # "cut" excluded: matches both "should we cut?" and "was cut".
+    # "done" excluded: too common in non-resolution contexts.
+    resolution_words = {
+        "removed", "complete", "fixed", "resolved", "applied",
+        "deleted", "finished", "dropped", "eliminated", "stripped",
+    }
+
+    results = []
+
+    for item in pending_items:
+        # Clean punctuation, extract distinctive words
+        clean = re.sub(r'[^\w\s]', ' ', item)
+        words = clean.split()
+        keywords = [
+            w for w in words
+            if w.lower() not in skip_words and len(w) > 2 and not w.isdigit()
+        ]
+
+        if len(keywords) < 2:
+            continue
+
+        # Check each session note for same-SENTENCE evidence.
+        # Session notes are often one giant paragraph, so splitting on
+        # newlines alone is not enough — split into sentences too.
+        found = False
+        for notes, ts in notes_rows:
+            if found:
+                break
+            # Split into sentences: first by newlines, then by ". " boundaries
+            sentences = []
+            for nline in (notes or "").split("\n"):
+                sentences.extend(re.split(r'(?<=\.)\s+(?=[A-Z])', nline))
+            for sentence in sentences:
+                sl = sentence.lower()
+                # Require 2+ topic keywords AND a resolution word, same sentence
+                topic_hits = sum(1 for kw in keywords[:3] if kw.lower() in sl)
+                has_res = any(rw in sl for rw in resolution_words)
+                if topic_hits >= 2 and has_res:
+                    date = ts[:10] if ts else "unknown"
+                    results.append({
+                        "item": item[:120],
+                        "date": date,
+                        "snippet": sentence.strip()[:150],
+                    })
+                    found = True
+                    break
+
+    return results
+
+
 def main():
     # Read stdin (hook protocol requires it; SessionStart sends {})
     sys.stdin.read()
@@ -59,9 +193,11 @@ def main():
         lines.append("- Before acting on inherited work: verify the premise independently")
         lines.append("- Before debugging: identify WHICH component is actually failing")
         lines.append("- Do NOT trust prior session notes blindly - they may contain wrong assumptions")
+        lines.append("- **NEXT_SESSION.md is a HINT, not truth. The brain is the source of truth.** Verify EACH pending item/decision against the brain individually before presenting it to the user. One broad search is NOT enough.")
         lines.append("")
 
         # Read NEXT_SESSION.md from CWD if it exists
+        next_session_content = ""
         cwd = os.environ.get("CWD", os.getcwd())
         next_session_path = os.path.join(cwd, "NEXT_SESSION.md")
         if os.path.isfile(next_session_path):
@@ -73,6 +209,23 @@ def main():
                     lines.append("The previous session left these notes for you:")
                     lines.append("")
                     lines.append(next_session_content)
+                    lines.append("")
+            except Exception:
+                pass
+
+        # Verify pending items from NEXT_SESSION.md against brain DB
+        if next_session_content:
+            try:
+                verified = _verify_pending_items(conn, next_session_content)
+                if verified:
+                    lines.append("## Brain Verification: Pending Items May Be Stale")
+                    lines.append("These items from NEXT_SESSION.md were listed as pending,")
+                    lines.append("but the brain has evidence they may ALREADY be resolved.")
+                    lines.append("**Do NOT present these as pending without re-verifying.**")
+                    lines.append("")
+                    for v in verified:
+                        lines.append(f"- **POSSIBLY RESOLVED:** {v['item']}")
+                        lines.append(f"  Brain evidence ({v['date']}): {v['snippet']}")
                     lines.append("")
             except Exception:
                 pass
