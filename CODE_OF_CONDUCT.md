@@ -21,7 +21,7 @@ We are committed to making participation in this project a harassment-free exper
 
 ## Enforcement
 
-Instances of unacceptable behavior may be reported to **mike@mikeadolan.com**. All complaints will be reviewed and investigated. Maintainers have the right to remove, edit, or reject comments, commits, code, issues, and other contributions that do not align with this Code of Conduct.
+Instances of unacceptable behavior may be reported by opening a **GitHub Discussion** in the [Discussions tab](../../discussions). All complaints will be reviewed and investigated promptly and fairly. All reports will be treated with discretion. Maintainers have the right to remove, edit, or reject comments, commits, code, issues, and other contributions that do not align with this Code of Conduct.
 
 ## Attribution
 

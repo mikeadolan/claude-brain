@@ -6,14 +6,13 @@ If you discover a security vulnerability in claude-brain, please report it respo
 
 **Do NOT open a public GitHub issue for security vulnerabilities.**
 
-Instead, email **mike@mikeadolan.com** with:
+Instead, use GitHub's **Private Vulnerability Reporting**:
 
-1. Description of the vulnerability
-2. Steps to reproduce
-3. Potential impact
-4. Suggested fix (if you have one)
+1. Go to the [Security tab](../../security) of this repository
+2. Click **"Report a vulnerability"**
+3. Fill in the description, steps to reproduce, potential impact, and suggested fix (if you have one)
 
-You will receive a response within 48 hours. Once the issue is confirmed, a fix will be prioritized and released as soon as possible.
+This creates a private security advisory visible only to you and the maintainers. You will receive a response within 48 hours. Once confirmed, a fix will be prioritized and released as soon as possible.
 
 ## Scope
 

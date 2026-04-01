@@ -34,6 +34,13 @@ body:
       description: Paste any relevant error messages or log output.
       render: shell
 
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: If applicable, drag and drop screenshots or terminal output that shows the problem.
+      placeholder: Drag and drop images here, or paste terminal screenshots.
+
   - type: dropdown
     id: os
     attributes:
