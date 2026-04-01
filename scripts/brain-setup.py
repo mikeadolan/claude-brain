@@ -27,8 +27,8 @@ from pathlib import Path
 
 MIN_PYTHON = (3, 10)
 PIP_PACKAGES = ["PyYAML", "mcp", "sentence-transformers", "numpy"]
-HOOK_EVENTS = ["SessionStart", "UserPromptSubmit", "Stop", "SessionEnd"]
-HOOK_SCRIPTS = ["session-start.py", "user-prompt-submit.py", "stop.py", "session-end.py"]
+HOOK_EVENTS = ["SessionStart", "UserPromptSubmit", "Stop", "SessionEnd", "PreCompact", "PostCompact"]
+HOOK_SCRIPTS = ["session-start.py", "user-prompt-submit.py", "stop.py", "session-end.py", "pre-compact.py", "post-compact.py"]
 
 # ---------------------------------------------------------------------------
 # Utilities
@@ -1077,7 +1077,7 @@ def phase_registration(cfg):
         else:
             warn("Hooks not registered - brain won't auto-capture sessions")
     else:
-        ok("All 4 hooks already registered")
+        ok("All 6 hooks already registered")
 
     # --- Register MCP server in ~/.claude.json ---
     claude_json_path = home / ".claude.json"

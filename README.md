@@ -274,12 +274,14 @@ Eleven read-only tools registered as `brain-server`. Claude calls these automati
 
 ```
 claude-brain/
-├── hooks/               # 4 lifecycle hooks (automatic)
+├── hooks/               # 6 lifecycle hooks (automatic)
 │   ├── session-start.py
 │   ├── user-prompt-submit.py
 │   ├── stop.py
-│   └── session-end.py
-├── scripts/             # 29 Python scripts
+│   ├── session-end.py
+│   ├── pre-compact.py
+│   └── post-compact.py
+├── scripts/             # 30 Python scripts
 │   ├── brain-setup.py   # Interactive installer
 │   ├── brain_digest.py  # Email digests (daily/weekly/project)
 │   └── ...              # Query, import, health, backup scripts

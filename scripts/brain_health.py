@@ -415,7 +415,7 @@ def check_mcp_server(config):
 
 
 def check_hooks():
-    """8. HOOKS - check ~/.claude/settings.json for all 4 hooks; verify hook files exist."""
+    """8. HOOKS - check ~/.claude/settings.json for all 6 hooks; verify hook files exist."""
     settings_path = os.path.expanduser("~/.claude/settings.json")
     details = {}
 
@@ -429,12 +429,14 @@ def check_hooks():
         return "FAIL", f"Hooks: failed to read settings.json: {e}", details
 
     hooks_config = settings.get("hooks", {})
-    required_hooks = ["SessionStart", "UserPromptSubmit", "Stop", "SessionEnd"]
+    required_hooks = ["SessionStart", "UserPromptSubmit", "Stop", "SessionEnd", "PreCompact", "PostCompact"]
     hook_files = {
         "SessionStart": "session-start.py",
         "UserPromptSubmit": "user-prompt-submit.py",
         "Stop": "stop.py",
         "SessionEnd": "session-end.py",
+        "PreCompact": "pre-compact.py",
+        "PostCompact": "post-compact.py",
     }
 
     registered = 0
@@ -477,9 +479,9 @@ def check_hooks():
             issues.append(f"not registered: {', '.join(missing_hooks)}")
         if missing_files:
             issues.append(f"missing files: {', '.join(missing_files)}")
-        return "FAIL", f"Hooks: {registered}/4 registered, {'; '.join(issues)}", details
+        return "FAIL", f"Hooks: {registered}/6 registered, {'; '.join(issues)}", details
 
-    summary = f"Hooks: {registered}/4 registered, all files exist"
+    summary = f"Hooks: {registered}/6 registered, all files exist"
     return "PASS", summary, details
 
 
