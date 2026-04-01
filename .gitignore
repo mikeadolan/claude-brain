@@ -104,30 +104,18 @@ db-backup/
 # Legacy Windows-era folder (personal files, not a project)
 mike-brain/
 
-# --- PROJECT-SPECIFIC CONTENT (PERSONAL) ---
+# --- PROJECT FOLDERS (ALL EXCLUDED, PERSONAL CONTENT) ---
+# Blanket exclusions prevent any project file from ever leaking to public repo
 
-# Manuscript files (copyrighted content)
-johnny-goods/chapters/
-johnny-goods/source/
-johnny-goods-assistant/chapters/
-johnny-goods-assistant/source/
-
-# Project archives (old CLAUDE.md versions, master plans, personal notes)
-johnny-goods/archive/
-johnny-goods-assistant/archive/
-general/archives/
-
-# Project start prompts (personal workflow)
-johnny-goods/START_PROMPTS.txt
-johnny-goods-assistant/START_PROMPTS.txt
-
-# Project-specific scripts (personal, not part of brain core)
-johnny-goods/scripts/
-johnny-goods-assistant/scripts/
-
-# Project output directories
-johnny-goods/output/
-johnny-goods-assistant/output/
+johnny-goods/
+johnny-goods-assistant/
+general/
+job-search/
+leg-therapy/
+other/
+igobono/
+archive/
+launch-posts/
 
 # --- BUILD/RUNTIME ARTIFACTS ---
 
