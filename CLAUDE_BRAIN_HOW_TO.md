@@ -1176,7 +1176,7 @@ To update: cd /your/install/path && git pull && pip3 install -r requirements.txt
 | **No automatic fact extraction** | Project facts and decisions are populated via setup questionnaire and scripts. The brain captures all conversations (so the data exists), but doesn't yet auto-extract structured facts from them. | Deferred - value thin after session note quality improvements. Search paths cover recall. |
 | **No lessons learned extractor** | Requires pattern mining across sessions | Post-MVP: find "mistake"/"redo"/"should have" patterns |
 
-See `POST_MVP_ROADMAP.md` for the full roadmap and planned fixes.
+See the [Roadmap](https://github.com/mikeadolan/claude-brain/discussions/1) for planned features and fixes.
 
 ---
 

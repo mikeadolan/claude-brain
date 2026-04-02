@@ -6,7 +6,7 @@
 
 **Introducing claude-brain for Claude Code - Your AI finally has a real memory.** Not just RAG, RAG and beyond. 100% lossless recall across every session and every project, no silos. Local SQLite. Keyword, semantic, and fuzzy search across everything. Emails you a daily briefing, weekly portfolio, and project status reports - no other tool does this. Zero cloud dependencies. Your data never leaves your machine. Zero token burn. Unlimited potential.
 
-**Watch the explainer video:** [claude-brain in 85 seconds](https://youtu.be/0kf-6VRi72M)
+**Watch the explainer video:** [claude-brain in 85 seconds](https://youtu.be/0kf-6VRi72M) | **[Roadmap](https://github.com/mikeadolan/claude-brain/discussions/1)**
 
 ---
 
@@ -410,7 +410,7 @@ All imports are safe to re-run. Already-imported conversations are skipped autom
 | **Semantic search cold-start** | First query takes ~4-5s to load the model. Fast after that. |
 | **No cross-machine real-time DB sync** | DB is local. Project files sync; database doesn't. |
 
-See `POST_MVP_ROADMAP.md` for the full list and planned fixes.
+See the [Roadmap](https://github.com/mikeadolan/claude-brain/discussions/1) for planned features and fixes.
 
 ---
 
