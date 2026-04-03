@@ -3,8 +3,8 @@
 
 Fires before every user message is sent to Claude.
 1. Extracts user prompt text from stdin JSON
-2. Searches for relevant memories (FTS5 search)
-3. Returns top 3 relevant memories as additionalContext
+2. Searches for relevant memories (FTS5 search with fuzzy correction)
+3. Returns top 5 relevant memories as additionalContext
 
 RULE: stdout is SACRED. Only valid JSON goes to stdout.
 """
@@ -16,6 +16,13 @@ import sqlite3
 import sys
 
 import yaml
+
+# Add scripts/ to path for fuzzy_search import
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "scripts"))
+try:
+    from fuzzy_search import fuzzy_correct
+except ImportError:
+    fuzzy_correct = None
 
 STOP_WORDS = {
     "a", "an", "the", "is", "are", "was", "were", "be", "been", "being",
@@ -280,10 +287,18 @@ def main():
 
         # 3. FTS5 search (semantic search available via MCP search_semantic on demand)
 
-        # Extract keywords from prompt
-        words = re.findall(r'[a-zA-Z]{3,}', prompt_text.lower())
-        keywords = [w for w in words if w not in STOP_WORDS]
+        # Extract keywords from prompt (handles hyphenated terms like "pre-compact")
+        words = re.findall(r'[a-zA-Z](?:[a-zA-Z\-]*[a-zA-Z])?', prompt_text.lower())
+        words = [w for w in words if len(w) >= 3]
+        keywords = [w for w in words if w.replace("-", "") not in STOP_WORDS and w not in STOP_WORDS]
         keywords = keywords[:8]  # Cap at 8 keywords
+
+        # Fuzzy correct keywords to fix typos before searching
+        if fuzzy_correct and keywords:
+            try:
+                keywords, _ = fuzzy_correct(keywords, db_path)
+            except Exception:
+                pass
 
         if not keywords:
             print("{}")
@@ -303,7 +318,8 @@ def main():
         conn = sqlite3.connect(db_path)
         conn.execute("PRAGMA busy_timeout=5000;")
 
-        # Search with project bias: get 2 from current project + 3 global, dedup to top 3
+        # Search with project bias: get 3 from current project + 5 global, dedup to top 5
+        # Recency weighting: rank * (1 + age_penalty) where newer = lower penalty
         rows = []
         if cwd_project:
             rows = conn.execute("""
@@ -311,18 +327,18 @@ def main():
                 FROM transcripts_fts fts
                 JOIN transcripts t ON t.rowid = fts.rowid
                 WHERE transcripts_fts MATCH ? AND t.project = ?
-                ORDER BY fts.rank
-                LIMIT 2
+                ORDER BY fts.rank * (1.0 + 0.1 * MAX(0, julianday('now') - julianday(t.timestamp)))
+                LIMIT 3
             """, (fts_query, cwd_project)).fetchall()
 
-        # Fill remaining slots with global results
+        # Fill remaining slots with global results (recency weighted)
         global_rows = conn.execute("""
             SELECT t.project, t.timestamp, t.content
             FROM transcripts_fts fts
             JOIN transcripts t ON t.rowid = fts.rowid
             WHERE transcripts_fts MATCH ?
-            ORDER BY fts.rank
-            LIMIT 5
+            ORDER BY fts.rank * (1.0 + 0.1 * MAX(0, julianday('now') - julianday(t.timestamp)))
+            LIMIT 7
         """, (fts_query,)).fetchall()
 
         # Merge: project-biased first, then global (dedup by content prefix)
@@ -333,7 +349,7 @@ def main():
             if key not in seen:
                 seen.add(key)
                 merged.append(r)
-            if len(merged) >= 3:
+            if len(merged) >= 5:
                 break
         rows = merged
 
@@ -346,7 +362,7 @@ def main():
         semantic_results = []
         for project, timestamp, content in rows:
             semantic_results.append({
-                "content": (content or "")[:200].replace("\n", " "),
+                "content": (content or "")[:400].replace("\n", " "),
                 "project": project or "",
                 "timestamp": (timestamp or "")[:10],
             })
