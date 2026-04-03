@@ -4,7 +4,8 @@
 Fires after every Claude response completes.
 1. Determines current session ID and JSONL path
 2. Calls write_exchange.py to capture new messages to DB
-3. Returns {} (no additional context needed)
+3. If backup is older than 12 hours, triggers brain_sync.py (detached)
+4. Returns {} (no additional context needed)
 
 RULE: stdout is SACRED. Only valid JSON goes to stdout.
 """
@@ -14,6 +15,9 @@ import json
 import os
 import subprocess
 import sys
+import time
+
+_BACKUP_MAX_AGE = 12 * 3600  # 12 hours in seconds
 
 
 def main():
@@ -46,6 +50,26 @@ def main():
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
+    except Exception:
+        pass
+
+    # Auto-backup if last backup is older than 12 hours
+    try:
+        backup_path = os.path.join(root, "db-backup", "claude-brain.db.bak1")
+        run_backup = False
+        if not os.path.exists(backup_path):
+            run_backup = True
+        else:
+            age = time.time() - os.path.getmtime(backup_path)
+            if age > _BACKUP_MAX_AGE:
+                run_backup = True
+
+        if run_backup:
+            subprocess.Popen(
+                [sys.executable, os.path.join(root, "scripts", "brain_sync.py")],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
     except Exception:
         pass
 
