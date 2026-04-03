@@ -15,6 +15,7 @@ while avoiding false corrections between legitimate word variants.
 """
 
 import sqlite3
+import time
 from difflib import get_close_matches
 
 # ---------------------------------------------------------------------------
@@ -47,10 +48,12 @@ STOP_WORDS = {
 _ESTABLISHED_DOC_MIN = 100   # Terms with this many+ docs are never corrected
 _RATIO_THRESHOLD = 20        # In-vocab terms need a close match with 20x+ freq to correct
 _CANDIDATE_DOC_MIN = 10      # Candidates must appear in at least this many docs
+_CACHE_TTL = 60              # Seconds before vocab cache is refreshed
 
 # Module-level caches: { db_path: data }
 _vocab_cache: dict[str, list[str]] = {}      # Sorted list for get_close_matches
 _freq_cache: dict[str, dict[str, int]] = {}  # term → doc count
+_cache_time: dict[str, float] = {}           # When each cache was loaded
 
 
 def _ensure_vocab_table(conn: sqlite3.Connection) -> None:
@@ -69,7 +72,9 @@ def _is_valid_term(term: str) -> bool:
 def _load_vocab(db_path: str) -> None:
     """Load vocabulary and frequencies from FTS5 index into caches."""
     if db_path in _vocab_cache:
-        return
+        if time.time() - _cache_time.get(db_path, 0) < _CACHE_TTL:
+            return
+        # Cache expired, fall through to reload
 
     conn = sqlite3.connect(db_path)
     try:
@@ -91,6 +96,7 @@ def _load_vocab(db_path: str) -> None:
 
     _vocab_cache[db_path] = sorted(vocab)
     _freq_cache[db_path] = freq
+    _cache_time[db_path] = time.time()
 
 
 def get_vocabulary(db_path: str) -> list[str]:
@@ -113,6 +119,7 @@ def clear_cache() -> None:
     """Clear all caches (useful for testing)."""
     _vocab_cache.clear()
     _freq_cache.clear()
+    _cache_time.clear()
 
 
 # ---------------------------------------------------------------------------
@@ -162,6 +169,21 @@ def fuzzy_correct(terms: list[str], db_path: str) -> tuple[list[str], dict[str, 
         if term_freq >= _ESTABLISHED_DOC_MIN:
             corrected.append(term)
             continue
+
+        # If term not in cache, check live DB before assuming it's a typo
+        if term_freq == 0:
+            conn = sqlite3.connect(db_path)
+            try:
+                _ensure_vocab_table(conn)
+                live = conn.execute(
+                    "SELECT doc FROM transcripts_fts_vocab WHERE term = ?",
+                    (term,)
+                ).fetchone()
+            finally:
+                conn.close()
+            if live and live[0] > 0:
+                corrected.append(term)
+                continue
 
         # Find close matches
         matches = get_close_matches(
