@@ -4,6 +4,17 @@ All notable changes to claude-brain.
 
 ---
 
+## [0.2.1] - 2026-04-06
+
+### Improved
+- **user-prompt-submit hook** - fuzzy correction runs before FTS5 search (catches typos before they miss results), result content bumped from 200 to 400 characters, results increased from 3 to 5, recency weighting added (recent messages rank higher), hyphenated terms preserved as single keywords instead of being split.
+- **stop hook** - auto-backup trigger checks backup age on every Claude response, runs `brain_sync.py` if the last backup is older than 12 hours. Prevents long-running sessions from going days without a backup.
+
+### Fixed
+- **FTS5 stale vocab cache** - MCP server vocabulary cache never refreshed, causing real words like "headless" to be autocorrected to "handles". Fix: 60-second cache TTL with live DB fallback before correcting. (Already on main in 0.2.0, listed here for completeness.)
+
+---
+
 ## [0.2.0] - 2026-03-12
 
 ### Added - Feature 3: Email Digests (the brain reaches OUT to you)
