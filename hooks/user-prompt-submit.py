@@ -233,6 +233,106 @@ def detect_discussion_not_go(text):
     return True
 
 
+CLEAR_CHECKPOINT_MARKER = "CLEAR_CHECKPOINT"
+
+
+def _build_post_clear_context(conn, cwd_project, current_session_id):
+    """Detect post-/clear state and build recovery context.
+
+    When /clear fires, session-end.py writes a CLEAR_CHECKPOINT marker on the
+    ended session. The next UserPromptSubmit after /clear uses a NEW session_id
+    (CC creates a new session). This function detects that transition and
+    returns recovery context Claude can use to continue cleanly.
+
+    Detection: a session in the same project ended < 5 minutes ago with the
+    CLEAR_CHECKPOINT marker, and the current session_id differs from it.
+
+    Returns: formatted context string, or None if not post-/clear state.
+    """
+    try:
+        row = conn.execute(
+            """SELECT session_id, ended_at, message_count
+               FROM sys_sessions
+               WHERE project = ?
+                 AND session_id != ?
+                 AND notes LIKE ?
+                 AND ended_at > datetime('now', '-5 minutes')
+               ORDER BY ended_at DESC
+               LIMIT 1""",
+            (cwd_project, current_session_id, CLEAR_CHECKPOINT_MARKER + "%"),
+        ).fetchone()
+
+        if not row:
+            return None
+
+        old_session_id, ended_at, msg_count = row
+
+        lines = []
+        lines.append("## POST-/CLEAR CONTEXT RECOVERY")
+        lines.append("")
+        lines.append(
+            f"A /clear just happened. Previous session `{old_session_id}` "
+            f"ended at {(ended_at or '')[:19]} with {msg_count} messages."
+        )
+        lines.append("The brain has restored context below so you can continue cleanly.")
+        lines.append("")
+
+        # Project summary (aggregate state across all sessions for this project)
+        proj_row = conn.execute(
+            """SELECT summary FROM project_registry
+               WHERE prefix = ? AND summary IS NOT NULL AND summary != ''""",
+            (cwd_project,),
+        ).fetchone()
+        if proj_row:
+            lines.append("### Current Project Summary")
+            lines.append(proj_row[0])
+            lines.append("")
+
+        # Last 10 exchanges (20 messages: user + assistant interleaved)
+        msgs = conn.execute(
+            """SELECT role, content, timestamp
+               FROM transcripts
+               WHERE session_id = ?
+                 AND role IN ('user', 'assistant')
+                 AND content IS NOT NULL AND trim(content) != ''
+               ORDER BY timestamp DESC
+               LIMIT 20""",
+            (old_session_id,),
+        ).fetchall()
+
+        if msgs:
+            msgs = list(reversed(msgs))  # chronological
+            lines.append("### Last 10 Exchanges from Previous Session")
+            lines.append("")
+            for role, content, ts in msgs:
+                preview = (content or "")[:600].replace("\n", " ").strip()
+                who = "**You**" if role == "user" else "**Claude**"
+                ts_str = (ts or "")[:19]
+                lines.append(f"{who} [{ts_str}]: {preview}")
+                lines.append("")
+
+        lines.append("### YOUR TASKS (do these FIRST, before responding to user)")
+        lines.append(
+            f"1. For deeper context beyond the exchanges above, call "
+            f"`get_session('{old_session_id}')` via brain MCP."
+        )
+        lines.append(
+            f"2. Write proper session notes for session `{old_session_id}` "
+            f"using scripts/write_session_notes.py."
+        )
+        lines.append(
+            "3. Update project summary via scripts/write_project_summary.py "
+            "if the state has materially changed."
+        )
+        lines.append("4. THEN respond to the user's prompt.")
+        lines.append("")
+        lines.append("This recovery context replaces the normal brain search for this turn.")
+
+        return "\n".join(lines)
+    except Exception:
+        return None
+
+
 def main():
     # Read stdin (hook protocol sends prompt data)
     raw_input = sys.stdin.read()
@@ -252,6 +352,8 @@ def main():
             prompt_text = ""
         prompt_text = prompt_text.strip()
 
+        current_session_id = input_data.get("session_id", "") or ""
+
         # Frustration circuit breaker - check BEFORE length filter
         if prompt_text and detect_frustration(prompt_text):
             context = handle_frustration(prompt_text, root)
@@ -270,18 +372,40 @@ def main():
             print(json.dumps({"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": context}}))
             return
 
-        # Skip short/trivial prompts
-        if len(prompt_text) < 15:
-            print("{}")
-            return
-
-        # 2. Load config and connect to DB
+        # 2. Load config and open DB (needed for post-/clear check, which must
+        #    run BEFORE the short-prompt skip — user might type "continue" after /clear)
         config_path = os.path.join(root, "config.yaml")
         with open(config_path) as f:
             config = yaml.safe_load(f)
 
         db_path = config["storage"]["local_db_path"]
         if not os.path.exists(db_path):
+            print("{}")
+            return
+
+        # Detect current project from CWD (used by post-/clear and FTS5 biasing)
+        cwd_project = None
+        cwd = os.environ.get("CWD", os.getcwd())
+        mapping = config.get("jsonl_project_mapping", {})
+        for folder, prefix in mapping.items():
+            if folder in cwd:
+                cwd_project = prefix
+                break
+
+        conn = sqlite3.connect(db_path)
+        conn.execute("PRAGMA busy_timeout=5000;")
+
+        # Post-/clear recovery: overrides normal flow when detected
+        if cwd_project and current_session_id:
+            post_clear_ctx = _build_post_clear_context(conn, cwd_project, current_session_id)
+            if post_clear_ctx:
+                conn.close()
+                print(json.dumps({"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": post_clear_ctx}}))
+                return
+
+        # Skip short/trivial prompts (only reached if not post-/clear)
+        if len(prompt_text) < 15:
+            conn.close()
             print("{}")
             return
 
@@ -301,22 +425,11 @@ def main():
                 pass
 
         if not keywords:
+            conn.close()
             print("{}")
             return
 
         fts_query = " OR ".join(f'"{kw}"' for kw in keywords)
-
-        # Detect current project from CWD for result biasing
-        cwd_project = None
-        cwd = os.environ.get("CWD", os.getcwd())
-        mapping = config.get("jsonl_project_mapping", {})
-        for folder, prefix in mapping.items():
-            if folder in cwd:
-                cwd_project = prefix
-                break
-
-        conn = sqlite3.connect(db_path)
-        conn.execute("PRAGMA busy_timeout=5000;")
 
         # Search with project bias: get 3 from current project + 5 global, dedup to top 5
         # Recency weighting: rank * (1 + age_penalty) where newer = lower penalty

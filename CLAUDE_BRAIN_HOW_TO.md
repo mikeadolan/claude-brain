@@ -129,7 +129,8 @@ data and inject memories without you lifting a finger.
 | Session starts | Ingests new files, loads recent session summaries as context | session-start.py |
 | Every prompt you type | Searches brain for relevant memories, injects top 3 into Claude's context | user-prompt-submit.py |
 | Every Claude response | Captures the full exchange (your prompt + Claude's response) to the database | stop.py |
-| Session ends | Backs up the database | session-end.py |
+| Session ends OR user runs /clear | Backs up the database. On /clear, writes a CLEAR_CHECKPOINT marker so the next prompt can inject recovery context automatically (see /clear safety below). | session-end.py |
+| First prompt after /clear | Detects post-/clear state and injects the project summary + last 10 exchanges from the cleared session + "write notes first" instructions. Makes /clear a safe restart button instead of destructive amnesia. | user-prompt-submit.py |
 
 **You never need to say "save this" or "remember that."** Every exchange is captured
 automatically, in full - not summarized, not filtered, not reduced to tool observations.
@@ -1171,7 +1172,7 @@ To update: cd /your/install/path && git pull && pip3 install -r requirements.txt
 | ~~**Keyword search is exact-match**~~ | ~~Typos won't match~~ | **DONE** - Fuzzy search auto-corrects typos before the FTS query. "sesion" now finds "session". |
 | **No auto-capture from claude.ai** | Claude.ai has no hook system | Manual export + import required |
 | **No cross-machine real-time sync** | DB is local; Dropbox syncs project files but not the DB | Planned: DB in Dropbox or sync script |
-| **Summaries require normal exit** | session-end hook only fires on clean exit | If Claude Code crashes, summary is lost (but exchanges are saved) |
+| **Summaries require normal exit or /clear** | session-end hook fires on `/exit`, `/clear`, and interactive `/resume`, but may NOT fire on hard terminal close or OS crash | If Claude Code or your machine crashes mid-session, the session notes field is empty (but every exchange is already saved to the database by the stop hook — no data loss). Next session-start will detect the empty notes and prompt you to rewrite them. |
 | **No web UI** | CLI-only via Claude Code | Post-MVP consideration |
 | **No automatic fact extraction** | Project facts and decisions are populated via setup questionnaire and scripts. The brain captures all conversations (so the data exists), but doesn't yet auto-extract structured facts from them. | Deferred - value thin after session note quality improvements. Search paths cover recall. |
 | **No lessons learned extractor** | Requires pattern mining across sessions | Post-MVP: find "mistake"/"redo"/"should have" patterns |

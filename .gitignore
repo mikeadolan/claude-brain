@@ -156,6 +156,44 @@ Thumbs.db
 # Claude Code auto-generated (lives in ~/.claude/, not here)
 .claude/
 
+# --- CODEX INTEGRATION FILES (personal, never commit) ---
+
+# Master architecture doc for Codex/Claude cross-tool reference
+BRAIN_ARCHITECTURE.md
+
+# Bootstrap prompt for first Codex session
+CODEX_BOOTSTRAP_PROMPT.md
+
+# Codex's per-project session continuity files
+CODEX_NEXT_SESSION.md
+**/CODEX_NEXT_SESSION.md
+
+# Cross-tool handoff signal files (only present when pending)
+HANDOFF_TO_CODEX.md
+HANDOFF_TO_CLAUDE.md
+**/HANDOFF_TO_CODEX.md
+**/HANDOFF_TO_CLAUDE.md
+
+# Archive of consumed handoff files (timestamped, never deleted)
+HANDOFF_ARCHIVE/
+**/HANDOFF_ARCHIVE/
+
+# --- LOCAL-ONLY FILES (never commit) ---
+
+# Drafted dev.to articles (Mike posts directly, not via repo)
+devto-articles/
+
+# Personal scratch (iPad session IDs, etc.)
+main-notes.txt
+
+# Local bug reports (contain internal session UUIDs - fix before public)
+BUG_*.md
+
+# Codex integration scripts - DEFERRED. Ship with Codex marketing push.
+# Pattern (not exact name) catches codex_sync.py, codex_status.py, and any
+# future Codex-related scripts so none can leak into a public commit.
+scripts/codex_*.py
+
 # --- KEEP THESE (explicit overrides) ---
 
 # Keep folder structure markers

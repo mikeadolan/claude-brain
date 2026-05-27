@@ -4,6 +4,22 @@ All notable changes to claude-brain.
 
 ---
 
+## [0.3.0] - 2026-04-13
+
+### Added - /clear safety (the brain makes /clear a safe restart button)
+
+For every other Claude Code user, `/clear` is destructive — it wipes context to free tokens and you lose continuity. With claude-brain, `/clear` now becomes a **safe restart**: the brain captures everything in real-time (already did), and on the first prompt after `/clear` it automatically restores context so Claude picks up where you left off.
+
+- **session-end hook — `/clear` trigger detection.** Reads the `reason` field from the SessionEnd stdin JSON. On `reason == "clear"`, writes a `CLEAR_CHECKPOINT` marker to the ended session's notes instead of the generic fallback. Skips the auto-tag suggestion so Claude can write proper tags during post-/clear recovery.
+- **user-prompt-submit hook — post-/clear detection + context recovery.** On each prompt, checks if a session in the same project ended < 5 minutes ago with a `CLEAR_CHECKPOINT` marker and a different session_id from the current one. When that pattern matches, injects recovery context automatically: the current project summary, the last 10 exchanges (user + assistant) from the ended session, and instructions to write proper notes for the ended session before responding to the user.
+- **Works with existing upstream bug.** Anthropic's `SessionStart` hook does NOT fire on `/clear` (GitHub #34072, open). The UserPromptSubmit-based detection is a workaround that does not depend on the buggy SessionStart trigger, so it works today.
+
+### Fixed
+- **Stale script count.** README.md referenced an outdated script count from the launch era. Synced to the actual count (25 Python scripts).
+- **brain_consistency.py false positives.** The script count check counted all `*.py` files on disk in `scripts/`, including any locally gitignored helpers, which inflated the count vs the public docs. Switched to counting git-tracked files only via `git ls-files`. The empty-notes check flagged active sessions that hadn't yet written end-of-session notes; added a 1-day freshness filter so only sessions that ended more than a day ago are checked, matching the existing untagged-session pattern.
+
+---
+
 ## [0.2.1] - 2026-04-06
 
 ### Improved

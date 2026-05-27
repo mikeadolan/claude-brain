@@ -155,8 +155,10 @@ You type a prompt
 Claude responds
     → stop hook captures the exchange to the database
 
-You close the session
+You close the session (or run /clear)
     → session-end hook backs up the database
+    → On /clear, it also writes a CLEAR_CHECKPOINT marker so the next
+      prompt auto-restores context (safe restart, not destructive amnesia)
 ```
 
 ### 2. Search - Three Engines, Zero Silos
@@ -281,7 +283,7 @@ claude-brain/
 │   ├── session-end.py
 │   ├── pre-compact.py
 │   └── post-compact.py
-├── scripts/             # 30 Python scripts
+├── scripts/             # 25 Python scripts
 │   ├── brain-setup.py   # Interactive installer
 │   ├── brain_digest.py  # Email digests (daily/weekly/project)
 │   └── ...              # Query, import, health, backup scripts

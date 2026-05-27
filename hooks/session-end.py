@@ -1,22 +1,28 @@
 #!/usr/bin/env python3
 """session-end.py - Claude Code SessionEnd hook for claude-brain.
 
-Fires when session ends (/exit or terminal close).
-1. Checks if Claude wrote session notes — if not, writes fallback placeholder
-2. Runs brain_sync.py to backup the database (detached)
-3. Returns {} (session is ending, no context needed)
+Fires when session ends. The `reason` field in stdin JSON tells us why:
+  - "clear"             → user ran /clear (session will be replaced by new one)
+  - "prompt_input_exit" → user ran /exit
+  - "resume"            → switched via interactive /resume
+  - "logout"            → user logged out
+  - "other"             → terminal close or other
 
-The fallback placeholder ensures every session has at least basic notes.
-Next session-start.py detects the placeholder and forces Claude to write
-real notes before doing anything else.
+Behavior:
+  /clear  → write CLEAR_CHECKPOINT marker so user-prompt-submit.py can
+            detect post-/clear state on the next prompt and inject
+            recovery context. Skip tag suggestion (Claude will write
+            proper notes+tags after /clear).
+  other   → write AUTO-GENERATED FALLBACK placeholder if Claude didn't
+            write notes. Auto-suggest tags from transcript.
 
-NOTE: May not fire on terminal close. Data integrity guaranteed
-by stop.py having captured all exchanges already.
+Always: run brain_sync.py to backup the database (detached).
 
 RULE: stdout is SACRED. Only valid JSON goes to stdout.
 """
 
 import glob
+import json
 import os
 import sqlite3
 import subprocess
@@ -26,6 +32,7 @@ import yaml
 
 
 FALLBACK_MARKER = "AUTO-GENERATED FALLBACK"
+CLEAR_CHECKPOINT_MARKER = "CLEAR_CHECKPOINT"
 
 # Same tag keywords used by import_chatgpt.py and brain_tag_review.py
 TAG_KEYWORDS = {
@@ -125,8 +132,15 @@ def _write_fallback_tags(root, session_id):
         pass
 
 
-def _write_fallback_notes(root, session_id):
-    """Check if session has notes. If not, write a fallback placeholder."""
+def _write_fallback_notes(root, session_id, reason="other"):
+    """Check if session has notes. If not, write a marker placeholder.
+
+    For reason=="clear": writes CLEAR_CHECKPOINT marker so user-prompt-submit.py
+    can detect post-/clear state on the next prompt and inject recovery context.
+
+    For other reasons (exit, logout, terminal close): writes AUTO-GENERATED
+    FALLBACK marker. Next session-start.py forces Claude to rewrite them.
+    """
     try:
         config_path = os.path.join(root, "config.yaml")
         if not os.path.exists(config_path):
@@ -181,19 +195,29 @@ def _write_fallback_notes(root, session_id):
         ).fetchone()
         preview = first_msg[0].replace("\n", " ").strip() if first_msg else "(no content)"
 
-        # Write fallback note
-        fallback = (
-            f"{FALLBACK_MARKER}\n"
-            f"Claude's end-session protocol did not write notes for this session.\n"
-            f"Project: {project} | Messages: {msg_count}\n"
-            f"Time: {first_ts} to {last_ts}\n"
-            f"First message: \"{preview}\"\n"
-            f"NOTE: Rewrite these notes in the next session using the transcript."
-        )
+        if reason == "clear":
+            note = (
+                f"{CLEAR_CHECKPOINT_MARKER}\n"
+                f"Session ended via /clear. user-prompt-submit.py will detect this\n"
+                f"on the next prompt and inject recovery context to the new session.\n"
+                f"Claude's first task after /clear: rewrite these notes using the transcript.\n"
+                f"Project: {project} | Messages: {msg_count}\n"
+                f"Time: {first_ts} to {last_ts}\n"
+                f"First message: \"{preview}\""
+            )
+        else:
+            note = (
+                f"{FALLBACK_MARKER}\n"
+                f"Claude's end-session protocol did not write notes for this session.\n"
+                f"Project: {project} | Messages: {msg_count}\n"
+                f"Time: {first_ts} to {last_ts}\n"
+                f"First message: \"{preview}\"\n"
+                f"NOTE: Rewrite these notes in the next session using the transcript."
+            )
 
         conn.execute(
             "UPDATE sys_sessions SET notes = ? WHERE session_id = ?",
-            (fallback, session_id),
+            (note, session_id),
         )
         conn.commit()
         conn.close()
@@ -204,8 +228,15 @@ def _write_fallback_notes(root, session_id):
 
 
 def main():
-    # Read stdin (hook protocol requires it)
-    sys.stdin.read()
+    # Read stdin — parse `reason` field to distinguish /clear from /exit
+    reason = "other"
+    try:
+        raw = sys.stdin.read()
+        if raw.strip():
+            hook_input = json.loads(raw)
+            reason = hook_input.get("reason") or "other"
+    except Exception:
+        pass
 
     # Determine ROOT (parent of hooks/)
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -213,8 +244,10 @@ def main():
     # Check for missing session notes and tags, write fallbacks if needed
     session_id = _detect_session_id()
     if session_id:
-        _write_fallback_notes(root, session_id)
-        _write_fallback_tags(root, session_id)
+        _write_fallback_notes(root, session_id, reason=reason)
+        # Skip auto-tag on /clear — Claude will write proper tags after recovery
+        if reason != "clear":
+            _write_fallback_tags(root, session_id)
 
     # Run database backup (detached - hook must return immediately)
     try:
