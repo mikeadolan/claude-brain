@@ -6,9 +6,11 @@ and brain_query.py to correct typos BEFORE the FTS query runs.
 
 Correction rules:
 1. Terms not in the FTS index at all → corrected to best close match (doc >= 10)
-2. Terms in the index but rare (doc < 100) → corrected only if a close match
-   has 20x+ higher frequency (e.g., "sesion" doc=10 → "session" doc=1700)
-3. Terms with doc >= 100 → never corrected (established words)
+2. Terms in the index but EXTREMELY rare (doc < 30) → corrected only if a close
+   match has 20x+ higher frequency (e.g., "sesion" doc=10 → "session" doc=1700)
+3. Terms with doc >= 30 → never corrected (protects technical/CamelCase terms
+   like "precompact" from being silently corrected to common words like "prompt")
+4. Terms with doc >= 100 → never corrected (established words)
 
 This handles typos that accumulate in the index from past conversations
 while avoiding false corrections between legitimate word variants.
@@ -46,6 +48,9 @@ STOP_WORDS = {
 
 # Correction thresholds
 _ESTABLISHED_DOC_MIN = 100   # Terms with this many+ docs are never corrected
+_RARE_DOC_MAX = 30           # Term must have FEWER than this many docs to be corrected
+                             # (protects technical terms like "precompact" from being
+                             # silently corrected to common words like "prompt")
 _RATIO_THRESHOLD = 20        # In-vocab terms need a close match with 20x+ freq to correct
 _CANDIDATE_DOC_MIN = 10      # Candidates must appear in at least this many docs
 _CACHE_TTL = 60              # Seconds before vocab cache is refreshed
@@ -209,8 +214,10 @@ def fuzzy_correct(terms: list[str], db_path: str) -> tuple[list[str], dict[str, 
                     found = True
                     break
             else:
-                # Term is in vocab but rare - need overwhelming freq difference
-                if cand_freq >= term_freq * _RATIO_THRESHOLD:
+                # Term is in vocab - only correct if EXTREMELY rare AND overwhelming freq difference
+                # The _RARE_DOC_MAX check protects technical terms (like "precompact") that
+                # legitimately appear 30-99 times from being silently swapped for common words.
+                if term_freq < _RARE_DOC_MAX and cand_freq >= term_freq * _RATIO_THRESHOLD:
                     corrected.append(candidate)
                     corrections[term] = candidate
                     found = True

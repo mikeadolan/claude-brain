@@ -4,6 +4,13 @@ All notable changes to claude-brain.
 
 ---
 
+## [0.3.1] - 2026-05-26 (PENDING PUSH TO MAIN)
+
+### Fixed
+- **Fuzzy correction silently corrupting searches for rare technical terms.** `scripts/fuzzy_search.py` was correcting any in-vocab term with doc < 100 if a close match had 20x+ frequency. This silently swapped technical terms like `PreCompact` (used heavily in brain conversations, ~50-90 docs) for unrelated common words like `prompt` (10,000+ docs). Result: searches for PreCompact, PostCompact, FastMCP, and other CamelCase/technical terms returned wrong results. Fix: added `_RARE_DOC_MAX = 30` constant — only correct in-vocab terms that appear in fewer than 30 docs AND meet the existing 20x ratio. Technical terms with 30+ legitimate uses are now protected. Caught by Codex bootstrap testing — Codex called `search_transcripts("PreCompact hook")` and got prompt-related results back. (Discovered during Codex integration verification, 2026-05-26.)
+
+---
+
 ## [0.3.0] - 2026-04-13
 
 ### Added - /clear safety (the brain makes /clear a safe restart button)
