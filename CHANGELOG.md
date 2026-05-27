@@ -23,7 +23,6 @@ For every other Claude Code user, `/clear` is destructive — it wipes context t
 
 ### Fixed
 - **Stale script count.** README.md referenced an outdated script count from the launch era. Synced to the actual count (25 Python scripts).
-- **brain_consistency.py false positives.** The script count check counted all `*.py` files on disk in `scripts/`, including any locally gitignored helpers, which inflated the count vs the public docs. Switched to counting git-tracked files only via `git ls-files`. The empty-notes check flagged active sessions that hadn't yet written end-of-session notes; added a 1-day freshness filter so only sessions that ended more than a day ago are checked, matching the existing untagged-session pattern.
 
 ---
 
