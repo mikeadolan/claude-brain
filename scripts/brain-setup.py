@@ -27,6 +27,10 @@ from pathlib import Path
 
 MIN_PYTHON = (3, 10)
 PIP_PACKAGES = ["PyYAML", "mcp", "sentence-transformers", "numpy"]
+# Hooks, the MCP server and the slash commands run outside this shell, where a
+# bare "python3" may resolve to a different interpreter than the one running
+# setup - the one the dependencies were just installed into. Use it by path.
+PYTHON = sys.executable
 HOOK_EVENTS = ["SessionStart", "UserPromptSubmit", "Stop", "SessionEnd", "PreCompact", "PostCompact"]
 HOOK_SCRIPTS = ["session-start.py", "user-prompt-submit.py", "stop.py", "session-end.py", "pre-compact.py", "post-compact.py"]
 
@@ -134,19 +138,17 @@ def phase_preflight():
         errors.append("Claude Code not found")
 
     # pip
+    # Always install into the interpreter running setup - a pip3 on PATH may
+    # belong to a different one, leaving the hooks without their dependencies.
     pip_cmd = None
-    if shutil.which("pip3"):
-        pip_cmd = ["pip3"]
-        ok("pip3 available")
-    else:
-        try:
-            subprocess.run([sys.executable, "-m", "pip", "--version"],
-                           capture_output=True, timeout=10, check=True)
-            pip_cmd = [sys.executable, "-m", "pip"]
-            ok("pip available (via python3 -m pip)")
-        except Exception:
-            fail("pip not found")
-            errors.append("pip not available")
+    try:
+        subprocess.run([sys.executable, "-m", "pip", "--version"],
+                       capture_output=True, timeout=10, check=True)
+        pip_cmd = [sys.executable, "-m", "pip"]
+        ok(f"pip available (via {sys.executable} -m pip)")
+    except Exception:
+        fail("pip not found")
+        errors.append("pip not available")
 
     if errors:
         print(f"\n  {red('HARD STOP')}: Fix the above errors before continuing.")
@@ -186,8 +188,33 @@ def phase_dependencies(pip_cmd):
 
     if failed:
         print(f"\n  {red('ERROR')}: Failed to install: {', '.join(failed)}")
-        print("  Try manually: pip3 install " + " ".join(failed))
+        print(f"  Try manually: {sys.executable} -m pip install " + " ".join(failed))
         sys.exit(1)
+
+    warm_embedding_model()
+
+
+def warm_embedding_model():
+    """Download the sentence-transformers model into the local HF cache.
+
+    Every script that embeds sets HF_HUB_OFFLINE=1, so the model can never be
+    fetched at runtime. Unless it is cached here, semantic search silently
+    produces zero embeddings forever.
+    """
+    info("Caching semantic search model (~80 MB, first run only)...")
+    code = (
+        "import os;"
+        "os.environ.pop('HF_HUB_OFFLINE', None);"
+        "from sentence_transformers import SentenceTransformer;"
+        "SentenceTransformer('all-MiniLM-L6-v2')"
+    )
+    try:
+        subprocess.run([sys.executable, "-c", code],
+                       capture_output=True, text=True, timeout=900, check=True)
+        ok("semantic search model cached")
+    except Exception as e:
+        warn(f"Could not cache the model ({e})")
+        warn("Semantic search will return no results until you re-run setup online.")
 
 # ---------------------------------------------------------------------------
 # Phase 3: Interactive Projects & Storage
@@ -723,8 +750,9 @@ def phase_config(cfg):
         },
     }
 
-    if cfg["storage_mode"] == "synced":
-        config_data["storage"]["local_db_path"] = cfg["db_path"]
+    # Every script reads storage.local_db_path, so write it in both modes.
+    # In local mode this is root_path/claude-brain.db, which is not synced.
+    config_data["storage"]["local_db_path"] = cfg["db_path"]
 
     config_path = root / "config.yaml"
     write_config = True
@@ -857,9 +885,9 @@ def phase_config(cfg):
             ## SESSION END PROTOCOL
             When the user says "end session" (or similar), complete ALL steps:
             1. Write session notes + tags to the database:
-               python3 {root}/scripts/write_session_notes.py --notes "<what was done, decisions, next steps>" --tags "<1-3 comma-separated tags>"
+               {PYTHON} {root}/scripts/write_session_notes.py --notes "<what was done, decisions, next steps>" --tags "<1-3 comma-separated tags>"
             2. Update project summary (if significant progress):
-               python3 {root}/scripts/write_project_summary.py --prefix {p['prefix']} --summary "<current state>"
+               {PYTHON} {root}/scripts/write_project_summary.py --prefix {p['prefix']} --summary "<current state>"
             3. Ask the user: "Anything you want Claude to know next session?"
             4. Write their answer (plus session summary) to NEXT_SESSION.md in this project folder
             5. Output this checklist (every row must show DONE):
@@ -880,7 +908,7 @@ def phase_config(cfg):
 
             ## FILE VERSIONING
             After creating or modifying any file, run:
-            python3 {root}/scripts/copy_chat_file.py \\
+            {PYTHON} {root}/scripts/copy_chat_file.py \\
               [filepath] --project {p['prefix']} --session $SESSION_ID
         """)
 
@@ -986,8 +1014,8 @@ def phase_email(cfg):
     root = cfg["root_path"]
     digest_script = os.path.join(root, "scripts", "brain_digest.py")
     log_dir = os.path.dirname(cfg["db_path"])
-    daily_cron = f'0 8 * * 1-5 /usr/bin/python3 {digest_script} --daily >> {log_dir}/digest.log 2>&1'
-    weekly_cron = f'0 8 * * 1 /usr/bin/python3 {digest_script} >> {log_dir}/digest.log 2>&1'
+    daily_cron = f'0 8 * * 1-5 {PYTHON} {digest_script} --daily >> {log_dir}/digest.log 2>&1'
+    weekly_cron = f'0 8 * * 1 {PYTHON} {digest_script} >> {log_dir}/digest.log 2>&1'
 
     if ask_yn("  Set up daily standup cron (weekdays 8am)?", "y"):
         try:
@@ -1044,7 +1072,7 @@ def phase_registration(cfg):
     hooks_added = 0
 
     for event, script in zip(HOOK_EVENTS, HOOK_SCRIPTS):
-        hook_cmd = f"python3 {root}/hooks/{script}"
+        hook_cmd = f"{PYTHON} {root}/hooks/{script}"
         existing = hooks.get(event, [])
 
         # Check if already registered with same command
@@ -1093,7 +1121,7 @@ def phase_registration(cfg):
 
     mcp_entry = {
         "type": "stdio",
-        "command": "python3",
+        "command": PYTHON,
         "args": [server_path],
         "env": {}
     }
@@ -1162,25 +1190,25 @@ def phase_registration(cfg):
             3. Move the downloaded .json file to: {root}/imports/
             4. Then run /brain-import again"
 
-            **ChatGPT:** Tell the user to run: python3 {root}/scripts/import_chatgpt.py --scan <path-to-chatgpt-export>
-            **Gemini:** Tell the user to run: python3 {root}/scripts/import_gemini.py --scan <path-to-gemini-takeout>
+            **ChatGPT:** Tell the user to run: {PYTHON} {root}/scripts/import_chatgpt.py --scan <path-to-chatgpt-export>
+            **Gemini:** Tell the user to run: {PYTHON} {root}/scripts/import_gemini.py --scan <path-to-gemini-takeout>
             And stop here.
 
             Step 2: If files ARE found, show the user a numbered list of filenames.
             Ask: "Which file do you want to import?" (they can say a number or filename)
 
             Step 3: Ask which project to assign it to. Show the available projects by running:
-              python3 -c "import sqlite3; conn=sqlite3.connect('{cfg['db_path']}'); [print(f'  {{r[1]}} - {{r[2]}}') for r in conn.execute('SELECT folder_name, prefix, label FROM project_registry ORDER BY folder_name')]"
+              {PYTHON} -c "import sqlite3; conn=sqlite3.connect('{cfg['db_path']}'); [print(f'  {{r[1]}} - {{r[2]}}') for r in conn.execute('SELECT folder_name, prefix, label FROM project_registry ORDER BY folder_name')]"
 
             Step 4: Run the import with their choices:
-              python3 {root}/scripts/import_claude_ai.py "<chosen_file_path>" --project <chosen_prefix>
+              {PYTHON} {root}/scripts/import_claude_ai.py "<chosen_file_path>" --project <chosen_prefix>
 
             Step 5: Show the result. If successful, tell the user the file has been moved to imports/completed/.
             Ask if they want to import another file (if more remain in imports/).
         """),
         "brain-status": textwrap.dedent(f"""\
             Run the brain status check. Execute this command:
-            python3 {root}/scripts/status.py
+            {PYTHON} {root}/scripts/status.py
 
             Show the user the full output. This displays:
             - Total sessions and messages in the database
@@ -1192,7 +1220,7 @@ def phase_registration(cfg):
         "brain-setup": textwrap.dedent(f"""\
             Run the brain setup script to add projects or fix configuration.
             Execute this command:
-            python3 {root}/scripts/brain-setup.py
+            {PYTHON} {root}/scripts/brain-setup.py
 
             This is an interactive script. It will walk through setup phases
             and is safe to re-run (idempotent). Use this when:
@@ -1210,7 +1238,7 @@ def phase_registration(cfg):
             Edit the file with their answers.
 
             When they're done, run:
-            python3 {root}/scripts/brain-setup.py --questionnaire
+            {PYTHON} {root}/scripts/brain-setup.py --questionnaire
 
             This imports their answers into the brain database so Claude
             knows who they are across every session.
@@ -1273,7 +1301,7 @@ def phase_registration(cfg):
         info(f"\nFound {len(json_files)} JSON file(s) in imports/ folder")
         import_script = root / "scripts" / "import_claude_ai.py"
         if import_script.exists():
-            info(f"Run: python3 {import_script} to import them")
+            info(f"Run: {PYTHON} {import_script} to import them")
         else:
             info("import_claude_ai.py not found - will be available after full setup")
 
