@@ -83,8 +83,12 @@ def main():
 
     for i, (tid, content) in enumerate(rows, 1):
         try:
-            embed_message(config, conn, tid, content, logger)
-            embedded += 1
+            # embed_message logs and swallows its own errors, so trust its
+            # return value rather than the absence of an exception.
+            if embed_message(config, conn, tid, content, logger):
+                embedded += 1
+            else:
+                failed += 1
         except Exception as e:
             failed += 1
             if failed <= 5:
@@ -103,6 +107,11 @@ def main():
     elapsed = time.time() - start
     print(f"\nDone: {embedded} embedded, {failed} failed, {elapsed:.1f}s total ({embedded/elapsed:.0f}/sec)")
 
+    if failed:
+        print(f"\n{failed} transcript(s) were not embedded - see the log for the cause.")
+        return 1
+    return 0
+
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main() or 0)

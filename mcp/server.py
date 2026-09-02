@@ -23,7 +23,10 @@ import sqlite3
 import sys
 
 import yaml
-from mcp.server.fastmcp import FastMCP
+try:
+    from mcp.server.mcpserver import MCPServer  # mcp >= 2.0
+except ImportError:  # pragma: no cover - mcp 1.x
+    from mcp.server.fastmcp import FastMCP as MCPServer
 
 # fuzzy_search is in scripts/ - add to path
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
@@ -71,7 +74,7 @@ def _get_embed_model():
     _embed_model = SentenceTransformer(model_name)
     return _embed_model
 
-mcp = FastMCP("brain-server")
+mcp = MCPServer("brain-server")
 
 # ---------------------------------------------------------------------------
 # 1. get_profile
