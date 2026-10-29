@@ -1079,6 +1079,19 @@ def phase_registration(cfg):
     else:
         ok("All 6 hooks already registered")
 
+    # --- Auto-compact window: 1M models otherwise never compact ---
+    # re-read: the user may have declined the hooks, and the file may not exist yet
+    on_disk = json.loads(settings_path.read_text()) if settings_path.exists() else {}
+    env = on_disk.setdefault("env", {})
+    if "CLAUDE_CODE_AUTO_COMPACT_WINDOW" not in env:
+        info("On 1M-context models auto-compact only fires near 1M tokens,")
+        info("so PreCompact/PostCompact rarely run and every turn re-reads the session.")
+        if ask_yn("Auto-compact at 200k instead? (the brain restores context after)", default="n"):
+            env["CLAUDE_CODE_AUTO_COMPACT_WINDOW"] = "200000"   # settings env values are strings
+            with open(settings_path, "w") as f:
+                json.dump(on_disk, f, indent=4)
+            ok("Auto-compact window set to 200k")
+
     # --- Register MCP server in ~/.claude.json ---
     claude_json_path = home / ".claude.json"
     if claude_json_path.exists():
