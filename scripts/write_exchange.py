@@ -148,6 +148,7 @@ def detect_project(config, jsonl_path, cwd):
 
 SEMANTIC_AVAILABLE = False
 _embed_model = None
+_embed_model_error = None
 
 try:
     from sentence_transformers import SentenceTransformer
@@ -159,23 +160,36 @@ except (ImportError, Exception):
 
 def _get_embed_model(config):
     """Lazily load the SentenceTransformer model (cached after first call)."""
-    global _embed_model
+    global _embed_model, _embed_model_error
     if _embed_model is not None:
         return _embed_model
+    # Remember a failed load (no network, model not cached) so a backfill of
+    # thousands of rows does not retry the download once per row.
+    if _embed_model_error is not None:
+        raise _embed_model_error
     sem_config = config.get("semantic_search", {})
     model_name = sem_config.get("model", "all-MiniLM-L6-v2")
-    _embed_model = SentenceTransformer(model_name)
+    try:
+        _embed_model = SentenceTransformer(model_name)
+    except Exception as e:
+        _embed_model_error = e
+        raise
     return _embed_model
 
 
 def embed_message(config, conn, transcript_id, content, logger):
-    """Generate embedding and store in transcript_embeddings table."""
+    """Generate embedding and store in transcript_embeddings table.
+
+    Returns True if a row was stored, False if it was skipped or failed.
+    Failures are logged rather than raised so that a missing model never
+    blocks transcript capture; callers that care must check the result.
+    """
     if not SEMANTIC_AVAILABLE:
-        return
+        return False
     if not config.get("semantic_search", {}).get("enabled", False):
-        return
+        return False
     if not content or len(content.strip()) < 50:
-        return
+        return False
 
     try:
         model = _get_embed_model(config)
@@ -189,8 +203,10 @@ def embed_message(config, conn, transcript_id, content, logger):
                VALUES (?, ?, ?, ?)""",
             (transcript_id, embedding_blob, model_name, now),
         )
+        return True
     except Exception as e:
         logger.warning("Embedding failed for transcript %d: %s", transcript_id, e)
+        return False
 
 
 # ---------------------------------------------------------------------------
