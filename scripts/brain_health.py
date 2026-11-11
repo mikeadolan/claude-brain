@@ -21,6 +21,9 @@ import time
 
 import yaml
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from project_path import is_external, resolve_project_path
+
 # ---------------------------------------------------------------------------
 # Config / DB
 # ---------------------------------------------------------------------------
@@ -585,14 +588,17 @@ def check_config():
     projects = config.get("projects", [])
     details["project_count"] = len(projects)
     missing_folders = []
+    external = 0
 
     for proj in projects:
-        folder = proj.get("folder_name", "")
-        folder_path = os.path.join(root, folder)
+        if is_external(proj):
+            external += 1
+        folder_path = resolve_project_path(proj, root)
         if not os.path.isdir(folder_path):
-            missing_folders.append(folder)
+            missing_folders.append(proj.get("folder_name", folder_path))
 
     details["missing_project_folders"] = missing_folders
+    details["external_project_count"] = external
 
     if missing_folders:
         if status == "PASS":
@@ -604,14 +610,18 @@ def check_config():
     import_projects = config.get("import_projects", [])
     details["import_project_count"] = len(import_projects)
     import_note = f", {len(import_projects)} import-only" if import_projects else ""
+    external_note = f", {external} external" if external else ""
 
     if not issues:
         summary = (
-            f"Config: config.yaml valid, {len(projects)} projects{import_note}, "
-            "all paths exist"
+            f"Config: config.yaml valid, {len(projects)} projects{external_note}"
+            f"{import_note}, all paths exist"
         )
     else:
-        summary = f"Config: {len(projects)} projects{import_note}, {'; '.join(issues)}"
+        summary = (
+            f"Config: {len(projects)} projects{external_note}{import_note}, "
+            f"{'; '.join(issues)}"
+        )
 
     return status, summary, details
 

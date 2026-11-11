@@ -1104,6 +1104,39 @@ Alternatively, re-run the full setup script -- it's safe to run anytime:
 python3 scripts/brain-setup.py
 ```
 
+### Attaching an Existing Project Outside the Brain Root
+
+Established repos should stay where they are -- moving them can break virtualenvs,
+editor configs, Docker bind mounts and scripts that use absolute paths. Point the
+brain at the existing directory instead:
+
+```bash
+python3 scripts/add-project.py --path "C:\code\my-existing-repo"
+```
+
+That single command does what `add-project.py` does for an internal folder, minus the
+folder creation:
+
+1. Adds the project to `config.yaml` with a `path` key (the folder name defaults to the
+   real directory name, and is used in `jsonl_project_mapping` so transcripts keep routing here)
+2. Writes a `CLAUDE.md` into that directory **only if it does not exist yet** -- an
+   existing one is never overwritten, so it is safe on repos that already have instructions
+3. Inserts the project into `project_registry`
+4. Registers `brain-server` for that directory in `~/.claude.json`
+
+Nothing is moved or copied. Git is untouched: staging and committing the new `CLAUDE.md`
+is your call. Add it to the repo's `.gitignore` if you would rather keep it personal.
+
+Then start working there as usual:
+
+```bash
+cd C:\code\my-existing-repo
+claude
+```
+
+`/brain-health` validates each `path` and reports them as `N external`, so a moved or
+unmounted project shows up as a missing folder instead of failing silently.
+
 ### Naming Rules
 
 | Field | Rule | Example |
@@ -1186,16 +1219,20 @@ If you prefer to add a project without the script:
 
 #### Working project vs import-only project
 
-| Config list | Needs a folder + CLAUDE.md | Used for |
-|-------------|---------------------------|----------|
-| `projects:` | Yes | Sessions you run with `claude` in that folder |
+| Config list | Needs a folder | Used for |
+|-------------|---------------|----------|
+| `projects:` | Yes -- inside the root, or anywhere when it has a `path` | Sessions you run with `claude` in that folder |
 | `import_projects:` | No | Imported history only (Copilot workspaces, old repos, drive roots) |
 
-When `brain-import` (or `import_copilot.py`) suggests a prefix for a workspace
-that has no folder inside your root, put that entry under `import_projects:`
-instead of `projects:`. That keeps `/brain-health` green (it warns about
-missing folders for `projects:` only) while the imported transcripts still get
-the right project name in `/brain-status` and reports.
+A project in `projects:` may point outside the root with `path:`. Without it, the
+folder is expected inside the root. Either way `/brain-health` validates the resolved
+directory, and reports how many projects are external.
+
+When `brain-import` (or `import_copilot.py`) suggests a prefix for a workspace that
+still exists on disk, register it under `projects:` -- use
+`add-project.py --path <dir>` so config, registry, MCP and CLAUDE.md stay in sync.
+Only when the folder is gone (or is a bare drive root) does the prefix belong in
+`import_projects:`, which keeps the history queryable without a directory.
 
 Keep `jsonl_project_mapping:` entries for both kinds -- that mapping is what
 routes incoming Claude Code and Copilot transcripts to the right prefix.

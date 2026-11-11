@@ -21,6 +21,9 @@ import textwrap
 from datetime import datetime, timezone
 from pathlib import Path
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from project_path import is_external, resolve_project_path  # noqa: E402
+
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -394,8 +397,10 @@ def phase_directories(cfg):
         db_dir,
     ]
 
-    # Project directories
+    # Project directories (external projects are used in place, never created)
     for p in cfg["projects"]:
+        if is_external(p):
+            continue
         dirs_to_create.append(root / p["folder_name"])
         dirs_to_create.append(root / p["folder_name"] / "chat-files")
 
@@ -669,11 +674,14 @@ def phase_config(cfg):
 
     projects_list = []
     for p in cfg["projects"]:
-        projects_list.append({
+        entry = {
             "folder_name": p["folder_name"],
             "prefix": p["prefix"],
             "label": p["label"],
-        })
+        }
+        if p.get("path"):
+            entry["path"] = p["path"]
+        projects_list.append(entry)
 
     # Build jsonl_project_mapping from projects
     jsonl_mapping = {}
@@ -848,8 +856,15 @@ def phase_config(cfg):
 
     # --- Generate CLAUDE.md per project ---
     for p in cfg["projects"]:
-        project_dir = root / p["folder_name"]
+        project_dir = Path(resolve_project_path(p, str(root)))
         claude_md = project_dir / "CLAUDE.md"
+        if claude_md.exists():
+            # Never overwrite: external repos may carry their own CLAUDE.md.
+            ok(f"CLAUDE.md exists in {p['folder_name']} (kept)")
+            continue
+        if not project_dir.is_dir():
+            warn(f"Skipped CLAUDE.md for {p['folder_name']}: {project_dir} not found")
+            continue
 
         template = textwrap.dedent(f"""\
             # {p['label']}
@@ -1167,7 +1182,7 @@ def phase_registration(cfg):
     }
 
     for p in cfg["projects"]:
-        project_path = str(root / p["folder_name"])
+        project_path = resolve_project_path(p, str(root))
         if project_path not in projects_section:
             projects_section[project_path] = {
                 "allowedTools": [],

@@ -83,19 +83,33 @@ python3 scripts/brain_search.py "something you remember from a Copilot chat"
 
 ### Registering imported prefixes
 
-Most Copilot workspaces have no folder inside your brain root, so register them under
-`import_projects:` in `config.yaml` rather than `projects:`:
+Where a prefix belongs depends on whether the workspace still exists on disk:
+
+| Situation | Where it goes | How |
+|---|---|---|
+| Folder exists (anywhere, including another drive or a UNC share) | `projects:` with a `path` | `python3 scripts/add-project.py --path "<folder>"` |
+| Folder is gone, or is a bare drive root | `import_projects:` | add the entry by hand |
+
+Only `projects:` entries get a CLAUDE.md, a registry row and a brain-server MCP
+registration. `import_projects:` entries are labels for history that no longer has a
+directory -- the transcripts stay queryable, but nothing is created for them.
 
 ```yaml
-import_projects:
+projects:
   - folder_name: "tradingview-indicators"
     prefix: "tradingview-indicators"
     label: "Tradingview Indicators"
+    path: "C:\\GIT\\Tradingview_indicators"
+
+import_projects:
+  - folder_name: "xscraper"
+    prefix: "xscraper"
+    label: "XScraper"
 ```
 
-`projects:` requires a real folder plus `CLAUDE.md`; `import_projects:` does not, and
-`/brain-health` only warns about missing folders for `projects:`. Add the same prefix to
-`jsonl_project_mapping:` so future transcripts route to it automatically.
+Add the same prefix to `jsonl_project_mapping:` so future transcripts route to it
+automatically. For a project nested inside another one, add the more specific path
+fragment as well -- the longest matching key wins.
 
 ---
 

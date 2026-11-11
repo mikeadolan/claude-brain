@@ -81,22 +81,40 @@ backup:
 # PROJECTS
 # ==============================================================================
 # Each project maps a folder name to a database prefix.
-# The folder_name must match an actual folder inside the root.
 #
-# TO ADD A NEW PROJECT:
+# WHERE A PROJECT LIVES
+#   Without `path`, the project is a folder inside the root.
+#   With `path`, the project is an existing directory anywhere on disk (or a
+#   UNC share). Nothing is moved and no folder is created - claude-brain attaches
+#   to it in place. This is how you use established repos without relocating
+#   them (upstream issue #2).
+#
+# TO ADD A NEW PROJECT INSIDE THE ROOT:
 #   1. Add an entry below
 #   2. Run: python3 scripts/brain-setup.py (or create folder + CLAUDE.md manually)
 #   3. The startup check registers the prefix on next session
 #
+# TO ADD AN EXISTING DIRECTORY ELSEWHERE:
+#   python3 scripts/add-project.py --path "C:\\code\\my-existing-repo"
+#   That one command does all four steps: config entry with `path`, CLAUDE.md in
+#   the repo (never overwrites an existing one), project_registry row, and the
+#   brain-server MCP registration for that directory in ~/.claude.json.
+#
 # NAMING:
-#   folder_name: lowercase, hyphens only (e.g., "my-project")
-#   prefix:      lowercase, 2-4 chars (e.g., "mp") - NO trailing underscore
-#   label:       human-readable name shown in brain-import picklist
+#   folder_name: real folder name; lowercase-hyphens for projects under the root
+#   prefix:      the value stored in the database; 2-4 chars is conventional
+#   label:       human-readable name shown in brain-status and brain-recap
+#   path:        absolute path of an external project (optional)
 
 projects:
   - folder_name: "my-project"
     prefix: "mp"
     label: "My Project"
+
+  - folder_name: "my-existing-repo"
+    prefix: "mer"
+    label: "My Existing Repo"
+    path: "C:\\code\\my-existing-repo"
 
   - folder_name: "general"
     prefix: "gen"
@@ -173,10 +191,16 @@ jsonl:
 #
 # ORDER MATTERS: longer/more-specific paths must come before shorter
 # ones to prevent false matches (e.g., "my-project-docs" before
-# "my-project").
+# "my-project"). This holds for external project paths too: a project
+# nested inside another one needs its own more specific entry.
+#
+# Claude Code stores transcripts under an encoded directory name where
+# "\" and ":" become "-", so a nested project may also need that encoded
+# form as a key (e.g. "parent-child").
 
 jsonl_project_mapping:
   "my-project": "mp"
+  "my-existing-repo": "mer"
   "general": "gen"
 
 # ==============================================================================
