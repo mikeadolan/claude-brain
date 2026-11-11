@@ -86,23 +86,26 @@ def get_status(root_path=None, config=None):
         # Total messages
         result["messages"] = conn.execute("SELECT COUNT(*) FROM transcripts").fetchone()[0]
 
-        # Per-project stats
+        # Per-project stats (with registry labels for clean display)
         for row in conn.execute("""
             SELECT s.project,
+                   COALESCE(r.label, s.project) as display,
                    COUNT(DISTINCT s.session_id) as session_count,
                    COALESCE(t.msg_count, 0) as message_count,
                    MAX(s.started_at) as last_session
             FROM sys_sessions s
+            LEFT JOIN project_registry r ON r.prefix = s.project
             LEFT JOIN (
                 SELECT project, COUNT(*) as msg_count
                 FROM transcripts
                 GROUP BY project
             ) t ON t.project = s.project
             GROUP BY s.project
-            ORDER BY s.project
+            ORDER BY display
         """):
             r = dict(row)
             result["projects"][r["project"]] = {
+                "label": r["display"],
                 "sessions": r["session_count"],
                 "messages": r["message_count"],
                 "last_session": r["last_session"],
@@ -163,7 +166,8 @@ def print_human(data):
         print("By project:")
         for proj, info in sorted(data["projects"].items()):
             last = info["last_session"] or "never"
-            print(f"  {proj:5s} {info['sessions']:4d} sessions, {info['messages']:6d} messages, last: {last}")
+            label = info.get("label") or proj
+            print(f"  {label:38s} {info['sessions']:4d} sessions, {info['messages']:6d} messages, last: {last}")
 
     backup = data["last_backup"] or "never"
     print(f"Last backup: {backup} ({data['last_backup_size_kb']} KB)")

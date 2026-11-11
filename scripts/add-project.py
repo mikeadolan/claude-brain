@@ -10,6 +10,7 @@ Usage:
     python3 scripts/add-project.py
 """
 
+import argparse
 import json
 import os
 import re
@@ -213,6 +214,15 @@ def main():
     print(f"\n{bold('claude-brain -- Add Project')}")
     print("Add a new project to your existing brain installation.\n")
 
+    parser = argparse.ArgumentParser(description="Register a project with claude-brain.")
+    parser.add_argument(
+        "--path",
+        help="Existing project directory outside the brain root (issue #2 flow). "
+             "The folder is used in place; nothing is moved or created inside it "
+             "except CLAUDE.md.",
+    )
+    args = parser.parse_args()
+
     # Step 1: Load existing config
     cfg, config_path = load_config()
     root = Path(cfg["storage"]["root_path"])
@@ -220,25 +230,47 @@ def main():
     existing_projects = cfg.get("projects", [])
     existing_names = {p["folder_name"] for p in existing_projects}
     existing_prefixes = {p["prefix"] for p in existing_projects}
+    existing_paths = {
+        os.path.normcase(os.path.abspath(p["path"]))
+        for p in existing_projects if p.get("path")
+    }
 
     print(f"  Found {len(existing_projects)} existing project(s):")
     for p in existing_projects:
         print(f"    {p['prefix']:5s} {p['folder_name']:20s} {p.get('label', '')}")
     print()
 
+    external_dir = None
+    if args.path:
+        external_dir = Path(os.path.expanduser(args.path)).resolve()
+        if not external_dir.is_dir():
+            fail(f"Path does not exist or is not a directory: {external_dir}")
+            return
+        if os.path.normcase(str(external_dir)) in existing_paths:
+            warn(f"'{external_dir}' is already registered.")
+            return
+
     # Step 2: Get new project details
     name_pattern = re.compile(r'^[a-z][a-z0-9-]*[a-z0-9]$|^[a-z]$')
 
     while True:
-        name = input("  New project folder name: ").strip().lower()
+        if external_dir:
+            # An external project keeps its real folder name so transcripts that
+            # reference that path keep matching.
+            name = ask("Project folder name", external_dir.name)
+        else:
+            name = input("  New project folder name: ").strip().lower()
+
         if not name:
             info("Cancelled.")
             return
-        if not name_pattern.match(name):
+        if not external_dir and not name_pattern.match(name):
             warn("Invalid. Use lowercase letters, numbers, hyphens. Must start with a letter.")
             continue
         if name in existing_names:
             warn(f"'{name}' already exists.")
+            if external_dir:
+                return
             continue
         break
 
@@ -256,17 +288,25 @@ def main():
         "prefix": prefix,
         "label": label,
     }
+    if external_dir:
+        new_project["path"] = str(external_dir)
 
     print(f"\n  Will add: {bold(name)} (prefix: {prefix}, label: {label})")
+    if external_dir:
+        print(f"  Location:  {external_dir} (used in place)")
     if not ask_yn("Proceed?"):
         info("Cancelled.")
         return
 
-    # Step 3: Create folder + chat-files/
-    project_dir = root / name
-    chat_dir = project_dir / "chat-files"
-    chat_dir.mkdir(parents=True, exist_ok=True)
-    ok(f"Created {project_dir}/")
+    # Step 3: Prepare the project directory
+    if external_dir:
+        project_dir = external_dir
+        ok(f"Using existing folder {project_dir}/")
+    else:
+        project_dir = root / name
+        chat_dir = project_dir / "chat-files"
+        chat_dir.mkdir(parents=True, exist_ok=True)
+        ok(f"Created {project_dir}/")
 
     # Step 4: Write CLAUDE.md
     claude_md_path = project_dir / "CLAUDE.md"
@@ -310,10 +350,14 @@ def main():
         now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         conn = sqlite3.connect(db_path)
         try:
+            columns = {r[1] for r in conn.execute("PRAGMA table_info(project_registry)")}
+            if "path" not in columns:
+                conn.execute("ALTER TABLE project_registry ADD COLUMN path TEXT")
             conn.execute(
-                "INSERT OR IGNORE INTO project_registry (folder_name, prefix, label, status, health, registered_at) "
-                "VALUES (?, ?, ?, 'active', 'green', ?)",
-                (name, prefix, label, now)
+                "INSERT OR IGNORE INTO project_registry "
+                "(folder_name, prefix, label, status, health, registered_at, path) "
+                "VALUES (?, ?, ?, 'active', 'green', ?, ?)",
+                (name, prefix, label, now, str(project_dir))
             )
             conn.commit()
             ok(f"project_registry updated (prefix: {prefix})")

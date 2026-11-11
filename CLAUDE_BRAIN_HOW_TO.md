@@ -652,7 +652,7 @@ Here are example queries you can type in Claude Code and what happens behind the
 
 ## 7. IMPORTING CONVERSATIONS FROM OTHER PLATFORMS
 
-claude-brain can import from four sources. Claude Code conversations are captured automatically by hooks. The other three require manual export and import.
+claude-brain can import from five sources. Claude Code conversations are captured automatically by hooks. The others require manual export and import, except GitHub Copilot Chat - that is read straight from disk.
 
 ### 7.1 Claude.ai (Web Interface)
 
@@ -724,7 +724,66 @@ Same xlsx workflow as ChatGPT. Gemini exports individual exchanges (not sessions
 python3 scripts/import_gemini.py --import imports/gemini-export/ --map imports/gemini_import_map.xlsx
 ```
 
-### 7.4 Tags and Topic Discovery
+### 7.4 GitHub Copilot Chat (VS Code)
+
+Copilot keeps its own history on disk; claude-brain reads it directly - no export step, no
+extension, no cloud. Three sources are combined:
+
+| Source | Location | Holds |
+|---|---|---|
+| Chat sessions | `%APPDATA%\Code\User\workspaceStorage\<hash>\chatSessions\*.jsonl` | every chat with a workspace folder, including renamed or deleted ones |
+| Empty-window chats | `%APPDATA%\Code\User\globalStorage\emptyWindowChatSessions\*.jsonl` | chats opened without a folder |
+| Session store | `%APPDATA%\Code\User\globalStorage\github.copilot-chat\session-store.db` | full turns of recent agent-mode sessions |
+| Agent host | `~/.copilot/session-state\<id>\events.jsonl` | Copilot agent sessions (VS Code agent host) |
+
+**Scan (read-only):**
+```bash
+cd ~/path/to/claude-brain
+python3 scripts/import_copilot.py --scan
+```
+This writes `imports/copilot_import_map.csv` and prints a summary. The CSV has one row per
+conversation with a `project` column you can edit.
+
+**Review the CSV.** Useful columns:
+
+| Column | Meaning |
+|---|---|
+| `project` | Project prefix to assign. Pre-filled from the workspace folder name |
+| `suggested_folder` | The workspace folder, so you recognise the chat |
+| `workspace_exists` | `no` means the folder was renamed, moved or deleted - the session is still imported |
+| `trimmed` | JSONL held fewer turns than the session store; the richest source was used |
+| `truncated` | Copilot dropped older messages from the file; the missing part no longer exists locally |
+| `status` | `IMPORTED` once it is in the brain |
+
+**Import (dry run first):**
+```bash
+python3 scripts/import_copilot.py --import --map imports/copilot_import_map.csv --dry-run
+python3 scripts/import_copilot.py --import --map imports/copilot_import_map.csv
+```
+
+Safe to re-run: rows are keyed on a deterministic UUID, so a second run adds nothing.
+Projects and tags are **not** overwritten on a re-run - change the CSV, then re-run with
+`--update-metadata` to apply the new project and tags.
+
+**What is imported:** user messages, assistant answers (tool calls and thinking excluded),
+inline references rendered as `[name]`, timestamps, model, workspace path and session id.
+Sessions where Copilot dropped the history keep a note in `sys_sessions.notes`.
+
+**List what is already in the brain:**
+```bash
+python3 scripts/import_copilot.py --report --output imports/copilot_imported.md
+```
+
+**Good to know:**
+
+- An empty chat leaves a `.jsonl` file with zero messages. Most files on a long-lived
+  machine are those shells; they are skipped, not imported.
+- Copilot trims older turns out of the JSONL for long sessions. When the session store has
+  more turns, those win; otherwise the truncation is recorded and cannot be recovered.
+- Chats are tagged with source `copilot_chat` or `copilot_agent`, so they stay distinguishable
+  from `claude_code`.
+
+### 7.5 Tags and Topic Discovery
 
 Every import auto-suggests tags based on conversation content (e.g., `coding`, `finance`, `family`, `memoir`). You review and edit tags in the xlsx before importing.
 
@@ -790,8 +849,38 @@ The simplest test: after a Claude Code session, check if the message count
 increased. If hooks are firing, every exchange adds to the database.
 
 ### Check Backup
-The brain backs up automatically at session end. Backups rotate (bak1, bak2, bak3).
+The brain backs up automatically at session end. Backups rotate (bak1, bak2).
 Location: `db-backup/claude-brain.db.bak1`
+
+**Off-site copy (recommended)** — a backup on the same disk is not a backup.
+Point `backup.offsite.path` at a NAS, network share, or cloud folder:
+
+```yaml
+backup:
+  offsite:
+    enabled: true
+    path: "\\\\192.168.15.100\\nfs\\backups\\claude-brain"
+    keep_dated: 7
+```
+
+After each verified local backup, `brain_sync.py` copies it off-site with its
+own `bak1`/`bak2` rotation plus one dated snapshot per day
+(`claude-brain-YYYY-MM-DD.db`), pruned to `keep_dated` files.
+
+- Use a **UNC path**, not a mapped drive letter (`R:`). Drive mappings are
+  per-session; scheduled tasks and services cannot see them.
+- If the target is unreachable, the local backup still succeeds and the log
+  records `[WARN] Offsite backup failed`. `/brain-health` then shows
+  `offsite unreachable` or the age of the newest off-site copy.
+- Log: `logs/<hostname>/brain_sync.log`
+
+**Restoring a backup** (the DB is a single file):
+1. Close Claude Code and anything else writing to the DB.
+2. Delete leftovers of the broken DB: `<local_db_path>-wal` and `-shm`.
+3. Copy `claude-brain.db.bak1` (local or off-site) over `storage.local_db_path`.
+4. Verify: `python3 scripts/brain_health.py`
+   On a Windows console, set `$env:PYTHONIOENCODING='utf-8'` first — the
+   box-drawing characters in the report fail on the default cp1252 codepage.
 
 ---
 
@@ -1015,6 +1104,39 @@ Alternatively, re-run the full setup script -- it's safe to run anytime:
 python3 scripts/brain-setup.py
 ```
 
+### Attaching an Existing Project Outside the Brain Root
+
+Established repos should stay where they are -- moving them can break virtualenvs,
+editor configs, Docker bind mounts and scripts that use absolute paths. Point the
+brain at the existing directory instead:
+
+```bash
+python3 scripts/add-project.py --path "C:\code\my-existing-repo"
+```
+
+That single command does what `add-project.py` does for an internal folder, minus the
+folder creation:
+
+1. Adds the project to `config.yaml` with a `path` key (the folder name defaults to the
+   real directory name, and is used in `jsonl_project_mapping` so transcripts keep routing here)
+2. Writes a `CLAUDE.md` into that directory **only if it does not exist yet** -- an
+   existing one is never overwritten, so it is safe on repos that already have instructions
+3. Inserts the project into `project_registry`
+4. Registers `brain-server` for that directory in `~/.claude.json`
+
+Nothing is moved or copied. Git is untouched: staging and committing the new `CLAUDE.md`
+is your call. Add it to the repo's `.gitignore` if you would rather keep it personal.
+
+Then start working there as usual:
+
+```bash
+cd C:\code\my-existing-repo
+claude
+```
+
+`/brain-health` validates each `path` and reports them as `N external`, so a moved or
+unmounted project shows up as a missing folder instead of failing silently.
+
 ### Naming Rules
 
 | Field | Rule | Example |
@@ -1094,6 +1216,26 @@ If you prefer to add a project without the script:
    ```
 
 5. **Restart Claude Code** -- the startup hook will register the new project automatically.
+
+#### Working project vs import-only project
+
+| Config list | Needs a folder | Used for |
+|-------------|---------------|----------|
+| `projects:` | Yes -- inside the root, or anywhere when it has a `path` | Sessions you run with `claude` in that folder |
+| `import_projects:` | No | Imported history only (Copilot workspaces, old repos, drive roots) |
+
+A project in `projects:` may point outside the root with `path:`. Without it, the
+folder is expected inside the root. Either way `/brain-health` validates the resolved
+directory, and reports how many projects are external.
+
+When `brain-import` (or `import_copilot.py`) suggests a prefix for a workspace that
+still exists on disk, register it under `projects:` -- use
+`add-project.py --path <dir>` so config, registry, MCP and CLAUDE.md stay in sync.
+Only when the folder is gone (or is a bare drive root) does the prefix belong in
+`import_projects:`, which keeps the history queryable without a directory.
+
+Keep `jsonl_project_mapping:` entries for both kinds -- that mapping is what
+routes incoming Claude Code and Copilot transcripts to the right prefix.
 
 ---
 
