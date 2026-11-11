@@ -107,6 +107,21 @@ projects:
     label: "Uncategorized"
 
 # ==============================================================================
+# IMPORT-ONLY PROJECTS
+# ==============================================================================
+# Prefixes for sources you import (Copilot Chat, Claude.ai, ...) that have no
+# workspace folder inside the root. They are used for labels and report names
+# only - no folder is expected and none is created.
+#
+# Put a project under `projects:` above when you actually work in it (it needs
+# a folder and a CLAUDE.md). Put it here when you only import its history.
+
+import_projects:
+  - folder_name: "legacy-repo"
+    prefix: "legacy-repo"
+    label: "Legacy Repo"
+
+# ==============================================================================
 # BRAIN PROFILE
 # ==============================================================================
 # brain tables store personal profile data (from questionnaire).

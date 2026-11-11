@@ -599,10 +599,19 @@ def check_config():
             status = "WARN"
         issues.append(f"missing folders: {', '.join(missing_folders)}")
 
+    # Import-only projects are database prefixes without a workspace folder,
+    # so they are reported but never require a directory.
+    import_projects = config.get("import_projects", [])
+    details["import_project_count"] = len(import_projects)
+    import_note = f", {len(import_projects)} import-only" if import_projects else ""
+
     if not issues:
-        summary = f"Config: config.yaml valid, {len(projects)} projects, all paths exist"
+        summary = (
+            f"Config: config.yaml valid, {len(projects)} projects{import_note}, "
+            "all paths exist"
+        )
     else:
-        summary = f"Config: {len(projects)} projects, {'; '.join(issues)}"
+        summary = f"Config: {len(projects)} projects{import_note}, {'; '.join(issues)}"
 
     return status, summary, details
 

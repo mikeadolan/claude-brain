@@ -580,7 +580,9 @@ def _looks_truncated(session):
 
 
 def _project_prefixes(config):
-    return [p for p in (config.get("projects") or []) if isinstance(p, dict)]
+    """Configured projects, including import-only ones (they have no folder)."""
+    entries = list(config.get("projects") or []) + list(config.get("import_projects") or [])
+    return [p for p in entries if isinstance(p, dict)]
 
 
 DRIVE_PREFIXES = {"s:": "s-drive", "x:": "x-drive", "o:": "o-drive", "z:": "z-drive", "c:": "c-drive"}
@@ -600,7 +602,9 @@ def sanitize_project_name(workspace):
 
     slug = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
     slug = re.sub(r"-main$", "", slug)
-    return slug[:18].strip("-") or DEFAULT_PROJECT
+    # Cap keeps display sane without mangling long folder names
+    # (was 18, which truncated e.g. tradingview-indicators -> tradingview-indica)
+    return slug[:36].strip("-") or DEFAULT_PROJECT
 
 
 def suggest_project(workspace, projects):

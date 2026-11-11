@@ -239,10 +239,21 @@ def test_suggest_project_matches_folder_name():
 
 
 def test_sanitize_project_name():
-    assert ic.sanitize_project_name(r"C:\GIT\Tradingview_indicators") == "tradingview-indica"
-    assert ic.sanitize_project_name(r"C:\GIT\Browse-CopilotChats-main") == "browse-copilotchat"
+    assert ic.sanitize_project_name(r"C:\GIT\Tradingview_indicators") == "tradingview-indicators"
+    assert ic.sanitize_project_name(r"C:\GIT\Browse-CopilotChats-main") == "browse-copilotchats"
     assert ic.sanitize_project_name("s:\\") == "s-drive"
     assert ic.sanitize_project_name("") == ic.DEFAULT_PROJECT
+
+
+def test_suggest_project_uses_import_only_projects():
+    config = {
+        "projects": [{"folder_name": "general", "prefix": "gen"}],
+        "import_projects": [{"folder_name": "ha-bestway", "prefix": "ha-bestway"}],
+    }
+    assert ic._project_prefixes(config) == config["projects"] + config["import_projects"]
+    assert ic.suggest_project(r"S:\ha-bestway", ic._project_prefixes(config)) == "ha-bestway"
+    assert ic.suggest_project(r"C:\GIT\general", ic._project_prefixes(config)) == "gen"
+    assert ic._project_prefixes({}) == []
 
 
 def test_scan_writes_csv(tmp_path, monkeypatch):

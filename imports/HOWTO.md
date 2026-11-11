@@ -81,6 +81,22 @@ python3 scripts/brain_search.py "something you remember from a Copilot chat"
   turns use the store instead; the rest is recorded in `sys_sessions.notes` as
   `history truncated by Copilot`
 
+### Registering imported prefixes
+
+Most Copilot workspaces have no folder inside your brain root, so register them under
+`import_projects:` in `config.yaml` rather than `projects:`:
+
+```yaml
+import_projects:
+  - folder_name: "tradingview-indicators"
+    prefix: "tradingview-indicators"
+    label: "Tradingview Indicators"
+```
+
+`projects:` requires a real folder plus `CLAUDE.md`; `import_projects:` does not, and
+`/brain-health` only warns about missing folders for `projects:`. Add the same prefix to
+`jsonl_project_mapping:` so future transcripts route to it automatically.
+
 ---
 
 ## Claude.ai

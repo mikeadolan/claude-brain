@@ -1184,6 +1184,22 @@ If you prefer to add a project without the script:
 
 5. **Restart Claude Code** -- the startup hook will register the new project automatically.
 
+#### Working project vs import-only project
+
+| Config list | Needs a folder + CLAUDE.md | Used for |
+|-------------|---------------------------|----------|
+| `projects:` | Yes | Sessions you run with `claude` in that folder |
+| `import_projects:` | No | Imported history only (Copilot workspaces, old repos, drive roots) |
+
+When `brain-import` (or `import_copilot.py`) suggests a prefix for a workspace
+that has no folder inside your root, put that entry under `import_projects:`
+instead of `projects:`. That keeps `/brain-health` green (it warns about
+missing folders for `projects:` only) while the imported transcripts still get
+the right project name in `/brain-status` and reports.
+
+Keep `jsonl_project_mapping:` entries for both kinds -- that mapping is what
+routes incoming Claude Code and Copilot transcripts to the right prefix.
+
 ---
 
 ## 11. TROUBLESHOOTING
