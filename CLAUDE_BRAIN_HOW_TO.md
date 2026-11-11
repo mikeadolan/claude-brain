@@ -652,7 +652,7 @@ Here are example queries you can type in Claude Code and what happens behind the
 
 ## 7. IMPORTING CONVERSATIONS FROM OTHER PLATFORMS
 
-claude-brain can import from four sources. Claude Code conversations are captured automatically by hooks. The other three require manual export and import.
+claude-brain can import from five sources. Claude Code conversations are captured automatically by hooks. The others require manual export and import, except GitHub Copilot Chat - that is read straight from disk.
 
 ### 7.1 Claude.ai (Web Interface)
 
@@ -724,7 +724,66 @@ Same xlsx workflow as ChatGPT. Gemini exports individual exchanges (not sessions
 python3 scripts/import_gemini.py --import imports/gemini-export/ --map imports/gemini_import_map.xlsx
 ```
 
-### 7.4 Tags and Topic Discovery
+### 7.4 GitHub Copilot Chat (VS Code)
+
+Copilot keeps its own history on disk; claude-brain reads it directly - no export step, no
+extension, no cloud. Three sources are combined:
+
+| Source | Location | Holds |
+|---|---|---|
+| Chat sessions | `%APPDATA%\Code\User\workspaceStorage\<hash>\chatSessions\*.jsonl` | every chat with a workspace folder, including renamed or deleted ones |
+| Empty-window chats | `%APPDATA%\Code\User\globalStorage\emptyWindowChatSessions\*.jsonl` | chats opened without a folder |
+| Session store | `%APPDATA%\Code\User\globalStorage\github.copilot-chat\session-store.db` | full turns of recent agent-mode sessions |
+| Agent host | `~/.copilot/session-state\<id>\events.jsonl` | Copilot agent sessions (VS Code agent host) |
+
+**Scan (read-only):**
+```bash
+cd ~/path/to/claude-brain
+python3 scripts/import_copilot.py --scan
+```
+This writes `imports/copilot_import_map.csv` and prints a summary. The CSV has one row per
+conversation with a `project` column you can edit.
+
+**Review the CSV.** Useful columns:
+
+| Column | Meaning |
+|---|---|
+| `project` | Project prefix to assign. Pre-filled from the workspace folder name |
+| `suggested_folder` | The workspace folder, so you recognise the chat |
+| `workspace_exists` | `no` means the folder was renamed, moved or deleted - the session is still imported |
+| `trimmed` | JSONL held fewer turns than the session store; the richest source was used |
+| `truncated` | Copilot dropped older messages from the file; the missing part no longer exists locally |
+| `status` | `IMPORTED` once it is in the brain |
+
+**Import (dry run first):**
+```bash
+python3 scripts/import_copilot.py --import --map imports/copilot_import_map.csv --dry-run
+python3 scripts/import_copilot.py --import --map imports/copilot_import_map.csv
+```
+
+Safe to re-run: rows are keyed on a deterministic UUID, so a second run adds nothing.
+Projects and tags are **not** overwritten on a re-run - change the CSV, then re-run with
+`--update-metadata` to apply the new project and tags.
+
+**What is imported:** user messages, assistant answers (tool calls and thinking excluded),
+inline references rendered as `[name]`, timestamps, model, workspace path and session id.
+Sessions where Copilot dropped the history keep a note in `sys_sessions.notes`.
+
+**List what is already in the brain:**
+```bash
+python3 scripts/import_copilot.py --report --output imports/copilot_imported.md
+```
+
+**Good to know:**
+
+- An empty chat leaves a `.jsonl` file with zero messages. Most files on a long-lived
+  machine are those shells; they are skipped, not imported.
+- Copilot trims older turns out of the JSONL for long sessions. When the session store has
+  more turns, those win; otherwise the truncation is recorded and cannot be recovered.
+- Chats are tagged with source `copilot_chat` or `copilot_agent`, so they stay distinguishable
+  from `claude_code`.
+
+### 7.5 Tags and Topic Discovery
 
 Every import auto-suggests tags based on conversation content (e.g., `coding`, `finance`, `family`, `memoir`). You review and edit tags in the xlsx before importing.
 

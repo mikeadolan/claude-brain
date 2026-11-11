@@ -203,7 +203,7 @@ No other AI memory tool does this. Schedule and forget - your inbox becomes your
 
 ---
 
-## Four Data Sources
+## Five Data Sources
 
 No other AI memory tool does this. One brain, every platform:
 
@@ -213,8 +213,9 @@ No other AI memory tool does this. One brain, every platform:
 | **Claude.ai** | `/brain-import` + Chrome extension | JSON export per conversation |
 | **ChatGPT** | `import_chatgpt.py` + data export | Full account export from OpenAI |
 | **Gemini** | `import_gemini.py` + Google Takeout | HTML export from Google |
+| **GitHub Copilot Chat** | `import_copilot.py --scan` then `--import` | Reads VS Code and agent-host history from disk - no export |
 
-Every message is tagged with its source (`claude_code`, `claude_ai`, `chatgpt`, `gemini`) so you always know where it came from. Search works across all sources seamlessly.
+Every message is tagged with its source (`claude_code`, `claude_ai`, `chatgpt`, `gemini`, `copilot_chat`, `copilot_agent`) so you always know where it came from. Search works across all sources seamlessly.
 
 ### Tags and Topic Discovery
 
@@ -243,7 +244,7 @@ Type these in any Claude Code session:
 | `/brain-recap` | Progress report for a time range |
 | `/brain-decide` | Decision lookup by number or keyword |
 | `/brain-export` | Export brain data to text files |
-| `/brain-import` | Import conversations (Claude.ai, ChatGPT, Gemini) |
+| `/brain-import` | Import conversations (Claude.ai, ChatGPT, Gemini, Copilot) |
 | `/brain-topics` | Browse sessions by tag -- drill into any topic |
 | `/brain-tag-review` | Batch tag review -- generate spreadsheet, edit, update |
 | `/brain-questionnaire` | Fill out or update your profile |

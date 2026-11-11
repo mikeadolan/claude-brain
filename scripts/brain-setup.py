@@ -1195,7 +1195,7 @@ def phase_registration(cfg):
 
     slash_commands = {
         "brain-import": textwrap.dedent(f"""\
-            Import conversations from Claude.ai, ChatGPT, or Gemini into the brain database.
+            Import conversations from Claude.ai, ChatGPT, Gemini or GitHub Copilot Chat into the brain database.
 
             **Claude.ai:** Uses JSON files exported via Chrome extension.
             Step 1: List JSON files in the imports folder:
@@ -1210,6 +1210,12 @@ def phase_registration(cfg):
 
             **ChatGPT:** Tell the user to run: {PYTHON} {root}/scripts/import_chatgpt.py --scan <path-to-chatgpt-export>
             **Gemini:** Tell the user to run: {PYTHON} {root}/scripts/import_gemini.py --scan <path-to-gemini-takeout>
+            **GitHub Copilot Chat:** No export needed - history is read from disk.
+              1. Scan: {PYTHON} {root}/scripts/import_copilot.py --scan
+              2. Tell the user to review {root}/imports/copilot_import_map.csv (edit the project column)
+              3. Dry run: {PYTHON} {root}/scripts/import_copilot.py --import --map {root}/imports/copilot_import_map.csv --dry-run
+              4. Import: {PYTHON} {root}/scripts/import_copilot.py --import --map {root}/imports/copilot_import_map.csv
+              5. List what landed: {PYTHON} {root}/scripts/import_copilot.py --report
             And stop here.
 
             Step 2: If files ARE found, show the user a numbered list of filenames.

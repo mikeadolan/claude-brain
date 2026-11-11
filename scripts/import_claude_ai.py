@@ -5,6 +5,11 @@ import_claude_ai.py - Import claude.ai JSON conversation exports into claude-bra
 Parses claude.ai export JSON (single conversation per file), maps messages,
 writes to sys_sessions + transcripts + sys_ingest_log, moves file to completed/.
 
+Supports two export formats:
+  - legacy: top-level chat_messages list with uuid/name/created_at fields
+  - Claude Exporter (ai-chat-exporter.net): top-level metadata + messages
+    with role/time/say fields
+
 Usage:
     python3 import_claude_ai.py <json_file> --project <prefix>
 
@@ -22,6 +27,7 @@ import socket
 import sqlite3
 import sys
 import time
+import uuid
 
 import yaml
 
@@ -89,6 +95,70 @@ SENDER_MAP = {
 }
 
 
+def _parse_exporter_dt(value):
+    """'9/24/2026 13:42:55' -> '2026-09-24T13:42:55'; pass through anything else."""
+    if not value:
+        return ""
+    try:
+        return datetime.datetime.strptime(value, "%m/%d/%Y %H:%M:%S").strftime(
+            "%Y-%m-%dT%H:%M:%S"
+        )
+    except ValueError:
+        return value
+
+
+def normalize_export(data):
+    """Normalize either export format into the legacy chat_messages shape.
+
+    Returns a dict with uuid/name/created_at/model/chat_messages, or the
+    input unchanged if it is not recognized (caller reports the error).
+    """
+    if isinstance(data.get("chat_messages"), list):
+        return data  # legacy format already
+
+    metadata = data.get("metadata")
+    messages = data.get("messages")
+    if not isinstance(metadata, dict) or not isinstance(messages, list):
+        return data
+
+    link = (metadata.get("link") or "").strip()
+    title = metadata.get("title") or ""
+    session_id = link.rstrip("/").split("/")[-1] if link else ""
+
+    chat_messages = []
+    prev_uuid = None
+    for i, msg in enumerate(messages):
+        if not isinstance(msg, dict):
+            continue
+        sender = msg.get("role", "")
+        if sender not in SENDER_MAP:
+            continue
+        base = link or f"{title}::{metadata.get('dates', {}).get('created', '')}"
+        msg_uuid = str(uuid.uuid5(uuid.NAMESPACE_URL, f"{base}#{i}"))
+        entry = {
+            "uuid": msg_uuid,
+            "sender": sender,
+            "text": msg.get("say", ""),
+            "created_at": _parse_exporter_dt(msg.get("time", "")),
+        }
+        if prev_uuid:
+            entry["parent_message_uuid"] = prev_uuid
+        prev_uuid = msg_uuid
+        chat_messages.append(entry)
+
+    if not session_id:
+        session_id = str(uuid.uuid5(uuid.NAMESPACE_URL, link or f"{title}::"
+                                    f"{metadata.get('dates', {}).get('created', '')}"))
+
+    return {
+        "uuid": session_id,
+        "name": title,
+        "created_at": _parse_exporter_dt(metadata.get("dates", {}).get("created", "")),
+        "model": None,
+        "chat_messages": chat_messages,
+    }
+
+
 def import_export(file_path, project, root_path=None, config=None, move_on_success=True):
     """Import a claude.ai JSON export file.
 
@@ -120,6 +190,10 @@ def import_export(file_path, project, root_path=None, config=None, move_on_succe
     if not isinstance(data, dict):
         logger.error("Expected JSON object in %s", file_path)
         return {"records_imported": 0, "conversation_name": "", "exit_code": 1}
+
+    # Support both the legacy chat_messages format and the newer
+    # Claude Exporter format (metadata + messages).
+    data = normalize_export(data)
 
     chat_messages = data.get("chat_messages")
     if not isinstance(chat_messages, list):
