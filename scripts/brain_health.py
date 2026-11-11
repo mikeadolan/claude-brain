@@ -29,11 +29,33 @@ SCRIPT_DIR = pathlib.Path(__file__).resolve().parent
 ROOT_PATH = str(SCRIPT_DIR.parent)
 
 
+def configure_output():
+    """Make Unicode output safe on consoles with a non-UTF-8 codepage.
+
+    The report uses box-drawing characters and check marks, which crash with
+    UnicodeEncodeError on a cp1252 console. Switch the Windows console to UTF-8
+    and reconfigure our streams; 'replace' keeps a stubborn console readable
+    instead of failing the whole report.
+    """
+    if os.name == "nt":
+        try:
+            import ctypes
+
+            ctypes.windll.kernel32.SetConsoleOutputCP(65001)
+        except Exception:
+            pass
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):
+            pass
+
+
 def load_config():
     config_path = os.path.join(ROOT_PATH, "config.yaml")
     if not os.path.exists(config_path):
         return None
-    with open(config_path, "r") as f:
+    with open(config_path, "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
 
 
@@ -304,6 +326,47 @@ def check_backup(config):
     if bak_integrity:
         parts.append("integrity OK")
     parts.extend(issues)
+
+    # Off-site copy: NAS, network share or cloud folder
+    offsite_cfg = (config.get("backup") or {}).get("offsite") or {}
+    if offsite_cfg.get("enabled"):
+        off_dir = os.path.expandvars(
+            os.path.expanduser(str(offsite_cfg.get("path", "") or "").strip())
+        )
+        off_details = {"path": off_dir}
+        details["offsite"] = off_details
+
+        off_files = []
+        if os.path.isdir(off_dir):
+            try:
+                off_files = sorted(
+                    [
+                        f
+                        for f in os.listdir(off_dir)
+                        if f.endswith((".bak1", ".bak2", ".db"))
+                    ],
+                    key=lambda f: os.path.getmtime(os.path.join(off_dir, f)),
+                    reverse=True,
+                )
+            except OSError as e:
+                off_details["error"] = str(e)
+
+        if not off_files:
+            if status == "PASS":
+                status = "WARN"
+            parts.append("offsite unreachable" if not os.path.isdir(off_dir) else "offsite empty")
+        else:
+            off_newest = os.path.join(off_dir, off_files[0])
+            off_age = round((time.time() - os.path.getmtime(off_newest)) / 3600, 1)
+            off_details["newest_file"] = off_files[0]
+            off_details["newest_age_hours"] = off_age
+            off_details["count"] = len(off_files)
+            if off_age > 48:
+                if status == "PASS":
+                    status = "WARN"
+            off_age_str = f"{off_age}h" if off_age >= 1 else f"{round(off_age * 60)}m"
+            parts.append(f"offsite {off_age_str} old")
+
     summary = f"Backup: {', '.join(parts)}"
     return status, summary, details
 
@@ -382,7 +445,7 @@ def check_mcp_server(config):
         return "FAIL", "MCP: ~/.claude.json not found", details
 
     try:
-        with open(claude_json_path, "r") as f:
+        with open(claude_json_path, "r", encoding="utf-8") as f:
             claude_config = json.load(f)
     except Exception as e:
         return "FAIL", f"MCP: failed to read ~/.claude.json: {e}", details
@@ -423,7 +486,7 @@ def check_hooks():
         return "FAIL", "Hooks: ~/.claude/settings.json not found", details
 
     try:
-        with open(settings_path, "r") as f:
+        with open(settings_path, "r", encoding="utf-8") as f:
             settings = json.load(f)
     except Exception as e:
         return "FAIL", f"Hooks: failed to read settings.json: {e}", details
@@ -494,7 +557,7 @@ def check_config():
         return "FAIL", "Config: config.yaml not found", details
 
     try:
-        with open(config_path, "r") as f:
+        with open(config_path, "r", encoding="utf-8") as f:
             config = yaml.safe_load(f)
     except Exception as e:
         return "FAIL", f"Config: failed to parse config.yaml: {e}", details
@@ -717,6 +780,7 @@ def print_report(results):
 
 
 def main():
+    configure_output()
     parser = argparse.ArgumentParser(description="Claude Brain 9-point health check")
     parser.add_argument("--json", action="store_true", help="Output as JSON")
     args = parser.parse_args()

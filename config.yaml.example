@@ -62,10 +62,20 @@ database:
 # ==============================================================================
 # Rotating backups in db-backup/ inside root_path.
 # Runs after JSONL ingestion (startup check and end-of-session).
+#
+# offsite copies the verified local backup to a second location - a NAS,
+# network share, or cloud folder. Use a UNC path (\\server\share\dir), not a
+# mapped drive letter: drive mappings are per-session and invisible to
+# scheduled tasks and services.
+# An unreachable offsite target logs a warning and never fails the local backup.
 
 backup:
   max_copies: 2                                # Rotating backup count
   verify_after_copy: true                      # Compare file sizes after backup
+  offsite:
+    enabled: false                             # true = also copy backups off-site
+    path: "\\\\192.168.15.100\\share\\claude-brain"   # UNC path or sync folder
+    keep_dated: 7                              # Dated snapshots kept (one per day)
 
 # ==============================================================================
 # PROJECTS

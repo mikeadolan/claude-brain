@@ -790,8 +790,38 @@ The simplest test: after a Claude Code session, check if the message count
 increased. If hooks are firing, every exchange adds to the database.
 
 ### Check Backup
-The brain backs up automatically at session end. Backups rotate (bak1, bak2, bak3).
+The brain backs up automatically at session end. Backups rotate (bak1, bak2).
 Location: `db-backup/claude-brain.db.bak1`
+
+**Off-site copy (recommended)** — a backup on the same disk is not a backup.
+Point `backup.offsite.path` at a NAS, network share, or cloud folder:
+
+```yaml
+backup:
+  offsite:
+    enabled: true
+    path: "\\\\192.168.15.100\\nfs\\backups\\claude-brain"
+    keep_dated: 7
+```
+
+After each verified local backup, `brain_sync.py` copies it off-site with its
+own `bak1`/`bak2` rotation plus one dated snapshot per day
+(`claude-brain-YYYY-MM-DD.db`), pruned to `keep_dated` files.
+
+- Use a **UNC path**, not a mapped drive letter (`R:`). Drive mappings are
+  per-session; scheduled tasks and services cannot see them.
+- If the target is unreachable, the local backup still succeeds and the log
+  records `[WARN] Offsite backup failed`. `/brain-health` then shows
+  `offsite unreachable` or the age of the newest off-site copy.
+- Log: `logs/<hostname>/brain_sync.log`
+
+**Restoring a backup** (the DB is a single file):
+1. Close Claude Code and anything else writing to the DB.
+2. Delete leftovers of the broken DB: `<local_db_path>-wal` and `-shm`.
+3. Copy `claude-brain.db.bak1` (local or off-site) over `storage.local_db_path`.
+4. Verify: `python3 scripts/brain_health.py`
+   On a Windows console, set `$env:PYTHONIOENCODING='utf-8'` first — the
+   box-drawing characters in the report fail on the default cp1252 codepage.
 
 ---
 

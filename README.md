@@ -333,6 +333,7 @@ claude-brain supports syncing between machines via Dropbox, OneDrive, Google Dri
 - **Project files** (scripts, hooks, config) sync via your cloud provider
 - **Database** stays on local disk (SQLite + cloud sync = corruption risk)
 - **Backups** sync automatically (stored in the project folder)
+- **Off-site copy** — set `backup.offsite.path` to a NAS, network share, or cloud folder; every verified backup is mirrored there with its own rotation and dated snapshots
 - **JSONL reconciliation** at startup catches exchanges from other machines
 
 The setup script asks whether you want "synced" or "local" mode.

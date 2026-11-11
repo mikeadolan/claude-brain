@@ -697,6 +697,11 @@ def phase_config(cfg):
         "backup": {
             "max_copies": 2,
             "verify_after_copy": True,
+            "offsite": {
+                "enabled": False,
+                "path": "",
+                "keep_dated": 7,
+            },
         },
         "projects": projects_list,
         "brain": {
